@@ -5,6 +5,7 @@ import { useTheme, ColorTheme } from '../context/ThemeContext';
 import { importService } from '../services/importService';
 import { useAnimeList } from '../hooks/useAnimeList';
 import { useLanguage, Language } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Settings() {
   const { darkMode, setDarkMode, colorTheme, setColorTheme } = useTheme();
@@ -149,7 +150,14 @@ export default function Settings() {
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Dark mode experience</p>
                     </div>
                     <button 
-                      onClick={() => setLocalSettings(s => ({ ...s, darkMode: !s.darkMode }))}
+                      onClick={async () => {
+                        if (localSettings.darkMode && useAuth().user) {
+                          const { rankingService } = await import('../services/rankingService');
+                          // @ts-ignore
+                          await rankingService.grantAchievement(useAuth().user.uid, 'NIGHT_MODE_RELIGION');
+                        }
+                        setLocalSettings(s => ({ ...s, darkMode: !s.darkMode }));
+                      }}
                       className={cn(
                         "w-14 h-7 rounded-full relative transition-all duration-300",
                         localSettings.darkMode ? "bg-brand shadow-inner shadow-black/20" : "bg-gray-200 dark:bg-gray-700"

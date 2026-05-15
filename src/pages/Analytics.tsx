@@ -9,15 +9,17 @@ import { cn } from '../lib/utils';
 export default function Analytics() {
   const { list } = useAnimeList();
   const { t } = useLanguage();
+  const [mediaType, setMediaType] = React.useState<'ALL' | 'ANIME' | 'MANGA'>('ALL');
 
   const stats = useMemo(() => {
-    const total = list.length;
-    const animeCount = list.filter(a => a.type === 'ANIME').length;
-    const mangaCount = list.filter(a => a.type === 'MANGA').length;
+    const filteredList = mediaType === 'ALL' ? list : list.filter(a => a.type === mediaType);
+    const total = filteredList.length;
+    const animeCount = filteredList.filter(a => a.type === 'ANIME').length;
+    const mangaCount = filteredList.filter(a => a.type === 'MANGA').length;
     
     // Genre count
     const genres: Record<string, number> = {};
-    list.forEach(item => {
+    filteredList.forEach(item => {
       item.genres?.forEach(g => {
         genres[g] = (genres[g] || 0) + 1;
       });
@@ -30,27 +32,50 @@ export default function Analytics() {
 
     // Status distribution
     const statusData = [
-      { name: 'Watching/Reading', value: list.filter(a => a.status === 'WATCHING' || a.status === 'READING').length, color: '#f59e0b' },
-      { name: 'Completed', value: list.filter(a => a.status === 'COMPLETED').length, color: '#10b981' },
-      { name: 'Planning', value: list.filter(a => a.status === 'PLANNING').length, color: '#3b82f6' },
-      { name: 'Dropped', value: list.filter(a => a.status === 'DROPPED').length, color: '#ef4444' },
+      { name: 'Watching/Reading', value: filteredList.filter(a => a.status === 'WATCHING' || a.status === 'READING').length, color: '#f59e0b' },
+      { name: 'Completed', value: filteredList.filter(a => a.status === 'COMPLETED').length, color: '#10b981' },
+      { name: 'Planning', value: filteredList.filter(a => a.status === 'PLANNING').length, color: '#3b82f6' },
+      { name: 'Dropped', value: filteredList.filter(a => a.status === 'DROPPED').length, color: '#ef4444' },
     ].filter(s => s.value > 0);
 
-    return { total, animeCount, mangaCount, topGenres, statusData };
-  }, [list]);
+    // Score calculation (excluding unrated)
+    const ratedItems = filteredList.filter(a => (a.score || 0) > 0);
+    const averageScore = ratedItems.length > 0 
+      ? (ratedItems.reduce((acc, curr) => acc + (curr.score || 0), 0) / ratedItems.length).toFixed(1)
+      : 'N/A';
+
+    return { total, animeCount, mangaCount, topGenres, statusData, averageScore };
+  }, [list, mediaType]);
 
   const cards = [
     { label: 'Total Media', value: stats.total, icon: Library, color: 'text-brand' },
     { label: 'Animes', value: stats.animeCount, icon: Play, color: 'text-blue-500' },
     { label: 'Mangás', value: stats.mangaCount, icon: BookOpen, color: 'text-emerald-500' },
-    { label: 'Score Médio', value: (list.reduce((acc, curr) => acc + (curr.score || 0), 0) / (list.length || 1)).toFixed(1), icon: Star, color: 'text-amber-500' },
+    { label: 'Score Médio', value: stats.averageScore, icon: Star, color: 'text-amber-500' },
   ];
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="border-b border-[var(--color-border)] pb-8">
-        <h1 className="text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">Analytics 2026</h1>
-        <p className="text-gray-500 font-bold text-xs uppercase tracking-[0.2em]">Sua jornada traduzida em dados</p>
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-[var(--color-border)] pb-8">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">Analytics 2026</h1>
+          <p className="text-gray-500 font-bold text-xs uppercase tracking-[0.2em]">Sua jornada traduzida em dados</p>
+        </div>
+
+        <div className="flex bg-[var(--color-card)] p-1 rounded-xl border border-[var(--color-border)]">
+          {(['ALL', 'ANIME', 'MANGA'] as const).map(type => (
+            <button
+              key={type}
+              onClick={() => setMediaType(type)}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
+                mediaType === type ? "bg-brand text-white shadow-lg" : "text-gray-500 hover:text-gray-300"
+              )}
+            >
+              {type === 'ALL' ? 'Geral' : type === 'ANIME' ? 'Animes' : 'Mangás'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

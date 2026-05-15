@@ -53,7 +53,8 @@ export interface JikanAnime {
 
 export const jikanService = {
   getTrending: async (type: 'anime' | 'manga' = 'anime') => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=airing&limit=6`);
+    const filter = type === 'anime' ? 'airing' : 'publishing';
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}&limit=6`);
     return data.data;
   },
 

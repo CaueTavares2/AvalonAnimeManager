@@ -6,10 +6,13 @@
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
-        "email": { "type": "string" },
         "username": { "type": "string" },
-        "avatar": { "type": "string" },
+        "customId": { "type": "string", "description": "Unique Otaku ID (e.g. #Otaku1234)" },
+        "photoURL": { "type": "string" },
         "bio": { "type": "string" },
+        "status": { "type": "string", "enum": ["ONLINE", "OFFLINE", "MARATONANDO"] },
+        "currentActivity": { "type": "string", "description": "Current anime/manga being watched/read" },
+        "lastOnlineAt": { "type": "string", "format": "date-time" },
         "otakuPoints": { "type": "number", "description": "Total Otaku Points (PO)" },
         "weeklyPoints": { "type": "number", "description": "Points earned in the current weekly season" },
         "rank": { "type": "string", "enum": ["FERRO", "BRONZE", "PRATA", "OURO", "PLATINA", "DIAMANTE", "DESAFIANTE"] },
@@ -26,7 +29,68 @@
           }
         }
       },
-      "required": ["uid", "email"]
+      "required": ["uid", "username"]
+    },
+    "friendship": {
+      "title": "Friendship",
+      "description": "Relationship between two users",
+      "type": "object",
+      "properties": {
+        "users": { "type": "array", "items": { "type": "string" }, "description": "UIDs of the two friends" },
+        "since": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["ACCEPTED", "BLOCKED"] }
+      }
+    },
+    "friendRequest": {
+      "title": "Friend Request",
+      "description": "Pending friend request",
+      "type": "object",
+      "properties": {
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "ACCEPTED", "REJECTED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "chat": {
+      "title": "Chat Session",
+      "description": "A conversation between friends",
+      "type": "object",
+      "properties": {
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "message": {
+      "title": "Message",
+      "description": "A single chat message",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "type": { "type": "string", "enum": ["TEXT", "MEDIA", "ACHIEVEMENT"] },
+        "mediaId": { "type": "integer", "description": "Optional ID of anime/manga shared" },
+        "achievementId": { "type": "string", "description": "Optional ID of achievement shared" },
+        "isSpoiler": { "type": "boolean" },
+        "sticker": { "type": "string", "description": "Anime reaction sticker identifier" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "activityEvent": {
+      "title": "Activity Event",
+      "description": "A public update in the user's feed",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["COMPLETED", "PROGRESS", "ACHIEVEMENT_UNLOCKED"] },
+        "mediaId": { "type": "integer" },
+        "mediaTitle": { "type": "string" },
+        "mediaImage": { "type": "string" },
+        "achievementTitle": { "type": "string" },
+        "progress": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     },
     "achievement": {
       "title": "Achievement",
@@ -93,6 +157,30 @@
     "users/{userId}/favorites/characters/{characterId}": {
       "schema": "favoriteCharacter",
       "description": "User's favorite characters"
+    },
+    "friendships/{friendshipId}": {
+      "schema": "friendship",
+      "description": "Friendship records"
+    },
+    "friendRequests/{requestId}": {
+      "schema": "friendRequest",
+      "description": "Pending friend requests"
+    },
+    "chats/{chatId}": {
+      "schema": "chat",
+      "description": "Conversation threads"
+    },
+    "chats/{chatId}/messages/{messageId}": {
+      "schema": "message",
+      "description": "Individual messages in a chat"
+    },
+    "activityFeed/{eventId}": {
+      "schema": "activityEvent",
+      "description": "System-wide activity events"
+    },
+    "users/{userId}/private/info": {
+      "schema": "object",
+      "description": "Private user information (email, status)"
     }
   }
 }

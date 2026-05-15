@@ -8,48 +8,18 @@ export interface Achievement {
   icon: string;
   rarity: 'COMUM' | 'RARO' | 'EPICO' | 'LENDARIO';
   points: number;
+  secret?: boolean;
 }
 
 export const ACHIEVEMENTS: Record<string, Achievement> = {
-  'MARATONISTA': {
-    id: 'MARATONISTA',
-    title: 'Maratonista Lendário',
-    description: 'Assistir a mais de 12 episódios em 24 horas.',
-    icon: 'Flame',
-    rarity: 'LENDARIO',
-    points: 500
-  },
-  'REI_PIRATAS': {
-    id: 'REI_PIRATAS',
-    title: 'O Rei dos Piratas',
-    description: 'Completar todos os episódios de One Piece.',
-    icon: 'Crown',
-    rarity: 'EPICO',
-    points: 400
-  },
-  'EXPLORADOR': {
-    id: 'EXPLORADOR',
-    title: 'Explorador de Gêneros',
-    description: 'Assistir a pelo menos 3 animes de 5 gêneros diferentes.',
-    icon: 'Compass',
-    rarity: 'RARO',
-    points: 300
-  },
-  'CRITICO': {
-    id: 'CRITICO',
-    title: 'Crítico do Reddit',
-    description: 'Escrever 10 avaliações detalhadas.',
-    icon: 'Edit3',
+  // Common (+50 PO)
+  'NINJA_MEDICO_JR': {
+    id: 'NINJA_MEDICO_JR',
+    title: 'Ninja Médico Júnior',
+    description: 'Salvar o streak de um amigo pela primeira vez.',
+    icon: 'HeartPulse',
     rarity: 'COMUM',
-    points: 150
-  },
-  'CACHADOR_TEMP': {
-    id: 'CACHADOR_TEMP',
-    title: 'Caçador de Temporadas',
-    description: 'Assistir a todos os animes sazonais em alta.',
-    icon: 'Zap',
-    rarity: 'EPICO',
-    points: 400
+    points: 50
   },
   'COVEIRO_WAIFUS': {
     id: 'COVEIRO_WAIFUS',
@@ -57,7 +27,179 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     description: 'Adicionar 15 personagens aos favoritos.',
     icon: 'Heart',
     rarity: 'COMUM',
-    points: 100
+    points: 50
+  },
+  'FUI_DEIXADO_VACUO': {
+    id: 'FUI_DEIXADO_VACUO',
+    title: 'Fui Deixado no Vácuo',
+    description: 'Pedir ajuda de streak e o tempo expirar sem socorro.',
+    icon: 'Wind',
+    rarity: 'COMUM',
+    points: 50,
+    secret: true
+  },
+  'GENJUTSU': {
+    id: 'GENJUTSU',
+    title: 'Isso é um Genjutsu?',
+    description: 'Clicar 10 vezes seguidas na foto de perfil de um amigo ou no logotipo.',
+    icon: 'Eye',
+    rarity: 'COMUM',
+    points: 50,
+    secret: true
+  },
+  'NIGHT_MODE_RELIGION': {
+    id: 'NIGHT_MODE_RELIGION',
+    title: 'Modo Noturno é Religião',
+    description: 'Tentar ativar o Modo Escuro quando ele já estiver ativado.',
+    icon: 'Moon',
+    rarity: 'COMUM',
+    points: 50,
+    secret: true
+  },
+
+  // Rare (+150 PO)
+  'EXPLORADOR': {
+    id: 'EXPLORADOR',
+    title: 'Explorador de Gêneros',
+    description: 'Assistir a pelo menos 3 animes de 5 gêneros diferentes.',
+    icon: 'Compass',
+    rarity: 'RARO',
+    points: 150
+  },
+  'CRITICO': {
+    id: 'CRITICO',
+    title: 'Crítico do Reddit',
+    description: 'Escrever 10 avaliações detalhadas com mais de 200 caracteres.',
+    icon: 'Edit3',
+    rarity: 'RARO',
+    points: 150
+  },
+  'DROPADOR_PROFISSIONAL': {
+    id: 'DROPADOR_PROFISSIONAL',
+    title: 'O Dropador Profissional',
+    description: 'Abandonar 5 animes ainda no primeiro episódio.',
+    icon: 'Trash2',
+    rarity: 'RARO',
+    points: 150,
+    secret: true
+  },
+  'GOSTO_PECULIAR': {
+    id: 'GOSTO_PECULIAR',
+    title: 'Gosto Peculiar',
+    description: 'Dar nota 10 para um anime com média global menor que 5.0.',
+    icon: 'Star',
+    rarity: 'RARO',
+    points: 150,
+    secret: true
+  },
+  'SEARCH_ONE_PIECE': {
+    id: 'SEARCH_ONE_PIECE',
+    title: 'Procurando o One Piece',
+    description: 'Digitar o nome de um anime que não existe 5 vezes na busca.',
+    icon: 'Search',
+    rarity: 'RARO',
+    points: 150,
+    secret: true
+  },
+
+  // Epic (+400 PO)
+  'MARATONISTA': {
+    id: 'MARATONISTA',
+    title: 'Maratonista Lendário',
+    description: 'Assistir a mais de 12 episódios dentro de uma janela de 24 horas.',
+    icon: 'Flame',
+    rarity: 'EPICO',
+    points: 400
+  },
+  'SALVADOR_SHIZUME': {
+    id: 'SALVADOR_SHIZUME',
+    title: 'O Salvador de Shizume',
+    description: 'Salvar o streak de amigos 10 vezes no total.',
+    icon: 'ShieldPlus',
+    rarity: 'EPICO',
+    points: 400
+  },
+  'INIMIGO_SOL': {
+    id: 'INIMIGO_SOL',
+    title: 'Inimigo do Sol',
+    description: 'Assistir a uma temporada inteira (12 episódios) em um único dia útil.',
+    icon: 'SunDim',
+    rarity: 'EPICO',
+    points: 400,
+    secret: true
+  },
+  'SEM_VIDA_SOCIAL': {
+    id: 'SEM_VIDA_SOCIAL',
+    title: 'Sem Vida Social',
+    description: 'Atualizar a lista às 04:00 da madrugada de uma segunda-feira.',
+    icon: 'Coffee',
+    rarity: 'EPICO',
+    points: 400,
+    secret: true
+  },
+  'SINDROME_PROTAGONISTA': {
+    id: 'SINDROME_PROTAGONISTA',
+    title: 'Síndrome de Protagonista',
+    description: 'Mudar o nome ou foto de perfil 3 vezes em uma única semana.',
+    icon: 'UserPlus',
+    rarity: 'EPICO',
+    points: 400,
+    secret: true
+  },
+  'GOSTOS_OPOSTOS': {
+    id: 'GOSTOS_OPOSTOS',
+    title: 'Gostos Opostos',
+    description: 'Adicionar um amigo que possui 0% de afinidade com você.',
+    icon: 'Users',
+    rarity: 'EPICO',
+    points: 400,
+    secret: true
+  },
+
+  // Legendary (+1000 PO)
+  'REI_PIRATAS': {
+    id: 'REI_PIRATAS',
+    title: 'O Rei dos Piratas',
+    description: 'Completar todos os episódios de One Piece.',
+    icon: 'Crown',
+    rarity: 'LENDARIO',
+    points: 1000
+  },
+  'SAITAMA_TRAINING': {
+    id: 'SAITAMA_TRAINING',
+    title: 'Treinamento do Saitama',
+    description: 'Ficar exatamente 100 dias seguidos de streak sem quebrar.',
+    icon: 'Fist',
+    rarity: 'LENDARIO',
+    points: 1000,
+    secret: true
+  },
+  'LACOS_INQUEBRAVEIS': {
+    id: 'LACOS_INQUEBRAVEIS',
+    title: 'Laços Inquebráveis',
+    description: 'Ter o seu streak salvo pelo mesmo amigo 3 vezes em meses diferentes.',
+    icon: 'Link',
+    rarity: 'LENDARIO',
+    points: 1000,
+    secret: true
+  },
+  'O_ESCOLHIDO': {
+    id: 'O_ESCOLHIDO',
+    title: 'O Escolhido (Isekai)',
+    description: 'Ser o primeiro usuário a adicionar um anime recém-lançado.',
+    icon: 'Sparkles',
+    rarity: 'LENDARIO',
+    points: 1000,
+    secret: true
+  },
+  'FILLER_VIDA_REAL': {
+    id: 'FILLER_VIDA_REAL',
+    title: 'Filler na Vida Real',
+    description: 'Deixar um anime em "Planejo Assistir" por mais de 365 dias.',
+    icon: 'Hourglass',
+    rarity: 'LENDARIO',
+    points: 1000,
+    secret: true
   }
 };
 
@@ -71,6 +213,51 @@ export const rankingService = {
       updatedAt: serverTimestamp()
     });
     console.log(`User ${userId} earned ${points} PO: ${reason}`);
+  },
+
+  syncListPoints: async (userId: string, list: any[]) => {
+    const userRef = doc(db, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+    
+    const userData = snap.data();
+    let totalPO = 0;
+    
+    list.forEach(item => {
+      if (item.status === 'COMPLETED') {
+        const episodes = item.episodes || 1;
+        const score = item.score || 0;
+        
+        // Validation: Must have a score to prevent "ghost" completions without engagement
+        // Basic PO: 50 per completed anime + 2 per episode
+        // Quality bonus: 5 extra PO for each score point > 5
+        const scoreBonus = score > 5 ? (score - 5) * 10 : 0;
+        const basePO = 50 + (episodes * 2) + scoreBonus;
+        
+        // Long anime bonus (e.g. > 50 episodes)
+        const bonus = episodes > 100 ? 150 : episodes > 50 ? 75 : 0;
+        
+        totalPO += (basePO + bonus);
+      } else if (item.progress > 0) {
+        totalPO += (item.progress * 2);
+      }
+    });
+
+    // Rank evaluation logic
+    let newRank = 'FERRO';
+    if (totalPO >= 10000) newRank = 'DESAFIANTE';
+    else if (totalPO >= 5000) newRank = 'DIAMANTE';
+    else if (totalPO >= 2500) newRank = 'PLATINA';
+    else if (totalPO >= 1000) newRank = 'OURO';
+    else if (totalPO >= 500) newRank = 'PRATA';
+    else if (totalPO >= 200) newRank = 'BRONZE';
+
+    // Update total PO and rank
+    await updateDoc(userRef, {
+      otakuPoints: totalPO,
+      rank: newRank,
+      updatedAt: serverTimestamp()
+    });
   },
 
   checkAchievements: async (userId: string, stats: any) => {

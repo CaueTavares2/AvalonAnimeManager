@@ -7,10 +7,12 @@ import {
   query, 
   setDoc, 
   doc, 
+  getDoc,
   updateDoc, 
   deleteDoc, 
   writeBatch,
-  serverTimestamp
+  serverTimestamp,
+  increment
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from './AuthContext';
@@ -59,6 +61,19 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
       });
       setList(newList);
       localStorage.setItem('avalon_anime_list', JSON.stringify(newList));
+
+      // Filler na Vida Real check
+      const yearInMs = 365 * 24 * 60 * 60 * 1000;
+      const now = new Date();
+      const longTermPlanning = newList.find(anime => {
+        if (anime.status !== 'PLANNING' || !anime.createdAt) return false;
+        const createdDate = new Date(anime.createdAt);
+        return (now.getTime() - createdDate.getTime()) > yearInMs;
+      });
+
+      if (longTermPlanning) {
+        rankingService.grantAchievement(user.uid, 'FILLER_VIDA_REAL');
+      }
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, `users/${user.uid}/list`);
     });
@@ -78,6 +93,22 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
+
+        // O Escolhido Logic: check if first to add
+        const globalRef = doc(db, 'global_media_stats', anime.id.toString());
+        const globalSnap = await getDoc(globalRef);
+        if (!globalSnap.exists()) {
+          await setDoc(globalRef, {
+            firstAddedBy: user.uid,
+            firstAddedAt: serverTimestamp(),
+            count: 1
+          });
+          await rankingService.grantAchievement(user.uid, 'O_ESCOLHIDO');
+        } else {
+          await updateDoc(globalRef, {
+            count: increment(1)
+          });
+        }
 
         // Award points for starting/adding
         await rankingService.addPoints(user.uid, 10, `Adicionou: ${anime.title}`);
@@ -136,10 +167,66 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
           updatedAt: serverTimestamp()
         });
 
+        const now = new Date();
+        const isMonday = now.getDay() === 1;
+        const is4AM = now.getHours() === 4;
+
+        if (isMonday && is4AM) {
+          await rankingService.grantAchievement(user.uid, 'SEM_VIDA_SOCIAL');
+        }
+
+        // Update User Status to MARATONANDO
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data();
+
+        await updateDoc(userRef, {
+          status: 'ONLINE',
+          currentActivity: existingItem?.title || data.title || 'Algo Incrível',
+          updatedAt: serverTimestamp()
+        });
+
         // Award points for progress
         if (existingItem && data.progress !== undefined && data.progress > existingItem.progress) {
           const diff = data.progress - existingItem.progress;
           await rankingService.addPoints(user.uid, diff * 5, `Progresso em: ${existingItem.title}`);
+          
+          // Track marathons
+          const lastMarathonUpdate = userData?.lastMarathonUpdate?.toDate() || new Date(0);
+          const isToday = lastMarathonUpdate.toDateString() === now.toDateString();
+          const todayCount = isToday ? (userData?.todayEpisodesCount || 0) + diff : diff;
+          
+          await updateDoc(userRef, {
+            todayEpisodesCount: todayCount,
+            lastMarathonUpdate: serverTimestamp()
+          });
+
+          if (todayCount >= 12) {
+            await rankingService.grantAchievement(user.uid, 'MARATONISTA');
+            const isWeekday = now.getDay() >= 1 && now.getDay() <= 5;
+            if (isWeekday) {
+              await rankingService.grantAchievement(user.uid, 'INIMIGO_SOL');
+            }
+          }
+        }
+
+        // Dropador Profissional Logic
+        if (data.status === 'DROPPED' && existingItem && existingItem.status !== 'DROPPED') {
+          if (existingItem.progress <= 1) {
+            const drops = (userData?.dropsCount || 0) + 1;
+            await updateDoc(userRef, { dropsCount: drops });
+            if (drops >= 5) {
+              await rankingService.grantAchievement(user.uid, 'DROPADOR_PROFISSIONAL');
+            }
+          }
+        }
+
+        // Gosto Peculiar Logic
+        if (data.score === 10 && existingItem && existingItem.score !== 10) {
+          // Check global rating (this is tricky without API, but we can use the media.score property if it's there)
+          if ((existingItem.score || 0) < 5.0 || (data as any).globalScore < 5.0) {
+             await rankingService.grantAchievement(user.uid, 'GOSTO_PECULIAR');
+          }
         }
 
         // Award points for completion

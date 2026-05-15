@@ -54,6 +54,17 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  mediaType: 'anime' | 'manga';
+  setMediaType: (type: 'anime' | 'manga') => void;
+  streakInfo: {
+    count: number;
+    multiplier: number;
+    phase: 1 | 2 | 3 | 4 | 5;
+    needsHelp: boolean;
+    helpExpireAt: any;
+  } | null;
+  showStreakPopUp: boolean;
+  setShowStreakPopUp: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,29 +73,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mediaType, setMediaType] = useState<'anime' | 'manga'>('anime');
+  const [streakInfo, setStreakInfo] = useState<AuthContextType['streakInfo']>(null);
+  const [showStreakPopUp, setShowStreakPopUp] = useState(false);
 
   useEffect(() => {
     // Set persistence to local (survives tab close)
     setPersistence(auth, browserLocalPersistence);
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      
+    const setOffline = async () => {
       if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        try {
+          await updateDoc(userRef, {
+            status: 'OFFLINE',
+            lastOnlineAt: serverTimestamp()
+          });
+        } catch (error) {
+          handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', setOffline);
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
         // Sync user profile to Firestore
         const userRef = doc(db, 'users', user.uid);
         try {
           const userSnap = await getDoc(userRef);
+          const now = new Date();
           
           if (!userSnap.exists()) {
-            await setDoc(userRef, {
+            const shortId = Math.floor(1000 + Math.random() * 9000);
+            const customId = `#Otaku${shortId}`;
+            
+            const initialData = {
               uid: user.uid,
-              email: user.email,
               username: user.displayName || user.email?.split('@')[0],
-              avatar: user.photoURL || '',
+              customId,
+              photoURL: user.photoURL || '',
+              status: 'ONLINE',
+              lastOnlineAt: serverTimestamp(),
               otakuPoints: 0,
               weeklyPoints: 0,
               rank: 'FERRO',
+              streak: 1,
+              streakMultiplier: 1.0,
+              lastStreakUpdate: serverTimestamp(),
+              pillsCount: 1,
+              pillsResetAt: serverTimestamp(),
+              savedStreaksCount: 0,
+              receivablesPillsCount: 0,
               lastResetAt: serverTimestamp(),
               lastActivityAt: serverTimestamp(),
               preferences: {
@@ -94,54 +136,163 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               },
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()
-            });
+            };
+
+            const privateData = {
+              email: user.email,
+              emailVerified: user.emailVerified,
+              updatedAt: serverTimestamp()
+            };
+
+            await setDoc(userRef, initialData);
+            await setDoc(doc(db, 'users', user.uid, 'private', 'info'), privateData);
+            setStreakInfo({ count: 1, multiplier: 1.0, phase: 1, needsHelp: false, helpExpireAt: null });
+            setShowStreakPopUp(true);
           } else {
-            // Check for weekly reset
             const userData = userSnap.data();
+            
+            // Streak Logic
+            const lastUpdate = userData.lastStreakUpdate ? (userData.lastStreakUpdate.toDate?.() || new Date(userData.lastStreakUpdate)) : new Date(0);
+            const isToday = lastUpdate.toDateString() === now.toDateString();
+            const isYesterday = new Date(now.getTime() - 86400000).toDateString() === lastUpdate.toDateString();
+            
+            let newStreak = userData.streak || 0;
+            let needsHelp = userData.needsHelp || false;
+            let helpExpireAt = userData.helpExpireAt || null;
+
+            if (!isToday) {
+              if (isYesterday || (userData.streak === 0 && !needsHelp)) {
+                newStreak += 1;
+                needsHelp = false;
+                helpExpireAt = null;
+                setShowStreakPopUp(true);
+              } else if (newStreak > 0) {
+                // Streak broken
+                needsHelp = true;
+                const expire = new Date(now.getTime() + 86400000); // 24h to be saved
+                helpExpireAt = expire;
+                // Don't zero yet, wait for save or 24h
+              }
+            }
+
+            // Calculate multiplier and phase
+            let phase: 1 | 2 | 3 | 4 | 5 = 1;
+            let multiplier = 1.0;
+            if (newStreak >= 31) { phase = 5; multiplier = 2.0; }
+            else if (newStreak >= 15) { phase = 4; multiplier = 1.8; }
+            else if (newStreak >= 8) { phase = 3; multiplier = 1.5; }
+            else if (newStreak >= 4) { phase = 2; multiplier = 1.2; }
+
+            setStreakInfo({ count: newStreak, multiplier, phase, needsHelp, helpExpireAt });
+
+            // Saitama Training Achievement
+            if (newStreak === 100) {
+              const { rankingService } = await import('../services/rankingService');
+              await rankingService.grantAchievement(user.uid, 'SAITAMA_TRAINING');
+            }
+
+            // Sync Rank with Points (Fix for users appearing in multiple/wrong leagues)
+            let newRank = 'FERRO';
+            const totalPO = userData.otakuPoints || 0;
+            if (totalPO >= 10000) newRank = 'DESAFIANTE';
+            else if (totalPO >= 5000) newRank = 'DIAMANTE';
+            else if (totalPO >= 2500) newRank = 'PLATINA';
+            else if (totalPO >= 1000) newRank = 'OURO';
+            else if (totalPO >= 500) newRank = 'PRATA';
+            else if (totalPO >= 200) newRank = 'BRONZE';
+
+            // Update online status and streak and RANK
+            try {
+              // Sync PII if needed
+              if (user.emailVerified) {
+                await updateDoc(doc(db, 'users', user.uid, 'private', 'info'), {
+                  emailVerified: true,
+                  updatedAt: serverTimestamp()
+                }).catch(() => {
+                  // If it doesn't exist, create it (backwards compatibility)
+                  setDoc(doc(db, 'users', user.uid, 'private', 'info'), {
+                    email: user.email,
+                    emailVerified: true,
+                    updatedAt: serverTimestamp()
+                  });
+                });
+              }
+
+              await updateDoc(userRef, {
+                status: 'ONLINE',
+                lastOnlineAt: serverTimestamp(),
+                streak: newStreak,
+                streakMultiplier: multiplier,
+                lastStreakUpdate: isToday ? userData.lastStreakUpdate : serverTimestamp(),
+                needsHelp,
+                helpExpireAt,
+                rank: newRank, // Ensure rank is synced on login
+                updatedAt: serverTimestamp()
+              });
+            } catch (error) {
+              handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+            }
+
+            // Check for weekly reset (Pills, Points, and Changes)
             const lastReset = userData.lastResetAt ? (userData.lastResetAt.toDate?.() || new Date(userData.lastResetAt)) : new Date();
-            const now = new Date();
             const weekInMs = 7 * 24 * 60 * 60 * 1000;
             
-            if (userData.lastResetAt && now.getTime() - lastReset.getTime() > weekInMs) {
-              await updateDoc(userRef, {
-                weeklyPoints: 0,
-                lastResetAt: serverTimestamp()
-              });
+            if (now.getTime() - lastReset.getTime() > weekInMs) {
+              try {
+                await updateDoc(userRef, {
+                  weeklyPoints: 0,
+                  weeklyChangesCount: 0, // Reset profile changes for achievement tracker
+                  pillsCount: 1, // Reset pill stock
+                  lastResetAt: serverTimestamp()
+                });
+              } catch (error) {
+                handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+              }
             }
 
             // Inactivity penalty check (3 days)
             const lastActivity = userData.lastActivityAt ? (userData.lastActivityAt.toDate?.() || new Date(userData.lastActivityAt)) : new Date();
             const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
-            if (userData.lastActivityAt && now.getTime() - lastActivity.getTime() > threeDaysInMs) {
+            if (now.getTime() - lastActivity.getTime() > threeDaysInMs) {
               const daysInactive = Math.floor((now.getTime() - lastActivity.getTime()) / (24 * 60 * 60 * 1000));
-              const penalty = daysInactive * 10; // 10 PO per day inactive
-              await updateDoc(userRef, {
-                otakuPoints: Math.max(0, (userData.otakuPoints || 0) - penalty),
-                lastActivityAt: serverTimestamp()
-              });
+              const penalty = daysInactive * 10;
+              try {
+                await updateDoc(userRef, {
+                  otakuPoints: Math.max(0, (userData.otakuPoints || 0) - penalty),
+                  lastActivityAt: serverTimestamp()
+                });
+              } catch (error) {
+                handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+              }
             } else {
-              // Update last activity to now to avoid penalty soon
-              await updateDoc(userRef, {
-                lastActivityAt: serverTimestamp()
-              });
+              try {
+                await updateDoc(userRef, {
+                  lastActivityAt: serverTimestamp()
+                });
+              } catch (error) {
+                handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+              }
             }
           }
         } catch (error) {
-          console.error("Profile sync error:", error);
-          // Don't use handleFirestoreError here as it might loop or hide auth state
+          handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
         }
         
-        // Simple admin check (can be replaced with a collection check)
+        // Simple admin check
         const admins = ['caue.nanda.tavares@gmail.com']; 
         setIsAdmin(admins.includes(user.email || ''));
       } else {
+        setUser(null);
         setIsAdmin(false);
+        setStreakInfo(null);
       }
-      
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      window.removeEventListener('beforeunload', setOffline);
+    };
   }, []);
 
   const loginWithGoogle = async () => {
@@ -158,7 +309,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout, isAdmin }}>
+    <AuthContext.Provider value={{ 
+      user, loading, loginWithGoogle, logout, isAdmin, mediaType, setMediaType, 
+      streakInfo, showStreakPopUp, setShowStreakPopUp 
+    }}>
       {children}
     </AuthContext.Provider>
   );

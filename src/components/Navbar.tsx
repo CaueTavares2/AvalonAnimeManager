@@ -1,27 +1,41 @@
-import { Search, User, MoreHorizontal, Settings as SettingsIcon, LogIn, PieChart } from 'lucide-react';
+import { Search, User, MoreHorizontal, Settings as SettingsIcon, LogIn, PieChart, Users, MessageSquare } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { jikanService, JikanAnime } from '../services/jikanService';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useSocial } from '../context/SocialContext';
 
 export default function Navbar() {
   const { t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user, logout, mediaType } = useAuth();
+  const { requests } = useSocial();
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<JikanAnime[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  const [failedSearches, setFailedSearches] = useState(0);
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (search.trim().length > 2) {
         try {
-          const data = await jikanService.search(search);
+          const data = await jikanService.search(search, mediaType);
           setResults(data);
           setIsSearching(true);
+          
+          if (data.length === 0) {
+            const newFailed = failedSearches + 1;
+            setFailedSearches(newFailed);
+            if (newFailed >= 5 && user) {
+              const { rankingService } = await import('../services/rankingService');
+              await rankingService.grantAchievement(user.uid, 'SEARCH_ONE_PIECE');
+              setFailedSearches(0);
+            }
+          }
         } catch (error) {
           console.error("Search failed:", error);
         }
@@ -32,7 +46,7 @@ export default function Navbar() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, mediaType, user, failedSearches]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -50,11 +64,25 @@ export default function Navbar() {
     navigate(`/anime/${id}`);
   };
 
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = async (e: React.MouseEvent) => {
+    if (user) {
+      const newClicks = logoClicks + 1;
+      setLogoClicks(newClicks);
+      if (newClicks === 10) {
+        const { rankingService } = await import('../services/rankingService');
+        await rankingService.grantAchievement(user.uid, 'GENJUTSU');
+        setLogoClicks(0);
+      }
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 dark:bg-[#0b1622]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2 cursor-pointer group">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer group">
             <div className="text-brand font-black text-2xl tracking-tighter uppercase italic group-hover:scale-110 transition-transform duration-300">Avalon</div>
           </Link>
 
@@ -62,9 +90,15 @@ export default function Navbar() {
             <Link to="/" className="text-gray-400 hover:text-brand transition-colors">{t('nav.browse')}</Link>
             <Link to="/list" className="text-gray-400 hover:text-brand transition-colors">{t('nav.list')}</Link>
             <Link to="/ranking" className="text-gray-400 hover:text-brand transition-colors">Ranking</Link>
+            <Link to="/social" className="text-gray-400 hover:text-brand transition-colors flex items-center gap-1.5">
+              Social
+              {requests.length > 0 && (
+                <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
+              )}
+            </Link>
+            <Link to="/chat" className="text-gray-400 hover:text-brand transition-colors">AniChat</Link>
             <Link to="/analytics" className="text-gray-400 hover:text-brand transition-colors">Analytics</Link>
-            <Link to="/community" className="text-gray-400 hover:text-brand transition-colors">{t('nav.community')}</Link>
-            <Link to="/settings" className="text-gray-400 hover:text-brand transition-colors">{t('nav.config')}</Link>
+            <Link to="/settings" className="text-gray-400 hover:text-brand transition-colors hover:scale-105 active:scale-95 transition-transform"><SettingsIcon className="w-4 h-4" /></Link>
           </div>
         </div>
 
