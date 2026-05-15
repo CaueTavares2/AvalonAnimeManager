@@ -12,6 +12,8 @@ interface ProfileData {
   joinedDate: string;
   otakuPoints: number;
   rank: string;
+  photoURL?: string;
+  bannerURL?: string;
 }
 
 interface ProfileContextType {
@@ -27,7 +29,8 @@ const defaultProfile: ProfileData = {
   location: 'Earth 616',
   joinedDate: 'Maio 2026',
   otakuPoints: 0,
-  rank: 'FERRO'
+  rank: 'FERRO',
+  bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200'
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -54,7 +57,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           location: data.location || prev.location,
           favoriteAnime: data.favoriteAnime || prev.favoriteAnime,
           otakuPoints: data.otakuPoints || 0,
-          rank: data.rank || 'FERRO'
+          rank: data.rank || 'FERRO',
+          photoURL: data.photoURL || prev.photoURL,
+          bannerURL: data.bannerURL || prev.bannerURL
         }));
       }
     });

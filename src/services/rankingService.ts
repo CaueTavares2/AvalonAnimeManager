@@ -155,6 +155,15 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     points: 400,
     secret: true
   },
+  'DESIGNER_INTERIOR': {
+    id: 'DESIGNER_INTERIOR',
+    title: 'Designer de Interiores',
+    description: 'Alterar o banner do perfil para uma imagem personalizada.',
+    icon: 'Image',
+    rarity: 'COMUM',
+    points: 50,
+    secret: true
+  },
 
   // Legendary (+1000 PO)
   'REI_PIRATAS': {

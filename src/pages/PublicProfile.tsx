@@ -114,34 +114,40 @@ export default function PublicProfile() {
       </Link>
 
       <div className="bg-[var(--color-card)] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden">
-        <div className="h-40 bg-gradient-to-r from-brand/90 to-brand flex items-center justify-center relative">
-           {affinity !== null && (
-             <div className="absolute top-4 right-8 flex flex-col items-end">
-                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 shadow-2xl">
-                   <Heart className="w-5 h-5 text-white fill-white animate-pulse" />
-                   <div className="text-right">
-                      <p className="text-[10px] font-black text-white/70 uppercase tracking-widest leading-none">Afinidade</p>
-                      <p className="text-xl font-black text-white italic leading-none">{affinity}%</p>
-                   </div>
-                </div>
-                <p className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mt-1 mr-1 italic">Match Otaku 2026</p>
-             </div>
-           )}
+        <div className="h-48 relative overflow-hidden group/banner">
+          <img 
+            src={profile.bannerURL || 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200'} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105" 
+            alt="Banner"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-card)] to-transparent opacity-60" />
+          
+          {affinity !== null && (
+            <div className="absolute top-4 right-8 flex flex-col items-end">
+               <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-2xl">
+                  <Heart className="w-5 h-5 text-white fill-white animate-pulse" />
+                  <div className="text-right">
+                     <p className="text-[10px] font-black text-white/70 uppercase tracking-widest leading-none">Afinidade</p>
+                     <p className="text-xl font-black text-white italic leading-none">{affinity}%</p>
+                  </div>
+               </div>
+            </div>
+          )}
         </div>
-        <div className="px-8 pb-8 flex flex-col md:flex-row items-end justify-between gap-6 -translate-y-8">
+        <div className="px-8 pb-8 flex flex-col md:flex-row items-end justify-between gap-6 -translate-y-12">
           <div className="flex items-end gap-6">
-            <div className="relative">
-              <div className="w-28 h-28 bg-[var(--color-card)] rounded-3xl shadow-2xl border-4 border-[var(--color-card)] overflow-hidden shrink-0">
-                <img src={profile.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} alt={profile.username} className="w-full h-full object-cover" />
+            <div className="relative group/avatar">
+              <div className="w-32 h-32 bg-[var(--color-card)] rounded-[32px] shadow-2xl border-8 border-[var(--color-card)] overflow-hidden shrink-0">
+                <img src={profile.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} alt={profile.username} className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-500" />
               </div>
               <div className={cn(
-                "absolute bottom-2 right-2 w-5 h-5 rounded-full border-4 border-[var(--color-card)]",
-                profile.status === 'ONLINE' ? "bg-emerald-500" : profile.status === 'MARATONANDO' ? "bg-brand" : "bg-gray-500"
+                "absolute bottom-4 right-4 w-6 h-6 rounded-full border-4 border-[var(--color-card)] shadow-lg",
+                profile.status === 'ONLINE' ? "bg-emerald-500 shadow-emerald-500/50" : profile.status === 'MARATONANDO' ? "bg-brand shadow-brand/50 animate-pulse" : "bg-gray-500"
               )} />
             </div>
-            <div className="flex-1 pb-1">
+            <div className="flex-1 pb-2">
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">{profile.username}</h1>
+                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">{profile.username}</h1>
                 <span className="text-xs font-black text-brand italic">{profile.customId}</span>
               </div>
               <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mt-1">

@@ -9,6 +9,7 @@
         "username": { "type": "string" },
         "customId": { "type": "string", "description": "Unique Otaku ID (e.g. #Otaku1234)" },
         "photoURL": { "type": "string" },
+        "bannerURL": { "type": "string" },
         "bio": { "type": "string" },
         "status": { "type": "string", "enum": ["ONLINE", "OFFLINE", "MARATONANDO"] },
         "currentActivity": { "type": "string", "description": "Current anime/manga being watched/read" },
@@ -20,6 +21,10 @@
         "lastActivityAt": { "type": "string", "format": "date-time" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "joinedDate": { "type": "string" },
+        "favoriteAnime": { "type": "string" },
+        "favoriteGenres": { "type": "array", "items": { "type": "string" } },
         "preferences": {
           "type": "object",
           "properties": {

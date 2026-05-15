@@ -256,6 +256,14 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
         since: serverTimestamp(),
         status: 'ACCEPTED'
       });
+
+      // Check for GOSTOS_OPOSTOS achievement
+      const affinity = await calculateAffinity(data.from);
+      if (affinity === 0) {
+        import('../services/rankingService').then(({ rankingService }) => {
+          rankingService.grantAchievement(user.uid, 'GOSTOS_OPOSTOS');
+        });
+      }
       
       // Create activity event
       await addDoc(collection(db, 'activityFeed'), {

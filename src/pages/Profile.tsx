@@ -19,9 +19,19 @@ export default function Profile() {
   const [achievements, setAchievements] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'ANIME' | 'CHARACTERS'>('ANIME');
 
-  const [editedPhotoURL, setEditedPhotoURL] = useState(user?.photoURL || '');
+  const [editedPhotoURL, setEditedPhotoURL] = useState(profile.photoURL || user?.photoURL || '');
+  const [editedBannerURL, setEditedBannerURL] = useState(profile.bannerURL || '');
   const isAdminUser = user?.email === 'caue.nanda.tavares@gmail.com';
   const [showAllAchievements, setShowAllAchievements] = useState(false);
+
+  // Helper to check if user has achievement
+  const hasAchievement = (achId: string) => {
+    if (isAdminUser) return true;
+    return achievements.some(a => a.id === achId);
+  };
+
+  // Calculate unlocked count based on hasAchievement to ensure admin/real progress is consistent
+  const unlockedCount = Object.keys(ACHIEVEMENTS).filter(id => hasAchievement(id)).length;
 
   const stats = {
     completed: list.filter(a => a.status === 'COMPLETED').length,
@@ -68,6 +78,7 @@ export default function Profile() {
         location: editedProfile.location,
         favoriteAnime: editedProfile.favoriteAnime,
         photoURL: editedPhotoURL,
+        bannerURL: editedBannerURL,
         weeklyChangesCount: currentChanges,
         updatedAt: new Date().toISOString()
       });
@@ -76,8 +87,13 @@ export default function Profile() {
         const { rankingService } = await import('../services/rankingService');
         await rankingService.grantAchievement(user.uid, 'SINDROME_PROTAGONISTA');
       }
+
+      if (editedBannerURL && editedBannerURL !== profile.bannerURL) {
+        const { rankingService } = await import('../services/rankingService');
+        await rankingService.grantAchievement(user.uid, 'DESIGNER_INTERIOR');
+      }
     }
-    updateProfile({ ...editedProfile, photoURL: editedPhotoURL });
+    updateProfile({ ...editedProfile, photoURL: editedPhotoURL, bannerURL: editedBannerURL });
     setIsEditing(false);
   };
 
@@ -85,31 +101,32 @@ export default function Profile() {
     ? new Date(profile.createdAt.seconds * 1000).toLocaleDateString('pt-BR')
     : profile.joinedDate || 'Recentemente';
 
-  // Helper to check if user has achievement
-  const hasAchievement = (achId: string) => {
-    if (isAdminUser) return true;
-    return achievements.some(a => a.id === achId);
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header Card */}
-      <div className="bg-[var(--color-card)] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden">
-        <div className="h-32 bg-gradient-to-r from-brand to-brand-dark" />
-        <div className="px-8 pb-8 flex flex-col md:flex-row items-end justify-between gap-6 -translate-y-6">
+      <div className="bg-[var(--color-card)] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden group/banner">
+        <div className="h-48 relative overflow-hidden">
+          <img 
+            src={profile.bannerURL || 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200'} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105" 
+            alt="Banner"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-card)] to-transparent opacity-60" />
+        </div>
+        <div className="px-8 pb-8 flex flex-col md:flex-row items-end justify-between gap-6 -translate-y-12">
           <div className="flex items-end gap-6">
-            <div className="w-24 h-24 bg-[var(--color-card)] rounded-2xl shadow-lg border-4 border-[var(--color-card)] overflow-hidden shrink-0">
+            <div className="w-32 h-32 bg-[var(--color-card)] rounded-[32px] shadow-2xl border-8 border-[var(--color-card)] overflow-hidden shrink-0 relative group/avatar">
               {profile.photoURL || user?.photoURL ? (
-                <img src={profile.photoURL || user?.photoURL || ''} alt={profile.username} className="w-full h-full object-cover" />
+                <img src={profile.photoURL || user?.photoURL || ''} alt={profile.username} className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-500" />
               ) : (
                 <div className="w-full h-full bg-[var(--color-bg)] flex items-center justify-center text-gray-300">
-                  <UserIcon className="w-12 h-12" />
+                  <UserIcon className="w-16 h-16" />
                 </div>
               )}
             </div>
-            <div className="flex-1 pb-1">
+            <div className="flex-1 pb-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">{profile.username}</h1>
+                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">{profile.username}</h1>
                 <div className={cn(
                   "px-2 py-0.5 rounded flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest border shadow-sm",
                   RANK_COLORS[profile.rank || 'FERRO']
@@ -297,7 +314,7 @@ export default function Profile() {
                       ach.rarity === 'EPICO' ? "bg-purple-500/10 border-purple-500/50 text-purple-500 shadow-purple-500/10" :
                       "bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-yellow-500/10"
                     )}>
-                      <Trophy className="w-6 h-6" />
+                      {ach.secret ? <Ghost className="w-6 h-6" /> : <Trophy className="w-6 h-6" />}
                     </div>
                     <p className="text-[10px] text-zinc-400 font-black uppercase tracking-tighter line-clamp-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4">
                       {ach.title}
@@ -381,7 +398,7 @@ export default function Profile() {
               <div className="flex items-center gap-3">
                 <Medal className="text-zinc-500" size={20} />
                 <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
-                  Progresso: {achievements.length} / {Object.keys(ACHIEVEMENTS).length}
+                  Progresso: {unlockedCount} / {Object.keys(ACHIEVEMENTS).length}
                 </span>
               </div>
               <p className="text-[10px] font-bold text-zinc-600 uppercase italic">Conquistas secretas são reveladas apenas para quem as conquista.</p>
@@ -400,15 +417,36 @@ export default function Profile() {
             </div>
             
             <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Link da Imagem de Perfil</label>
-                <input 
-                  type="url" 
-                  placeholder="https://sua-foto.png"
-                  value={editedPhotoURL}
-                  onChange={e => setEditedPhotoURL(e.target.value)}
-                  className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-2 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-1 focus:ring-brand"
-                />
+              <div className="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl mb-4">
+                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest flex items-center gap-2">
+                  ⚠️ Aviso de Segurança
+                </p>
+                <p className="text-[9px] text-orange-400 font-bold uppercase mt-1 leading-tight">
+                  IMAGENS +18 SÃO ESTRITAMENTE PROIBIDAS NO BANNER OU PERFIL. O DESCUMPRIMENTO RESULTARÁ EM BANIMENTO IMEDIATO SEM DIREITO A RECURSO.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Link do Avatar</label>
+                  <input 
+                    type="url" 
+                    placeholder="https://sua-foto.png"
+                    value={editedPhotoURL}
+                    onChange={e => setEditedPhotoURL(e.target.value)}
+                    className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-2 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Link do Banner</label>
+                  <input 
+                    type="url" 
+                    placeholder="https://seu-banner.png"
+                    value={editedBannerURL}
+                    onChange={e => setEditedBannerURL(e.target.value)}
+                    className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-2 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
               </div>
 
               <div>

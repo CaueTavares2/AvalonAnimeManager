@@ -21,7 +21,8 @@ service cloud.firestore {
       return data.uid is string && data.uid.size() == 28 &&
              data.username is string && data.username.size() >= 3 && data.username.size() <= 32 &&
              (data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
-             (data.bio == null || (data.bio is string && data.bio.size() <= 500)) &&
+             (data.bannerURL == null || (data.bannerURL is string && data.bannerURL.size() <= 1024)) &&
+             (data.bio == null || (data.bio is string && data.bio.size() <= 1000)) &&
              data.otakuPoints is number && data.otakuPoints >= 0 &&
              data.rank in ['FERRO', 'BRONZE', 'PRATA', 'OURO', 'PLATINA', 'DIAMANTE', 'DESAFIANTE'];
     }
@@ -34,10 +35,18 @@ service cloud.firestore {
     function isValidMediaItem(data) {
       return data.userId is string && data.userId.size() == 28 &&
              data.mediaId is int &&
-             data.title is string && data.title.size() <= 200 &&
-             data.type in ['ANIME', 'MANGA'] &&
+             data.title is string && data.title.size() <= 400 &&
+             data.type in ['ANIME', 'MANGA', 'COMMON'] &&
              data.status in ['WATCHING', 'READING', 'COMPLETED', 'PLANNING', 'DROPPED'] &&
-             data.score is number && data.score >= 0 && data.score <= 10;
+             (data.score == null || (data.score is number && data.score >= 0 && data.score <= 10));
+    }
+
+    function isValidCharacter(data) {
+      return data.id is int && data.name is string && data.name.size() <= 200;
+    }
+
+    function isValidAchievement(data) {
+       return data.id is string && data.title is string;
     }
 
     function isValidFriendRequest(data) {
@@ -56,16 +65,15 @@ service cloud.firestore {
 
     // User Profile Rules
     match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid; // Secure list: only self in list
+      allow get, list: if isSignedIn();
       
       allow create: if isOwner(userId) && isEmailVerified() && isValidUser(incoming()) &&
                     incoming().createdAt == request.time &&
                     incoming().updatedAt == request.time;
       
-      allow update: if isOwner(userId) && isEmailVerified() && isValidUser(incoming()) && (
+      allow update: if isOwner(userId) && isEmailVerified() && (
         // Action: Standard Profile Update
-        (incoming().diff(existing()).affectedKeys().hasOnly(['username', 'photoURL', 'bio', 'preferences', 'updatedAt', 'lastActivityAt', 'status', 'currentActivity', 'lastOnlineAt', 'favoriteAnime', 'weeklyChangesCount'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['username', 'photoURL', 'bannerURL', 'bio', 'preferences', 'updatedAt', 'lastActivityAt', 'status', 'currentActivity', 'lastOnlineAt', 'favoriteAnime', 'weeklyChangesCount', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'location'])) ||
         // Action: Points/Rank Update
         (incoming().diff(existing()).affectedKeys().hasAny(['otakuPoints', 'weeklyPoints', 'rank', 'streak', 'streakMultiplier', 'lastStreakUpdate', 'needsHelp', 'helpExpireAt', 'pillsCount', 'savedStreaksCount', 'receivablesPillsCount', 'lastResetAt', 'updatedAt', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'weeklyChangesCount']))
       ) && incoming().uid == existing().uid && incoming().createdAt == existing().createdAt;
@@ -73,6 +81,19 @@ service cloud.firestore {
       // PII Isolation: Private Info
       match /private/info {
         allow read, write: if isOwner(userId);
+      }
+
+      // Achievements
+      match /achievements/{achId} {
+        allow read, list: if isSignedIn();
+        allow create, update: if isOwner(userId) && isValidAchievement(incoming());
+      }
+
+      // Favorites
+      match /favorites/characters/items/{itemId} {
+        allow read, list: if isSignedIn();
+        allow create, update: if isOwner(userId) && isValidCharacter(incoming());
+        allow delete: if isOwner(userId);
       }
     }
 
