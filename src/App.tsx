@@ -17,7 +17,9 @@ import Login from './pages/Login';
 import Analytics from './pages/Analytics';
 import Social from './pages/Social';
 import AniChat from './pages/AniChat';
-import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon } from 'lucide-react';
+import Shop from './pages/Shop';
+import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
+import { UpdateNotification } from './components/UpdateNotification';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { ProfileProvider } from './context/ProfileContext';
@@ -39,6 +41,7 @@ export default function App() {
                   <BrowserRouter>
                     <div className="min-h-screen">
                       <Navbar />
+                      <UpdateNotification />
                       
                       <main className="max-w-7xl mx-auto px-4 md:px-12 py-12">
                         <Routes>
@@ -51,6 +54,7 @@ export default function App() {
                           <Route path="/profile/:uid" element={<PublicProfile />} />
                           <Route path="/social" element={<Social />} />
                           <Route path="/chat" element={<AniChat />} />
+                          <Route path="/shop" element={<Shop />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="/login" element={<Login />} />
                           <Route path="/analytics" element={<Analytics />} />
@@ -77,9 +81,13 @@ export default function App() {
 
                       {/* Mobile Nav */}
                       <div className="fixed bottom-0 left-0 right-0 h-16 bg-[var(--color-card)]/98 backdrop-blur-md border-t border-[var(--color-border)] lg:hidden flex items-center justify-around z-50">
-                        <Link to="/" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-                          <TrendingUp className="w-5 h-5 text-brand" />
-                          <span className="text-[10px] font-black uppercase tracking-tighter text-brand">Browse</span>
+                        <Link to="/ranking" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
+                          <TrendingUp className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+                          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Ranking</span>
+                        </Link>
+                        <Link to="/shop" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
+                          <ShoppingBag className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+                          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Loja</span>
                         </Link>
                         <Link to="/list" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
                           <Search className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />

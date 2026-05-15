@@ -24,6 +24,7 @@ service cloud.firestore {
              (data.bannerURL == null || (data.bannerURL is string && data.bannerURL.size() <= 1024)) &&
              (data.bio == null || (data.bio is string && data.bio.size() <= 1000)) &&
              data.otakuPoints is number && data.otakuPoints >= 0 &&
+             (data.availablePoints == null || (data.availablePoints is number && data.availablePoints >= 0)) &&
              data.rank in ['FERRO', 'BRONZE', 'PRATA', 'OURO', 'PLATINA', 'DIAMANTE', 'DESAFIANTE'];
     }
 
@@ -75,7 +76,7 @@ service cloud.firestore {
         // Action: Standard Profile Update
         (incoming().diff(existing()).affectedKeys().hasOnly(['username', 'photoURL', 'bannerURL', 'bio', 'preferences', 'updatedAt', 'lastActivityAt', 'status', 'currentActivity', 'lastOnlineAt', 'favoriteAnime', 'weeklyChangesCount', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'location'])) ||
         // Action: Points/Rank Update
-        (incoming().diff(existing()).affectedKeys().hasAny(['otakuPoints', 'weeklyPoints', 'rank', 'streak', 'streakMultiplier', 'lastStreakUpdate', 'needsHelp', 'helpExpireAt', 'pillsCount', 'savedStreaksCount', 'receivablesPillsCount', 'lastResetAt', 'updatedAt', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'weeklyChangesCount']))
+        (incoming().diff(existing()).affectedKeys().hasAny(['otakuPoints', 'availablePoints', 'weeklyPoints', 'rank', 'streak', 'streakMultiplier', 'lastStreakUpdate', 'needsHelp', 'helpExpireAt', 'pillsCount', 'savedStreaksCount', 'receivablesPillsCount', 'lastResetAt', 'updatedAt', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'weeklyChangesCount']))
       ) && incoming().uid == existing().uid && incoming().createdAt == existing().createdAt;
       
       // PII Isolation: Private Info

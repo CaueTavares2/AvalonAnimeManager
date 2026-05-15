@@ -1,20 +1,55 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Avalon - Anime Tracking Saga
 
-# Run and deploy your AI Studio app
+Avalon é uma plataforma refinada de rastreamento de animes com uma interface cinematográfica, sistema de progressão otaku e recursos sociais.
 
-This contains everything you need to run your app locally.
+## 🚀 Como Rodar Localmente (Dependências Completas)
 
-View your app in AI Studio: https://ai.studio/apps/0f1c0323-dd3f-49a3-be98-0c8592fe2a86
+Para garantir que você tenha todas as dependências e o ambiente configurado como um "EXE" de fácil execução, siga estes passos:
 
-## Run Locally
+### Pré-requisitos
+- [Node.js](https://nodejs.org/) (v18 ou superior)
+- [npm](https://www.npmjs.com/) (Vem com o Node)
 
-**Prerequisites:**  Node.js
+### Instalação
+1. Extraia o arquivo ZIP do projeto.
+2. Abra o terminal na pasta do projeto.
+3. Instale todas as dependências necessárias de uma vez:
+   ```bash
+   npm install
+   ```
 
+### Execução
+Para iniciar o servidor de desenvolvimento:
+```bash
+npm run dev
+```
+O app estará disponível em `http://localhost:3000`.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Build para Produção
+Para criar uma versão otimizada e leve:
+```bash
+npm run build
+```
+
+---
+
+## 🛠️ Tecnologias
+- **Frontend:** React + Vite + TypeScript
+- **Estilização:** Tailwind CSS (Modern v4)
+- **Animações:** Motion (Framer Motion)
+- **Backend:** Firebase (Auth, Firestore)
+- **Dados:** Jikan API (MyAnimeList)
+
+## 👑 Administradores
+Os administradores têm acesso a:
+- Visualização de **Conquistas Secretas** bloqueadas.
+- Painel de Analytics avançado.
+- Selo exclusivo no perfil.
+
+## ⚠️ Regras de Imagem
+- **Imagens +18 são proibidas.**
+- O descumprimento resultará em banimento imediato.
+- O sistema de verificação em segundo plano monitora links externos.
+
+---
+Para suporte ou atualizações, verifique o repositório oficial no GitHub.

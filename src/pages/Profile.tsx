@@ -140,7 +140,9 @@ export default function Profile() {
                 )}
               </div>
                 <p className="text-gray-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2 mt-1">
-                  <span className="text-brand italic">{profile.otakuPoints || 0} PO</span>
+                  <span className="text-brand italic" title="Pontos de Ranking">{profile.otakuPoints || 0} PO</span>
+                  <span className="opacity-30">|</span>
+                  <span className="text-blue-400 italic" title="Saldo na Loja">{profile.availablePoints || 0} AP</span>
                   <span className="opacity-30">|</span>
                   <Calendar className="w-3 h-3" /> Membro desde {memberSince}
                   {profile.location && (
@@ -290,8 +292,10 @@ export default function Profile() {
             <div className="grid grid-cols-4 md:grid-cols-6 gap-6">
               {Object.values(ACHIEVEMENTS).map(ach => {
                 const unlocked = hasAchievement(ach.id);
-                // Reveal all for admin or unlocked, hide locked secrets
-                if (ach.secret && !unlocked && !isAdminUser) {
+                // Reveal details for admin even if locked, only hide for regular users if locked
+                const shouldHide = ach.secret && !unlocked && !isAdminUser;
+                
+                if (shouldHide) {
                   return (
                     <div key={ach.id} className="flex flex-col items-center gap-2 group relative text-center grayscale opacity-20">
                       <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 border-zinc-700 bg-zinc-800 text-zinc-600">
@@ -314,9 +318,9 @@ export default function Profile() {
                       ach.rarity === 'EPICO' ? "bg-purple-500/10 border-purple-500/50 text-purple-500 shadow-purple-500/10" :
                       "bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-yellow-500/10"
                     )}>
-                      {ach.secret ? <Ghost className="w-6 h-6" /> : <Trophy className="w-6 h-6" />}
+                      {(ach.secret && !unlocked && !isAdminUser) ? <Ghost className="w-6 h-6" /> : <Trophy className="w-6 h-6" />}
                     </div>
-                    <p className="text-[10px] text-zinc-400 font-black uppercase tracking-tighter line-clamp-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4">
+                    <p className="text-[10px] text-zinc-400 font-black uppercase tracking-tighter line-clamp-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4 bg-[var(--color-bg)] px-2 py-0.5 rounded border border-[var(--color-border)] z-10 whitespace-nowrap">
                       {ach.title}
                     </p>
                   </div>

@@ -15,6 +15,7 @@
         "currentActivity": { "type": "string", "description": "Current anime/manga being watched/read" },
         "lastOnlineAt": { "type": "string", "format": "date-time" },
         "otakuPoints": { "type": "number", "description": "Total Otaku Points (PO)" },
+        "availablePoints": { "type": "number", "description": "Available PO for shopping" },
         "weeklyPoints": { "type": "number", "description": "Points earned in the current weekly season" },
         "rank": { "type": "string", "enum": ["FERRO", "BRONZE", "PRATA", "OURO", "PLATINA", "DIAMANTE", "DESAFIANTE"] },
         "division": { "type": "string", "description": "Current division for the user (e.g., Division 4)" },

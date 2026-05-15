@@ -90,6 +90,7 @@ export default function Navbar() {
             <Link to="/" className="text-gray-400 hover:text-brand transition-colors">{t('nav.browse')}</Link>
             <Link to="/list" className="text-gray-400 hover:text-brand transition-colors">{t('nav.list')}</Link>
             <Link to="/ranking" className="text-gray-400 hover:text-brand transition-colors">Ranking</Link>
+            <Link to="/shop" className="text-gray-400 hover:text-brand transition-colors">Loja</Link>
             <Link to="/social" className="text-gray-400 hover:text-brand transition-colors flex items-center gap-1.5">
               Social
               {requests.length > 0 && (

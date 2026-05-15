@@ -11,6 +11,7 @@ interface ProfileData {
   location: string;
   joinedDate: string;
   otakuPoints: number;
+  availablePoints: number;
   rank: string;
   photoURL?: string;
   bannerURL?: string;
@@ -29,6 +30,7 @@ const defaultProfile: ProfileData = {
   location: 'Earth 616',
   joinedDate: 'Maio 2026',
   otakuPoints: 0,
+  availablePoints: 0,
   rank: 'FERRO',
   bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200'
 };
@@ -57,6 +59,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           location: data.location || prev.location,
           favoriteAnime: data.favoriteAnime || prev.favoriteAnime,
           otakuPoints: data.otakuPoints || 0,
+          availablePoints: data.availablePoints || 0,
           rank: data.rank || 'FERRO',
           photoURL: data.photoURL || prev.photoURL,
           bannerURL: data.bannerURL || prev.bannerURL
