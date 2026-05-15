@@ -4,7 +4,7 @@
  */
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import Navbar from './components/layout/Navbar';
 import Home from './pages/Home';
 import AnimeDetails from './pages/AnimeDetails';
 import MyList from './pages/MyList';
@@ -19,7 +19,7 @@ import Social from './pages/Social';
 import AniChat from './pages/AniChat';
 import Shop from './pages/Shop';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
-import { UpdateNotification } from './components/UpdateNotification';
+import { UpdateNotification } from './components/shared/UpdateNotification';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { ProfileProvider } from './context/ProfileContext';

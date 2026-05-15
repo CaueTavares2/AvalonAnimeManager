@@ -1,8 +1,8 @@
 import React from 'react';
 import { Star, MessageCircle, Play } from 'lucide-react';
 import { motion } from 'motion/react';
-import type { Media } from '../types';
-import { cn } from '../lib/utils';
+import type { Media } from '../../types';
+import { cn } from '../../lib/utils';
 import { Link } from 'react-router-dom';
 
 interface MediaCardProps {

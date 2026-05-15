@@ -1,6 +1,6 @@
 import { Play, Info } from 'lucide-react';
 import { motion } from 'motion/react';
-import type { Media } from '../types';
+import type { Media } from '../../types';
 
 interface HeroProps {
   media: Media;

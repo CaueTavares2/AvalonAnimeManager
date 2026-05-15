@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Edit2, Trash2 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { UserAnime, AnimeStatus } from '../hooks/useAnimeList';
+import { cn } from '../../lib/utils';
+import { UserAnime, AnimeStatus } from '../../hooks/useAnimeList';
 
 interface AnimeListRowProps {
   anime: UserAnime;

@@ -52,4 +52,14 @@ Os administradores têm acesso a:
 - O sistema de verificação em segundo plano monitora links externos.
 
 ---
+
+## 📂 Estrutura do Projeto
+- `docs/`: Documentação técnica e especificações de segurança.
+- `scripts/`: Scripts de instalação (`.sh` e `.bat`) para setup rápido.
+- `src/components/`: Componentes organizados por categoria (anime, layout, shared, home).
+- `src/services/`: Lógica de integração com APIs (Jikan, GitHub, Firebase).
+- `src/context/`: Estados globais da aplicação.
+- `src/hooks/`: Hooks customizados para lógica de dados.
+
+---
 Para suporte ou atualizações, verifique o repositório oficial no GitHub.

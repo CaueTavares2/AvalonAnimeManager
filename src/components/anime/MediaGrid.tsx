@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import MediaCard from './MediaCard';
-import type { Media } from '../types';
+import type { Media } from '../../types';
 
 interface MediaGridProps {
   title: string;

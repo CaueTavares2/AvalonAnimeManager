@@ -1,5 +1,5 @@
 import { TrendingUp, Award, Calendar, Heart, Zap, Trophy } from 'lucide-react';
-import MediaGrid from '../components/MediaGrid';
+import MediaGrid from '../components/anime/MediaGrid';
 import { useState, useEffect } from 'react';
 import { jikanService, JikanAnime } from '../services/jikanService';
 import { cn } from '../lib/utils';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, X, Github, ArrowUpCircle } from 'lucide-react';
-import { updateService } from '../services/updateService';
+import { updateService } from '../../services/updateService';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const UpdateNotification: React.FC = () => {

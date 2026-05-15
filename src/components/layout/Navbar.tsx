@@ -1,11 +1,11 @@
 import { Search, User, MoreHorizontal, Settings as SettingsIcon, LogIn, PieChart, Users, MessageSquare } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { jikanService, JikanAnime } from '../services/jikanService';
-import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-import { useSocial } from '../context/SocialContext';
+import { jikanService, JikanAnime } from '../../services/jikanService';
+import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { useSocial } from '../../context/SocialContext';
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -31,7 +31,7 @@ export default function Navbar() {
             const newFailed = failedSearches + 1;
             setFailedSearches(newFailed);
             if (newFailed >= 5 && user) {
-              const { rankingService } = await import('../services/rankingService');
+              const { rankingService } = await import('../../services/rankingService');
               await rankingService.grantAchievement(user.uid, 'SEARCH_ONE_PIECE');
               setFailedSearches(0);
             }
@@ -71,7 +71,7 @@ export default function Navbar() {
       const newClicks = logoClicks + 1;
       setLogoClicks(newClicks);
       if (newClicks === 10) {
-        const { rankingService } = await import('../services/rankingService');
+        const { rankingService } = await import('../../services/rankingService');
         await rankingService.grantAchievement(user.uid, 'GENJUTSU');
         setLogoClicks(0);
       }

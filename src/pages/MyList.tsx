@@ -3,8 +3,8 @@ import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2,
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
-import CompletionModal from '../components/CompletionModal';
-import AnimeListRow from '../components/AnimeListRow';
+import CompletionModal from '../components/shared/CompletionModal';
+import AnimeListRow from '../components/anime/AnimeListRow';
 import { useLanguage } from '../context/LanguageContext';
 import { rankingService } from '../services/rankingService';
 import { useAuth } from '../context/AuthContext';

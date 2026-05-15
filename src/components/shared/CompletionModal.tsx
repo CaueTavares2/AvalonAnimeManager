@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PartyPopper, Star, X, Trophy, Quote } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '../../lib/utils';
 
 const ANIME_QUOTES = [
   { text: "Não é sobre o quanto você pode bater, é sobre o quanto você pode apanhar e continuar seguindo em frente.", author: "Rocky (Vibe Anime)" },
