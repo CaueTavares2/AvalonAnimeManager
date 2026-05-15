@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // User Profile Rules
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.uid is string && data.uid == userId &&
+               (data.email == null || (data.email is string && data.email.size() <= 256));
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUser(incoming()) && 
+                    (incoming().createdAt == request.time || incoming().createdAt is string);
+      allow update: if isOwner(userId) && 
+                    incoming().uid == existing().uid && 
+                    incoming().createdAt == existing().createdAt &&
+                    (incoming().email == existing().email || incoming().email == null) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['username', 'avatar', 'bio', 'preferences', 'updatedAt', 'otakuPoints', 'weeklyPoints', 'rank', 'lastActivityAt', 'lastResetAt', 'favoriteAnime', 'favoriteGenres', 'location']);
+      allow delete: if false;
+    }
+
+    // Achievements Rules
+    match /users/{userId}/achievements/{achievementId} {
+      allow read, list: if isSignedIn();
+      allow create: if isOwner(userId);
+    }
+
+    // Favorite Characters Rules
+    match /users/{userId}/favorites/characters/items/{characterId} {
+      allow read, list: if isSignedIn();
+      allow create, delete: if isOwner(userId);
+    }
+
+    // Media List Item Rules
+    match /users/{userId}/list/{mediaId} {
+      function isValidMediaItem(data) {
+        return data.userId == userId &&
+               data.mediaId is int &&
+               data.type in ['ANIME', 'MANGA'] &&
+               data.status in ['WATCHING', 'READING', 'COMPLETED', 'PLANNING', 'DROPPED'];
+      }
+
+      // Allow anyone signed in to see lists (public profile feature)
+      // Client must query users/{userId}/list
+      allow list: if isSignedIn(); 
+      allow get: if isSignedIn();
+
+      allow create: if isOwner(userId) && isValidMediaItem(incoming()) && 
+                    incoming().createdAt == request.time;
+      
+      allow update: if isOwner(userId) && isValidMediaItem(incoming()) &&
+                    incoming().mediaId == existing().mediaId &&
+                    incoming().type == existing().type &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().updatedAt == request.time &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'score', 'progress', 'notes', 'updatedAt', 'title', 'image']);
+      
+      allow delete: if isOwner(userId);
+    }
+  }
+}

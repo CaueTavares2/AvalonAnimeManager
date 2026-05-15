@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Overpass:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand: var(--color-brand);
+  --color-brand-dark: var(--color-brand-dark);
+}
+
+:root {
+  --color-brand: #f59e0b; /* Avalon Gold Default */
+  --color-brand-dark: #d97706;
+  --color-brand-muted: rgba(245, 158, 11, 0.1);
+  
+  --color-bg: #edf1f5;
+  --color-card: #ffffff;
+  --color-text: #4b5563;
+  --color-text-bright: #1f2937;
+  --color-border: rgba(0, 0, 0, 0.08);
+}
+
+.theme-avalon {
+  --color-brand: #f59e0b;
+  --color-brand-dark: #d97706;
+  --color-brand-muted: rgba(245, 158, 11, 0.1);
+}
+
+.theme-crunchyroll {
+  --color-brand: #f47521;
+  --color-brand-dark: #d35400;
+  --color-brand-muted: rgba(244, 117, 33, 0.1);
+}
+
+.theme-netflix {
+  --color-brand: #e50914;
+  --color-brand-dark: #b20710;
+  --color-brand-muted: rgba(229, 9, 20, 0.1);
+}
+
+.dark {
+  --color-bg: #070d19;
+  --color-card: #121922;
+  --color-text: #94a3b8;
+  --color-text-bright: #f1f5f9;
+  --color-border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background-color: var(--color-bg);
+  background-image: linear-gradient(rgba(237, 241, 245, 0.55), rgba(237, 241, 245, 0.55)), url('/image.png');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  @apply text-[var(--color-text)] font-sans transition-colors duration-300 antialiased relative;
+}
+
+.dark body {
+  background-image: linear-gradient(rgba(7, 13, 25, 0.94), rgba(7, 13, 25, 0.94)), url('/image.png');
+}
+
+/* Custom scrollbar to match Anilist style */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-brand-dark;
+}
+

@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "User account information and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "username": { "type": "string" },
+        "avatar": { "type": "string" },
+        "bio": { "type": "string" },
+        "otakuPoints": { "type": "number", "description": "Total Otaku Points (PO)" },
+        "weeklyPoints": { "type": "number", "description": "Points earned in the current weekly season" },
+        "rank": { "type": "string", "enum": ["FERRO", "BRONZE", "PRATA", "OURO", "PLATINA", "DIAMANTE", "DESAFIANTE"] },
+        "division": { "type": "string", "description": "Current division for the user (e.g., Division 4)" },
+        "lastActivityAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "darkMode": { "type": "boolean" },
+            "colorTheme": { "type": "string" },
+            "language": { "type": "string" }
+          }
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "achievement": {
+      "title": "Achievement",
+      "description": "A badge earned by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "rarity": { "type": "string", "enum": ["COMUM", "RARO", "EPICO", "LENDARIO"] },
+        "unlockedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "favoriteCharacter": {
+      "title": "Favorite Character",
+      "description": "A character favorited by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "image": { "type": "string" },
+        "animeTitle": { "type": "string" },
+        "role": { "type": "string" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "mediaListItem": {
+      "title": "Media List Item",
+      "description": "An anime or manga in a user's list",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "mediaId": { "type": "integer" },
+        "title": { "type": "string" },
+        "image": { "type": "string" },
+        "type": { "type": "string", "enum": ["ANIME", "MANGA"] },
+        "status": { "type": "string", "enum": ["WATCHING", "READING", "COMPLETED", "PLANNING", "DROPPED"] },
+        "score": { "type": "number" },
+        "progress": { "type": "number" },
+        "totalVolumes": { "type": "number" },
+        "totalChapters": { "type": "number" },
+        "totalEpisodes": { "type": "number" },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "mediaId", "type", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profile data"
+    },
+    "users/{userId}/list/{mediaId}": {
+      "schema": "mediaListItem",
+      "description": "User's anime and manga list items"
+    },
+    "users/{userId}/achievements/{achievementId}": {
+      "schema": "achievement",
+      "description": "Badges earned by the user"
+    },
+    "users/{userId}/favorites/characters/{characterId}": {
+      "schema": "favoriteCharacter",
+      "description": "User's favorite characters"
+    }
+  }
+}
