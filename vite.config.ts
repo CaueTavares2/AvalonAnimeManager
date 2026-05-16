@@ -11,21 +11,24 @@ export default defineConfig(({mode}) => {
     plugins: [react(), tailwindcss(), VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      base: '/AvalonAnimeManager/',
+      scope: '/AvalonAnimeManager/',
       manifest: {
         name: 'Avalon',
         short_name: 'Avalon',
         description: 'Onde as Lendas Ganham Vida',
         theme_color: '#000000',
+        start_url: '/AvalonAnimeManager/',
         icons: [
           {
-            src: 'vite.svg',
+            src: 'https://cdn-icons-png.flaticon.com/512/3069/3069171.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
           },
           {
-            src: 'vite.svg',
+            src: 'https://cdn-icons-png.flaticon.com/512/3069/3069171.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
           }
         ]
       }
