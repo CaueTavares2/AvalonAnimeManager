@@ -391,6 +391,49 @@ export default function Admin() {
             </div>
           </div>
 
+          {/* TEST ACHIEVEMENTS */}
+          <div className="bg-zinc-900/50 border border-white/5 p-8 rounded-3xl">
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+              <Shield size={16} className="text-brand" />
+              Testar Notificações de Conquistas
+            </h3>
+            <p className="text-xs text-zinc-400 mb-4">Teste os alertas visuais de conquistas. Isso não salva no banco de dados.</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => {
+                   window.dispatchEvent(new CustomEvent('TEST_ACHIEVEMENT', { detail: { id: 'TEST_1', title: 'Primeiros Passos', description: 'Você testou as conquistas.', rarity: 'COMUM', points: 50 } }));
+                }}
+                className="p-3 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 rounded-xl text-[10px] font-black uppercase tracking-widest border border-zinc-500/30 transition-colors"
+              >
+                Comum
+              </button>
+              <button 
+                onClick={() => {
+                   window.dispatchEvent(new CustomEvent('TEST_ACHIEVEMENT', { detail: { id: 'TEST_2', title: 'Foco Total', description: 'Você focou no objetivo.', rarity: 'RARO', points: 150 } }));
+                }}
+                className="p-3 bg-blue-900/30 hover:bg-blue-900/50 text-blue-300 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-500/30 transition-colors"
+              >
+                Raro
+              </button>
+              <button 
+                onClick={() => {
+                   window.dispatchEvent(new CustomEvent('TEST_ACHIEVEMENT', { detail: { id: 'TEST_3', title: 'Poder Absoluto', description: 'Poder que transborda.', rarity: 'EPICO', points: 400 } }));
+                }}
+                className="p-3 bg-purple-900/30 hover:bg-purple-900/50 text-purple-300 rounded-xl text-[10px] font-black uppercase tracking-widest border border-purple-500/30 transition-colors"
+              >
+                Épico
+              </button>
+              <button 
+                onClick={() => {
+                   window.dispatchEvent(new CustomEvent('TEST_ACHIEVEMENT', { detail: { id: 'TEST_4', title: 'Lendário Vivo', description: 'A lenda é real.', rarity: 'LENDARIO', points: 1000 } }));
+                }}
+                className="p-3 bg-yellow-900/30 hover:bg-yellow-900/50 text-yellow-300 rounded-xl text-[10px] font-black uppercase tracking-widest border border-yellow-500/30 transition-colors"
+              >
+                Lendário
+              </button>
+            </div>
+          </div>
+
         </div>
 
         {/* RIGHT COLUMN */}

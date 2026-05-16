@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
 import { UpdateNotification } from './components/shared/UpdateNotification';
+import { AchievementNotification } from './components/shared/AchievementNotification';
 
 const Home = lazy(() => import('./pages/Home'));
 const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
@@ -58,6 +59,7 @@ function AppRoutes() {
     <div className="min-h-screen">
       <Navbar />
       <UpdateNotification />
+      <AchievementNotification />
       
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-12">
         <Suspense fallback={

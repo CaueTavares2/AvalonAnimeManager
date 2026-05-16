@@ -108,6 +108,23 @@ export default function PublicProfile() {
 
   const filteredList = mediaType === 'COMMON' ? commonItems : list.filter(a => a.type === mediaType);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-40">
+        <div className="w-12 h-12 border-t-4 border-brand rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex flex-col items-center justify-center py-40 space-y-4">
+        <h2 className="text-2xl font-black text-[var(--color-text-bright)] uppercase italic">Perfil não encontrado</h2>
+        <Link to="/social" className="text-brand text-xs font-bold uppercase tracking-widest hover:underline">Voltar para o Social Hub</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-8">
       <Link to="/social" className="flex items-center gap-2 text-gray-500 hover:text-brand transition-colors group text-xs font-bold uppercase tracking-widest">

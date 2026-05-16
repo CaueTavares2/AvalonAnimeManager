@@ -324,6 +324,12 @@ export const rankingService = {
         unlockedAt: serverTimestamp()
       });
       await rankingService.addPoints(userId, achievement.points, `Conquista: ${achievement.title}`);
+      
+      // Dispatch event for UI Notification
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('ACHIEVEMENT_UNLOCKED', { detail: achievement }));
+      }
+      
       return true;
     }
     return false;
