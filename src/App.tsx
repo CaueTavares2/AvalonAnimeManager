@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
 import { UpdateNotification } from './components/shared/UpdateNotification';
+import { GlobalAnnouncement } from './components/shared/GlobalAnnouncement';
 import { AchievementNotification } from './components/shared/AchievementNotification';
 import { ChangelogModal } from './components/shared/ChangelogModal';
 
@@ -58,6 +59,7 @@ function AppRoutes() {
 
   return (
     <div className="min-h-screen">
+      <GlobalAnnouncement />
       <Navbar />
       <UpdateNotification />
       <AchievementNotification />

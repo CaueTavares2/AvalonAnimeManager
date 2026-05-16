@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 import { jikanService } from '../services/jikanService';
 import { cn } from '../lib/utils';
 import type { Media, AnimeStatus } from '../types';
+import { SPECIAL_ANIMES } from '../constants/specialAnimes';
+import { SpecialAnimeInteraction } from '../components/anime/SpecialAnimeInteraction';
 
 interface MediaCharacter {
   character: {
@@ -32,6 +34,7 @@ export default function AnimeDetails() {
   const [addStatus, setAddStatus] = useState<AnimeStatus>('PLANNING');
   
   const inList = list.find(a => a.id === Number(id));
+  const special = anime ? SPECIAL_ANIMES[anime.id] : null;
 
   const handleRate = (score: number) => {
     if (inList) {
@@ -91,6 +94,7 @@ export default function AnimeDetails() {
   if (!anime) return <div className="pt-32 text-center text-gray-500">Media not found</div>;
 
   const handleAdd = () => {
+    const total = anime.type === 'ANIME' ? anime.episodes : anime.chapters;
     addAnime({
       id: anime.id,
       title: anime.title,
@@ -98,15 +102,20 @@ export default function AnimeDetails() {
       type: anime.type,
       status: addStatus,
       score: 0,
-      progress: 0,
-      totalProgress: anime.type === 'ANIME' ? anime.episodes : anime.chapters,
+      progress: addStatus === 'COMPLETED' ? (total || 0) : 0,
+      totalProgress: total,
       genres: anime.genres
     });
   };
 
   return (
     <div className="min-h-screen pt-20">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 relative">
+        {special && (
+          <div className="absolute top-4 right-4 z-10 p-4 bg-black/50 rounded-2xl backdrop-blur">
+            <SpecialAnimeInteraction theme={special.theme} />
+          </div>
+        )}
         <button 
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-500 hover:text-brand transition-colors mb-8 group"

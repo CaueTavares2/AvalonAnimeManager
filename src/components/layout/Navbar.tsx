@@ -22,10 +22,10 @@ export default function Navbar() {
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (search.trim().length > 2) {
+        setIsSearching(true);
         try {
           const data = await jikanService.search(search, mediaType);
           setResults(data);
-          setIsSearching(true);
           
           if (data.length === 0) {
             const newFailed = failedSearches + 1;
@@ -43,7 +43,7 @@ export default function Navbar() {
         setResults([]);
         setIsSearching(false);
       }
-    }, 500);
+    }, 300); // Debounce to 300ms
 
     return () => clearTimeout(timer);
   }, [search, mediaType, user, failedSearches]);

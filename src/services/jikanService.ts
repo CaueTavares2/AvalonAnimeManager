@@ -103,7 +103,7 @@ export const jikanService = {
   },
 
   search: async (query: string, type: 'anime' | 'manga' = 'anime') => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${query}&limit=10`);
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&limit=10&order_by=popularity&sort=desc`);
     return data.data;
   },
   
