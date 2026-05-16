@@ -74,6 +74,12 @@ npm run build
 
 ---
 
+## 🆕 Novidades
+- **Sistema de Notificações de Conquistas:** Notificações visuais e animadas (Motion) para desbloqueio de conquistas, adaptadas ao nível de raridade.
+- **Painel de Testes (Staff):** Área administrativa para testar o sistema de notificações de conquistas sem impactar o banco de dados.
+
+---
+
 ## 🛠️ Tecnologias
 - **Frontend:** React + Vite + TypeScript
 - **Estilização:** Tailwind CSS (Modern v4)
