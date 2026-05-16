@@ -257,7 +257,7 @@ export default function AnimeDetails() {
               <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Personagens Principais</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {characters.map((char) => (
-                  <div key={char.character.mal_id} className="bg-[var(--color-card)]/50 rounded-xl overflow-hidden border border-[var(--color-border)] group relative">
+                  <div key={char.character.mal_id} translate="no" className="bg-[var(--color-card)]/50 rounded-xl overflow-hidden border border-[var(--color-border)] group relative">
                     <div className="aspect-square relative">
                       <img src={char.character.images.webp.image_url} alt={char.character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <button 

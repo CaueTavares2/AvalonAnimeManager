@@ -17,6 +17,7 @@ interface ProfileData {
   numericId?: number;
   photoURL?: string;
   bannerURL?: string;
+  inventory?: any[];
 }
 
 interface ProfileContextType {
@@ -34,7 +35,8 @@ const defaultProfile: ProfileData = {
   otakuPoints: 0,
   availablePoints: 0,
   rank: 'FERRO',
-  bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200'
+  bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200',
+  inventory: []
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -70,7 +72,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           rank: data.rank || 'FERRO',
           numericId: data.numericId !== undefined ? data.numericId : prev.numericId,
           photoURL: data.photoURL || prev.photoURL,
-          bannerURL: data.bannerURL || prev.bannerURL
+          bannerURL: data.bannerURL || prev.bannerURL,
+          inventory: data.inventory || prev.inventory || []
         }));
       }
     }, (error) => {
