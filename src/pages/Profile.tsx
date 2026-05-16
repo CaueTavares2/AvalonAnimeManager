@@ -1,4 +1,13 @@
-import { User as UserIcon, Calendar, MapPin, Edit3, Save, X, LogOut, ShieldCheck, TrendingUp, Heart, Trophy, Medal, Star, Ghost } from 'lucide-react';
+import { User as UserIcon, Calendar, MapPin, Edit3, Save, X, LogOut, ShieldCheck, TrendingUp, Heart, Trophy, Medal, Star, Ghost, HeartPulse, Wind, Eye, Moon, Compass, Edit2, Trash2, Search, Flame, ShieldPlus, SunDim, Coffee, UserPlus, Users, Image as ImageIcon, Crown, Link as LinkIcon, Sparkles, Hourglass, ShieldCheck as ShieldCheckIcon } from 'lucide-react';
+
+// Add a helper component to render the icon based on the icon name
+const AchievementIcon = ({ name, className, size }: { name: string, className?: string, size?: number }) => {
+  const icons: Record<string, any> = {
+    HeartPulse, Heart, Wind, Eye, Moon, Compass, Edit3: Edit2, Trash2, Star, Search, Flame, ShieldPlus, SunDim, Coffee, UserPlus, Users, Image: ImageIcon, Crown, Link: LinkIcon, Sparkles, Hourglass, ShieldCheck: ShieldCheckIcon
+  };
+  const Icon = icons[name] || Trophy;
+  return <Icon className={className} size={size} />;
+};
 import { useAnimeList } from '../hooks/useAnimeList';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
@@ -346,10 +355,10 @@ export default function Profile() {
                       ach.rarity === 'EPICO' ? "bg-purple-500/10 border-purple-500/50 text-purple-500 shadow-purple-500/10" :
                       "bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-yellow-500/10"
                     )}>
-                      {(ach.secret && !unlocked && !isAdminUser) ? <Ghost className="w-6 h-6" /> : <Trophy className="w-6 h-6" />}
+                      {(ach.secret && !unlocked && !isAdminUser) ? <Ghost className="w-6 h-6" /> : <AchievementIcon name={ach.icon} className="w-6 h-6" />}
                     </div>
                     <p className="text-[10px] text-zinc-400 font-black uppercase tracking-tighter line-clamp-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4 bg-[var(--color-bg)] px-2 py-0.5 rounded border border-[var(--color-border)] z-10 whitespace-nowrap">
-                      {ach.title}
+                      {(ach.secret && !unlocked && !isAdminUser) ? '[RESTRITO]' : ach.title}
                     </p>
                   </div>
                 );
@@ -394,7 +403,7 @@ export default function Profile() {
                       ach.rarity === 'EPICO' ? "bg-purple-500/10 border-purple-500 text-purple-500" :
                       "bg-yellow-500/10 border-yellow-500 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]"
                     )}>
-                      {isSecret ? <Ghost size={32} /> : <Trophy size={32} />}
+                      {isSecret ? <Ghost size={32} /> : <AchievementIcon name={ach.icon} size={32} />}
                     </div>
 
                     <div className="flex flex-col justify-center min-w-0">

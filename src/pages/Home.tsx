@@ -1,4 +1,4 @@
-import { TrendingUp, Award, Calendar, Heart, Zap, Trophy } from 'lucide-react';
+import { TrendingUp, Award, Calendar, Heart, Zap, Trophy, CheckCircle } from 'lucide-react';
 import MediaGrid from '../components/anime/MediaGrid';
 import { useState, useEffect } from 'react';
 import { jikanService, JikanAnime } from '../services/jikanService';
@@ -7,9 +7,14 @@ import { useAuth } from '../context/AuthContext';
 import type { Media } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { useProfile } from '../context/ProfileContext';
+import { doc, updateDoc, increment } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export default function Home() {
   const { mediaType, setMediaType, streakInfo, showStreakPopUp, setShowStreakPopUp } = useAuth();
+  const { profile } = useProfile();
+  const { user } = useAuth();
   const [trending, setTrending] = useState<Media[]>([]);
   const [popular, setPopular] = useState<Media[]>([]);
   const [stats, setStats] = useState({
@@ -20,6 +25,26 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
+
+  const registerAttendance = async () => {
+    if (!user) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (profile.lastAttendance === today) return;
+    
+    let newStreak = 1;
+    if (profile.lastAttendance) {
+        const lastDate = new Date(profile.lastAttendance);
+        const diff = (new Date(today).getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (diff === 1) newStreak = profile.streak + 1;
+    }
+
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, {
+        streak: newStreak,
+        lastAttendance: today,
+        availablePoints: increment(10)
+    });
+  };
 
   const quotes = [
     "Você está mais perto do topo, jovem gafanhoto!",
@@ -110,6 +135,21 @@ export default function Home() {
 
   return (
     <div className="space-y-12">
+      
+      {/* Attendance Tracker */}
+      <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 flex items-center justify-between">
+         <div className="flex items-center gap-4">
+             <div className="bg-brand/10 p-3 rounded-full"><Zap className="text-brand" /></div>
+             <div>
+                <p className="text-xs text-zinc-500 font-bold uppercase">Streak Atual</p>
+                <p className="text-xl font-black text-white">{profile.streak} dias</p>
+             </div>
+         </div>
+         <button onClick={registerAttendance} disabled={profile.lastAttendance === new Date().toISOString().split('T')[0]} className={cn("px-6 py-2 rounded-xl font-black text-xs uppercase flex items-center gap-2", profile.lastAttendance === new Date().toISOString().split('T')[0] ? "bg-zinc-800 text-zinc-500" : "bg-brand text-white")}>
+             <CheckCircle size={14}/> {profile.lastAttendance === new Date().toISOString().split('T')[0] ? "Registrado" : "Registrar Presença"}
+         </button>
+      </div>
+
       {/* Streak Help Needed Alert */}
       {streakInfo?.needsHelp && (
         <motion.div 
