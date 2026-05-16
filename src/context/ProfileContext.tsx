@@ -18,6 +18,7 @@ interface ProfileData {
   photoURL?: string;
   bannerURL?: string;
   inventory?: any[];
+  badges?: string[];
   streak: number;
   lastAttendance: string | null;
 }
@@ -39,6 +40,7 @@ const defaultProfile: ProfileData = {
   rank: 'FERRO',
   bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200',
   inventory: [],
+  badges: [],
   streak: 0,
   lastAttendance: null
 };
@@ -78,6 +80,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           photoURL: data.photoURL || prev.photoURL,
           bannerURL: data.bannerURL || prev.bannerURL,
           inventory: data.inventory || prev.inventory || [],
+          badges: data.badges || prev.badges || [],
           streak: data.streak || prev.streak || 0,
           lastAttendance: data.lastAttendance || prev.lastAttendance || null
         }));

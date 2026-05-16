@@ -132,7 +132,14 @@ export default function AnimeDetails() {
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Status na Lista</p>
                     <select 
                       value={inList.status}
-                      onChange={(e) => updateAnime(inList.id, { status: e.target.value as AnimeStatus })}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as AnimeStatus;
+                        const updates: any = { status: newStatus };
+                        if (newStatus === 'COMPLETED') {
+                          updates.progress = inList.totalProgress;
+                        }
+                        updateAnime(inList.id, updates);
+                      }}
                       className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-brand text-center py-2 rounded-md font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
                     >
                       {anime.type === 'ANIME' ? <option value="WATCHING">Watching</option> : <option value="READING">Reading</option>}
@@ -142,8 +149,16 @@ export default function AnimeDetails() {
                     </select>
                   </div>
                   
-                  <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Sua Nota</p>
+                  <div className={cn(
+                    "bg-[var(--color-card)] p-4 rounded-xl border space-y-3 transition-all duration-500",
+                    inList.status === 'COMPLETED' && !inList.score ? "border-brand shadow-[0_0_15px_rgba(255,107,0,0.2)] animate-pulse" : "border-[var(--color-border)]"
+                  )}>
+                    <p className={cn(
+                        "text-[10px] font-black uppercase tracking-[0.2em] text-center",
+                        inList.status === 'COMPLETED' && !inList.score ? "text-brand" : "text-gray-400"
+                    )}>
+                        Sua Nota {inList.status === 'COMPLETED' && !inList.score && "(Obrigatório)"}
+                    </p>
                     <div className="flex justify-center gap-1.5">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
                         <button

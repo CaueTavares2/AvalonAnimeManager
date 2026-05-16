@@ -313,6 +313,23 @@ export default function Profile() {
             )}
           </div>
 
+
+          {/* Badges Section */}
+          <div className="bg-[var(--color-card)] p-6 rounded-xl border border-[var(--color-border)] shadow-sm">
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Badges Equipadas</h3>
+              <div className="flex gap-2">
+                  {profile.badges && profile.badges.length > 0 ? (
+                      profile.badges.map((badge, i) => (
+                          <div key={i} className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center border border-zinc-700">
+                              <Trophy className="text-brand w-6 h-6" />
+                          </div>
+                      ))
+                  ) : (
+                      <p className="text-[10px] text-zinc-500 italic">Nenhuma badge equipada.</p>
+                  )}
+              </div>
+          </div>
+
           <div className="bg-[var(--color-card)] p-8 rounded-xl border border-[var(--color-border)] shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
