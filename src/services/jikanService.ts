@@ -108,7 +108,7 @@ export const jikanService = {
   },
 
   getByYear: async (year: number) => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=12`);
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=12&type=tv`);
     return data.data;
   },
   
