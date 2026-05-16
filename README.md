@@ -78,6 +78,15 @@ npm run build
 - **Sistema de Notificações de Conquistas:** Notificações visuais e animadas (Motion) para desbloqueio de conquistas, adaptadas ao nível de raridade.
 - **Painel de Testes (Staff):** Área administrativa para testar o sistema de notificações de conquistas sem impactar o banco de dados.
 
+## 📱 Instalação como App (PWA)
+Avalon agora funciona como um Progressive Web App (PWA). Você pode instalá-lo no seu computador ou dispositivo móvel para uma experiência nativa:
+
+1. **Chrome/Edge/Brave:** Clique no ícone de "Instalar" na barra de endereços (lado direito).
+2. **Mobile (Android):** No Chrome, abrir o menu e selecionar "Instalar App" ou "Adicionar à tela inicial".
+3. **iOS (Safari):** Tocar no botão de "Compartilhar" e selecionar "Adicionar à Tela de Início".
+
+*Nota: Ícones personalizados do app serão adicionados em uma atualização futura.*
+
 ---
 
 ## 🛠️ Tecnologias
