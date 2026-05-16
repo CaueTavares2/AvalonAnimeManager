@@ -340,6 +340,15 @@ export default function Home() {
             </div>
           </div>
 
+           
+           {/* Banner Year */}
+          <Link to="/animes-by-year" className="block relative h-48 rounded-3xl overflow-hidden group shadow-2xl">
+             <img src="https://images.unsplash.com/photo-1541560052-773aece0563b?auto=format&fit=crop&q=80&w=1200" alt="Banner" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                 <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">Explore por Ano</h2>
+             </div>
+          </Link>
+
           <MediaGrid title={`Em Alta: ${mediaType === 'anime' ? 'Animes' : 'Mangás'}`} items={trending} />
           <MediaGrid title={`Populares: ${mediaType === 'anime' ? 'Animes' : 'Mangás'}`} items={popular} />
         </div>

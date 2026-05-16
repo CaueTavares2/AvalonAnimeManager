@@ -106,6 +106,11 @@ export const jikanService = {
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&limit=10&order_by=popularity&sort=desc`);
     return data.data;
   },
+
+  getByYear: async (year: number) => {
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=12`);
+    return data.data;
+  },
   
   searchCharacters: async (query: string) => {
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/characters?q=${query}&limit=12`);

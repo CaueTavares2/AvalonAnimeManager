@@ -26,6 +26,7 @@ const Social = lazy(() => import('./pages/Social'));
 const AniChat = lazy(() => import('./pages/AniChat'));
 const Shop = lazy(() => import('./pages/Shop'));
 const Admin = lazy(() => import('./pages/Admin'));
+const AnimesByYear = lazy(() => import('./pages/AnimesByYear'));
 
 import { ThemeProvider } from './context/ThemeContext';
 import { ProfileProvider } from './context/ProfileContext';
@@ -87,6 +88,7 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/animes-by-year" element={<AnimesByYear />} />
           </Routes>
         </Suspense>
       </main>

@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { UserAnime, AnimeStatus } from '../../hooks/useAnimeList';
 
@@ -106,9 +106,6 @@ const AnimeListRow = memo(({
       </td>
       <td className="px-4 py-6 text-right">
         <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-          <Link to={`/${anime.type.toLowerCase()}/${anime.id}`} className="p-2 text-gray-400 hover:text-brand bg-[var(--color-bg)] rounded-lg transition-colors">
-            <Edit2 className="w-4 h-4" />
-          </Link>
           <button 
             onClick={() => removeAnime(anime.id)}
             className="p-2 text-gray-400 hover:text-red-500 bg-[var(--color-bg)] rounded-lg transition-colors"
