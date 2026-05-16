@@ -7,6 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
+    base: '/AvalonAnimeManager/',
     plugins: [react(), tailwindcss(), VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
@@ -15,7 +16,18 @@ export default defineConfig(({mode}) => {
         short_name: 'Avalon',
         description: 'Onde as Lendas Ganham Vida',
         theme_color: '#000000',
-        icons: []
+        icons: [
+          {
+            src: 'vite.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+          },
+          {
+            src: 'vite.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+          }
+        ]
       }
     })],
     define: {
