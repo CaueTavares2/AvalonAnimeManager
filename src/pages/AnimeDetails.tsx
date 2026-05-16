@@ -33,6 +33,8 @@ export default function AnimeDetails() {
   const [hoveredStar, setHoveredStar] = useState(0);
   const [addStatus, setAddStatus] = useState<AnimeStatus>('PLANNING');
   
+  const [error, setError] = useState<string | null>(null);
+  
   const inList = list.find(a => a.id === Number(id));
   const special = anime ? SPECIAL_ANIMES[anime.id] : null;
 
@@ -80,6 +82,7 @@ export default function AnimeDetails() {
         }
       } catch (error) {
         console.error("Failed to fetch media details:", error);
+        setError("Não foi possível carregar as informações desta obra. Tente novamente mais tarde.");
       } finally {
         setLoading(false);
       }
@@ -92,7 +95,7 @@ export default function AnimeDetails() {
       <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
     </div>
   );
-  if (!anime) return <div className="pt-32 text-center text-gray-500">Media not found</div>;
+  if (error || !anime) return <div className="pt-32 text-center text-gray-500">{error || "Obra não encontrada"}</div>;
 
   const handleAdd = () => {
     const total = anime.type === 'ANIME' ? anime.episodes : anime.chapters;
