@@ -9,6 +9,7 @@ import Navbar from './components/layout/Navbar';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
 import { UpdateNotification } from './components/shared/UpdateNotification';
 import { AchievementNotification } from './components/shared/AchievementNotification';
+import { ChangelogModal } from './components/shared/ChangelogModal';
 
 const Home = lazy(() => import('./pages/Home'));
 const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Navbar />
       <UpdateNotification />
       <AchievementNotification />
+      <ChangelogModal />
       
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-12">
         <Suspense fallback={
