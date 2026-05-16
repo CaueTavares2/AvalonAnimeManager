@@ -10,6 +10,7 @@ import { handleFirestoreError, OperationType } from '../context/AuthContext';
 interface CommunityUser {
   uid: string;
   username: string;
+  numericId?: number;
   photoURL?: string;
   bio?: string;
   joinedDate: string;
@@ -149,7 +150,9 @@ const UserCard = React.memo(({ user }: { user: CommunityUser }) => {
       </div>
 
       <div className="space-y-1">
-        <h3 className="font-black text-[var(--color-text-bright)] uppercase tracking-tight group-hover:text-brand transition-colors line-clamp-1">{user.username}</h3>
+        <h3 className="font-black text-[var(--color-text-bright)] uppercase tracking-tight group-hover:text-brand transition-colors line-clamp-1">
+          {user.username} <span className="text-brand not-italic opacity-40 ml-1">#{user.numericId || '??'}</span>
+        </h3>
         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.1em]">Membro desde {user.joinedDate || '2026'}</p>
       </div>
 

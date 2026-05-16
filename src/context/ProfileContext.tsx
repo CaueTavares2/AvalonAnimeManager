@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth, handleFirestoreError, OperationType } from './AuthContext';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -12,7 +12,9 @@ interface ProfileData {
   joinedDate: string;
   otakuPoints: number;
   availablePoints: number;
+  mediaPoints?: number;
   rank: string;
+  numericId?: number;
   photoURL?: string;
   bannerURL?: string;
 }
@@ -46,7 +48,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   // Sync with Firestore
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setProfile(defaultProfile);
+      localStorage.removeItem('avalon_profile');
+      return;
+    }
 
     const userRef = doc(db, 'users', user.uid);
     const unsubscribe = onSnapshot(userRef, (doc) => {
@@ -58,13 +64,17 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           bio: data.bio || prev.bio,
           location: data.location || prev.location,
           favoriteAnime: data.favoriteAnime || prev.favoriteAnime,
-          otakuPoints: data.otakuPoints || 0,
-          availablePoints: data.availablePoints || 0,
+          otakuPoints: data.otakuPoints !== undefined ? data.otakuPoints : (prev.otakuPoints || 0),
+          availablePoints: data.availablePoints !== undefined ? data.availablePoints : (prev.availablePoints || 0),
+          mediaPoints: data.mediaPoints !== undefined ? data.mediaPoints : (prev.mediaPoints || 0),
           rank: data.rank || 'FERRO',
+          numericId: data.numericId !== undefined ? data.numericId : prev.numericId,
           photoURL: data.photoURL || prev.photoURL,
           bannerURL: data.bannerURL || prev.bannerURL
         }));
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
     });
 
     return () => unsubscribe();

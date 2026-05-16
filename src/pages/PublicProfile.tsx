@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { User as UserIcon, Calendar, MapPin, Grid, List as ListIcon, Star, TrendingUp, ChevronLeft, Heart, Zap, UserPlus, Check, MessageSquare } from 'lucide-react';
+import { User as UserIcon, Calendar, MapPin, Grid, List as ListIcon, Star, TrendingUp, ChevronLeft, Heart, Zap, UserPlus, Check, MessageSquare, X } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc, collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -18,7 +18,8 @@ export default function PublicProfile() {
     sendRequest, 
     acceptRequest, 
     calculateAffinity, 
-    sendSalvationPill 
+    sendSalvationPill,
+    removeFriend
   } = useSocial();
   
   const [profile, setProfile] = useState<any>(null);
@@ -147,7 +148,9 @@ export default function PublicProfile() {
             </div>
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">{profile.username}</h1>
+                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">
+                  {profile.username} <span className="text-brand not-italic opacity-40 ml-1">#{profile.numericId || '??'}</span>
+                </h1>
                 <span className="text-xs font-black text-brand italic">{profile.customId}</span>
               </div>
               <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mt-1">
@@ -184,12 +187,24 @@ export default function PublicProfile() {
                </button>
              )}
              {isFriend && (
-               <Link 
-                to={`/chat?friend=${uid}`}
-                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all"
-               >
-                 <MessageSquare className="w-4 h-4" /> Chat
-               </Link>
+               <div className="flex gap-2">
+                 <Link 
+                  to={`/chat?friend=${uid}`}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all"
+                 >
+                   <MessageSquare className="w-4 h-4" /> Chat
+                 </Link>
+                 <button 
+                  onClick={() => {
+                    if (uid && window.confirm(`Remover ${profile?.username} da sua lista de amigos?`)) {
+                      removeFriend(uid);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg"
+                 >
+                   <X className="w-4 h-4" /> Desfazer Amizade
+                 </button>
+               </div>
              )}
           </div>
         </div>

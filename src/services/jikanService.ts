@@ -1,22 +1,45 @@
 import axios from 'axios';
 
-const JIKAN_API_BASE = 'https://api.jikan.moe/v4';
+const JIKAN_API_BASE = import.meta.env.VITE_JIKAN_API_URL || 'https://api.jikan.moe/v4';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<any> {
-  const cached = cache.get(url);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return cached.data;
+function getCachedData(url: string) {
+  try {
+    const cached = sessionStorage.getItem(`jikan_cache_${url}`);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('Cache read error', e);
   }
+  return null;
+}
+
+function setCachedData(url: string, data: any) {
+  try {
+    sessionStorage.setItem(`jikan_cache_${url}`, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (e) {
+    console.warn('Cache write error', e);
+  }
+}
+
+async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<any> {
+  const cached = getCachedData(url);
+  if (cached) return cached;
 
   try {
     const response = await axios.get(url);
     const data = response.data;
-    cache.set(url, { data, timestamp: Date.now() });
+    setCachedData(url, data);
     return data;
   } catch (error: any) {
     if (error.response?.status === 429 && retries > 0) {

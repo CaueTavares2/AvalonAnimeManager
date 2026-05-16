@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { useFavorites, FavoriteCharacter } from '../context/FavoritesContext';
 import React, { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
-import { doc, updateDoc, collection, query, getDocs, where } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, getDocs, where, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { ACHIEVEMENTS } from '../services/rankingService';
+import { Link } from 'react-router-dom';
 
 export default function Profile() {
   const { list } = useAnimeList();
@@ -67,30 +68,35 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (user) {
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)));
-      const userData = userSnap.docs[0]?.data();
-      const currentChanges = (userData?.weeklyChangesCount || 0) + 1;
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.exists() ? userSnap.data() : {};
+        const currentChanges = (userData?.weeklyChangesCount || 0) + 1;
 
-      await updateDoc(userRef, {
-        username: editedProfile.username,
-        bio: editedProfile.bio,
-        location: editedProfile.location,
-        favoriteAnime: editedProfile.favoriteAnime,
-        photoURL: editedPhotoURL,
-        bannerURL: editedBannerURL,
-        weeklyChangesCount: currentChanges,
-        updatedAt: new Date().toISOString()
-      });
+        await updateDoc(userRef, {
+          username: editedProfile.username,
+          bio: editedProfile.bio,
+          location: editedProfile.location,
+          favoriteAnime: editedProfile.favoriteAnime,
+          photoURL: editedPhotoURL,
+          bannerURL: editedBannerURL,
+          weeklyChangesCount: currentChanges,
+          updatedAt: serverTimestamp()
+        });
 
-      if (currentChanges >= 3) {
-        const { rankingService } = await import('../services/rankingService');
-        await rankingService.grantAchievement(user.uid, 'SINDROME_PROTAGONISTA');
-      }
+        if (currentChanges >= 3) {
+          const { rankingService } = await import('../services/rankingService');
+          await rankingService.grantAchievement(user.uid, 'SINDROME_PROTAGONISTA');
+        }
 
-      if (editedBannerURL && editedBannerURL !== profile.bannerURL) {
-        const { rankingService } = await import('../services/rankingService');
-        await rankingService.grantAchievement(user.uid, 'DESIGNER_INTERIOR');
+        if (editedBannerURL && editedBannerURL !== profile.bannerURL) {
+          const { rankingService } = await import('../services/rankingService');
+          await rankingService.grantAchievement(user.uid, 'DESIGNER_INTERIOR');
+        }
+      } catch (err) {
+        console.error("Failed to update profile", err);
+        alert("Erro ao salvar perfil. Tente novamente.");
       }
     }
     updateProfile({ ...editedProfile, photoURL: editedPhotoURL, bannerURL: editedBannerURL });
@@ -126,7 +132,9 @@ export default function Profile() {
             </div>
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">{profile.username}</h1>
+                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">
+                  {profile.username} <span className="text-brand not-italic opacity-40 ml-1">#{profile.numericId !== undefined ? profile.numericId : '???'}</span>
+                </h1>
                 <div className={cn(
                   "px-2 py-0.5 rounded flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest border shadow-sm",
                   RANK_COLORS[profile.rank || 'FERRO']
@@ -134,12 +142,19 @@ export default function Profile() {
                   <Trophy className="w-3 h-3" /> {profile.rank || 'FERRO'}
                 </div>
                 {isAdmin && (
-                  <div className="bg-brand/10 text-brand px-2 py-0.5 rounded flex items-center gap-1 text-[8px] font-black uppercase tracking-widest border border-brand/20">
-                    <ShieldCheck className="w-3 h-3" /> Staff
+                  <div className="flex gap-2">
+                    <div className="bg-brand/10 text-brand px-2 py-0.5 rounded flex items-center gap-1 text-[8px] font-black uppercase tracking-widest border border-brand/20">
+                      <ShieldCheck className="w-3 h-3" /> Staff
+                    </div>
+                    <Link to="/admin" className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded flex items-center gap-1 text-[8px] font-black uppercase tracking-widest border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">
+                      Setor Staff
+                    </Link>
                   </div>
                 )}
               </div>
                 <p className="text-gray-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2 mt-1">
+                  <span className="text-brand font-black" title="Seu ID Único">#{profile.numericId !== undefined ? profile.numericId : '???'}</span>
+                  <span className="opacity-30">|</span>
                   <span className="text-brand italic" title="Pontos de Ranking">{profile.otakuPoints || 0} PO</span>
                   <span className="opacity-30">|</span>
                   <span className="text-blue-400 italic" title="Saldo na Loja">{profile.availablePoints || 0} AP</span>
@@ -158,7 +173,20 @@ export default function Profile() {
           <div className="flex gap-4">
             <div className="hidden md:flex flex-col items-end justify-center px-4 border-r border-[var(--color-border)]">
               <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Nível de Poder</p>
-              <p className="text-lg font-black text-[var(--color-text-bright)] italic leading-none">{profile.otakuPoints || 0}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-black text-[var(--color-text-bright)] italic leading-none">{profile.otakuPoints || 0}</p>
+                <button 
+                  onClick={async () => {
+                    const { rankingService } = await import('../services/rankingService');
+                    await rankingService.syncListPoints(user!.uid, list);
+                    alert('Pontos sincronizados com sucesso!');
+                  }}
+                  className="p-1 hover:text-brand transition-colors"
+                  title="Sincronizar Pontos"
+                >
+                  <TrendingUp className="w-3 h-3" />
+                </button>
+              </div>
             </div>
             <button 
               onClick={() => {

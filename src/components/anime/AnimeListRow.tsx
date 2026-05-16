@@ -22,12 +22,12 @@ const AnimeListRow = memo(({
   return (
     <tr className="group hover:bg-[var(--color-card)]/30 transition-colors border-b border-[var(--color-border)] last:border-0">
       <td className="px-4 py-6">
-        <Link to={`/anime/${anime.id}`}>
+        <Link to={`/${anime.type.toLowerCase()}/${anime.id}`}>
           <img src={anime.image} className="w-12 h-16 object-cover rounded shadow-lg border border-black/10" alt={anime.title} />
         </Link>
       </td>
       <td className="px-4 py-6">
-        <Link to={`/anime/${anime.id}`} className="font-bold text-[var(--color-text-bright)] hover:text-brand transition-colors block truncate max-w-md text-base tracking-tight mb-1">
+        <Link to={`/${anime.type.toLowerCase()}/${anime.id}`} className="font-bold text-[var(--color-text-bright)] hover:text-brand transition-colors block truncate max-w-md text-base tracking-tight mb-1">
           {anime.title}
         </Link>
         <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-70">
@@ -106,7 +106,7 @@ const AnimeListRow = memo(({
       </td>
       <td className="px-4 py-6 text-right">
         <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-          <Link to={`/anime/${anime.id}`} className="p-2 text-gray-400 hover:text-brand bg-[var(--color-bg)] rounded-lg transition-colors">
+          <Link to={`/${anime.type.toLowerCase()}/${anime.id}`} className="p-2 text-gray-400 hover:text-brand bg-[var(--color-bg)] rounded-lg transition-colors">
             <Edit2 className="w-4 h-4" />
           </Link>
           <button 

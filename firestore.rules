@@ -10,155 +10,98 @@ service cloud.firestore {
     // 1. Primitive Hardened Helpers
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function isStaff() { return isSignedIn() && request.auth.token.email in ['caue.nanda.tavares@gmail.com']; }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
 
-    // 2. Entity Validation Blueprints (Anti-Update-Gap)
-    
+    // 2. Entity Validation Blueprints
     function isValidUser(data) {
-      return data.uid is string && data.uid.size() == 28 &&
-             data.username is string && data.username.size() >= 3 && data.username.size() <= 32 &&
-             (data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
-             (data.bannerURL == null || (data.bannerURL is string && data.bannerURL.size() <= 1024)) &&
-             (data.bio == null || (data.bio is string && data.bio.size() <= 1000)) &&
-             data.otakuPoints is number && data.otakuPoints >= 0 &&
-             (data.availablePoints == null || (data.availablePoints is number && data.availablePoints >= 0)) &&
-             data.rank in ['FERRO', 'BRONZE', 'PRATA', 'OURO', 'PLATINA', 'DIAMANTE', 'DESAFIANTE'];
+      return (data.get('uid', null) == null || data.uid is string) &&
+             (data.get('username', null) == null || (data.username is string && data.username.size() >= 1 && data.username.size() <= 64));
     }
 
-    function isValidPrivateInfo(data) {
-      return (data.email == null || (data.email is string && data.email.size() <= 256)) &&
-             (data.emailVerified is bool);
+    match /counters/{counterId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (incoming().get('count', 0) >= existing().get('count', 0)) || isStaff();
     }
 
-    function isValidMediaItem(data) {
-      return data.userId is string && data.userId.size() == 28 &&
-             data.mediaId is int &&
-             data.title is string && data.title.size() <= 400 &&
-             data.type in ['ANIME', 'MANGA', 'COMMON'] &&
-             data.status in ['WATCHING', 'READING', 'COMPLETED', 'PLANNING', 'DROPPED'] &&
-             (data.score == null || (data.score is number && data.score >= 0 && data.score <= 10));
-    }
-
-    function isValidCharacter(data) {
-      return data.id is int && data.name is string && data.name.size() <= 200;
-    }
-
-    function isValidAchievement(data) {
-       return data.id is string && data.title is string;
-    }
-
-    function isValidFriendRequest(data) {
-      return data.from is string && data.from == request.auth.uid &&
-             data.to is string && data.to != request.auth.uid &&
-             data.status in ['PENDING', 'ACCEPTED', 'REJECTED'];
-    }
-
-    function isValidMessage(data) {
-      return data.senderId is string && data.senderId == request.auth.uid &&
-             data.text is string && data.text.size() <= 2000 &&
-             data.type in ['TEXT', 'MEDIA', 'ACHIEVEMENT'];
-    }
-
-    // 3. Collection Rules
-
-    // User Profile Rules
     match /users/{userId} {
       allow get, list: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if (isOwner(userId) && isValidUser(incoming())) || isStaff();
+      allow delete: if isStaff();
       
-      allow create: if isOwner(userId) && isEmailVerified() && isValidUser(incoming()) &&
-                    incoming().createdAt == request.time &&
-                    incoming().updatedAt == request.time;
-      
-      allow update: if isOwner(userId) && isEmailVerified() && (
-        // Action: Standard Profile Update
-        (incoming().diff(existing()).affectedKeys().hasOnly(['username', 'photoURL', 'bannerURL', 'bio', 'preferences', 'updatedAt', 'lastActivityAt', 'status', 'currentActivity', 'lastOnlineAt', 'favoriteAnime', 'weeklyChangesCount', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'location'])) ||
-        // Action: Points/Rank Update
-        (incoming().diff(existing()).affectedKeys().hasAny(['otakuPoints', 'availablePoints', 'weeklyPoints', 'rank', 'streak', 'streakMultiplier', 'lastStreakUpdate', 'needsHelp', 'helpExpireAt', 'pillsCount', 'savedStreaksCount', 'receivablesPillsCount', 'lastResetAt', 'updatedAt', 'todayEpisodesCount', 'lastMarathonUpdate', 'dropsCount', 'weeklyChangesCount']))
-      ) && incoming().uid == existing().uid && incoming().createdAt == existing().createdAt;
-      
-      // PII Isolation: Private Info
       match /private/info {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId) || isStaff();
+        allow write: if isOwner(userId);
       }
-
-      // Achievements
       match /achievements/{achId} {
         allow read, list: if isSignedIn();
-        allow create, update: if isOwner(userId) && isValidAchievement(incoming());
+        allow create, update: if isOwner(userId) || isStaff();
+        allow delete: if isStaff();
       }
-
-      // Favorites
+      match /list/{mediaId} {
+        allow read, list: if isSignedIn();
+        allow create, update: if isOwner(userId) || isStaff();
+        allow delete: if isOwner(userId) || isStaff();
+      }
+      match /notifications/{notifId} {
+        allow read, list: if isOwner(userId);
+        allow create: if isSignedIn();
+        allow update, delete: if isOwner(userId) || isStaff();
+      }
       match /favorites/characters/items/{itemId} {
         allow read, list: if isSignedIn();
-        allow create, update: if isOwner(userId) && isValidCharacter(incoming());
-        allow delete: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId) || isStaff();
       }
     }
 
-    // Media List Items
-    match /users/{userId}/list/{mediaId} {
-      allow get, list: if isSignedIn();
-      
-      allow create: if isOwner(userId) && isEmailVerified() && isValidMediaItem(incoming()) &&
-                    incoming().createdAt == request.time;
-      
-      allow update: if isOwner(userId) && isEmailVerified() && isValidMediaItem(incoming()) &&
-                    incoming().mediaId == existing().mediaId &&
-                    incoming().userId == existing().userId &&
-                    incoming().createdAt == existing().createdAt &&
-                    incoming().updatedAt == request.time &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'score', 'progress', 'notes', 'updatedAt', 'title', 'image']);
-      
-      allow delete: if isOwner(userId);
-    }
-
-    // Friend Requests
     match /friendRequests/{requestId} {
-      allow read: if isSignedIn() && (request.auth.uid == existing().from || request.auth.uid == existing().to);
-      allow create: if isSignedIn() && isEmailVerified() && isValidFriendRequest(incoming()) &&
-                    incoming().createdAt == request.time;
-      allow update: if isSignedIn() && request.auth.uid == existing().to &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
-                    incoming().status in ['ACCEPTED', 'REJECTED'];
-      allow delete: if isSignedIn() && (request.auth.uid == existing().from || request.auth.uid == existing().to);
+      allow read, list: if isSignedIn() && (request.auth.uid == resource.data.from || request.auth.uid == resource.data.to);
+      allow create: if isSignedIn() && incoming().from == request.auth.uid;
+      allow update: if isSignedIn() && (request.auth.uid == existing().to || request.auth.uid == existing().from);
+      allow delete: if isSignedIn() && (request.auth.uid == existing().from || request.auth.uid == existing().to || isStaff());
     }
 
-    // Friendships
     match /friendships/{friendshipId} {
-      allow read, list: if isSignedIn() && (request.auth.uid in existing().users);
-      allow create: if isSignedIn() && isEmailVerified() && (request.auth.uid in incoming().users);
+      allow read, list: if isSignedIn() && (request.auth.uid in resource.data.users);
+      allow create: if isSignedIn() && (request.auth.uid in incoming().users);
+      allow delete: if isSignedIn() && (request.auth.uid in resource.data.users || isStaff());
     }
 
-    // Activity Feed
     match /activityFeed/{eventId} {
       allow read, list: if isSignedIn();
-      allow create: if isSignedIn() && isEmailVerified() && incoming().userId == request.auth.uid &&
-                    incoming().createdAt == request.time;
+      allow create: if isSignedIn() && (incoming().userId == request.auth.uid || incoming().from == request.auth.uid);
+      allow delete: if isStaff();
     }
 
-    // Chats & Messages
     match /chats/{chatId} {
-      allow read: if isSignedIn() && (request.auth.uid in existing().participants);
-      allow create: if isSignedIn() && isEmailVerified() && (request.auth.uid in incoming().participants);
-      allow update: if isSignedIn() && (request.auth.uid in existing().participants);
-
+      allow read, update, list: if isSignedIn() && (request.auth.uid in resource.data.participants || isStaff());
+      allow create: if isSignedIn() && (request.auth.uid in incoming().participants);
+      allow delete: if isStaff();
+      
       match /messages/{messageId} {
-        allow read, list: if isSignedIn() && 
-                          (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
-        
-        allow create: if isSignedIn() && isEmailVerified() && 
-                      isValidMessage(incoming()) &&
-                      (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants) &&
-                      incoming().createdAt == request.time;
+        allow read, list: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isStaff());
+        allow create: if isSignedIn() && (incoming().senderId == request.auth.uid);
+        allow delete: if isStaff();
       }
     }
 
     match /global_media_stats/{animeId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn() && isEmailVerified();
+      allow read, list: if isSignedIn();
+      allow create, update: if isSignedIn();
+    }
+
+    match /broadcasts/{broadcastId} {
+      allow read, list: if isSignedIn();
+      allow write: if isStaff();
+    }
+
+    match /auditLogs/{logId} {
+      allow read, list: if isStaff();
+      allow create: if isSignedIn();
+      allow update, delete: if isStaff();
     }
   }
 }

@@ -61,7 +61,7 @@ export default function Navbar() {
   const handleSelect = (id: number) => {
     setSearch('');
     setIsSearching(false);
-    navigate(`/anime/${id}`);
+    navigate(`/${mediaType}/${id}`);
   };
 
   const [logoClicks, setLogoClicks] = useState(0);
@@ -79,7 +79,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 dark:bg-[#0b1622]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
+    <nav className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer group">
@@ -112,7 +112,7 @@ export default function Navbar() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onFocus={() => search.length > 1 && setIsSearching(true)}
-              className="bg-[var(--color-bg)] dark:bg-[#152232] rounded-md py-2 pl-9 pr-4 text-xs w-48 focus:w-64 transition-all focus:outline-none focus:ring-1 focus:ring-brand border border-transparent focus:border-brand/50"
+              className="bg-[var(--color-bg)] rounded-md py-2 pl-9 pr-4 text-xs w-48 focus:w-64 transition-all focus:outline-none focus:ring-1 focus:ring-brand border border-transparent focus:border-brand/50"
             />
 
             {/* Search Results Dropdown */}

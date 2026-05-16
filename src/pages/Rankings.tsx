@@ -22,6 +22,7 @@ interface RankingUser {
   uid: string;
   username: string;
   photoURL?: string;
+  numericId?: number;
   otakuPoints: number;
   weeklyPoints: number;
   rank: string;
@@ -44,7 +45,7 @@ export default function Rankings() {
   const { friends } = useSocial();
   const [loading, setLoading] = useState(true);
   const [ranking, setRanking] = useState<RankingUser[]>([]);
-  const [activeLeague, setActiveLeague] = useState<string>('DIAMANTE'); 
+  const [activeLeague, setActiveLeague] = useState<string>('FERRO'); 
   const [viewMode, setViewMode] = useState<'GLOBAL' | 'FRIENDS'>('GLOBAL');
   const [timeRemaining, setTimeRemaining] = useState('');
 
@@ -268,7 +269,10 @@ export default function Rankings() {
                        <div className="col-span-1 font-black text-[var(--color-text-bright)] italic">#{u.currentPosition}</div>
                        <div className="col-span-6 flex items-center gap-4">
                           <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} className="w-10 h-10 rounded-xl border border-[var(--color-border)]" />
-                          <Link to={`/profile/${u.uid}`} className="font-black text-sm uppercase italic tracking-tight hover:text-brand transition-colors">{u.username}</Link>
+                          <div className="flex flex-col">
+                            <Link to={`/profile/${u.uid}`} className="font-black text-sm uppercase italic tracking-tight hover:text-brand transition-colors line-clamp-1">{u.username}</Link>
+                            <span className="text-[10px] font-bold text-brand opacity-60">#{u.numericId !== undefined ? u.numericId : '???'}</span>
+                          </div>
                        </div>
                        <div className="col-span-2 flex justify-center">
                          <span className="text-[10px] font-black uppercase text-brand/70">{u.rank || 'Bronze'}</span>
@@ -279,6 +283,14 @@ export default function Rankings() {
                        </div>
                     </div>
                   ))}
+
+                  {/* Show current user if not in ranking list */}
+                  {currentUser && !ranking.some(u => u.uid === currentUser.uid) && viewMode === 'GLOBAL' && (
+                    <div className="p-8 text-center bg-brand/5 border-t border-[var(--color-brand)]">
+                       <p className="text-[10px] font-black uppercase tracking-widest text-brand">Você ainda não está no Top 50 desta Liga</p>
+                       <p className="text-[9px] text-gray-500 font-bold uppercase mt-1">Continue completando animes para subir de posição!</p>
+                    </div>
+                  )}
                </div>
             </div>
           </div>

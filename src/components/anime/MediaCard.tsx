@@ -11,7 +11,7 @@ interface MediaCardProps {
 
 const MediaCard = React.memo(({ media }: MediaCardProps) => {
   return (
-    <Link to={`/anime/${media.id}`} className="group relative cursor-pointer block">
+    <Link to={`/${media.type.toLowerCase()}/${media.id}`} className="group relative cursor-pointer block">
       {/* Cover Image */}
       <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-gray-200 mb-2 shadow-sm border border-black/5 dark:border-white/5">
         <img 

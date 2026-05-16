@@ -10,13 +10,14 @@ import {
   Flame,
   MessageSquare,
   TrendingUp,
-  Award
+  Award,
+  ShieldCheck
 } from 'lucide-react';
 import { useSocial, Friend } from '../context/SocialContext';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { cn } from '../lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -24,7 +25,8 @@ import { db } from '../lib/firebase';
 export default function Social() {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { friends, requests, sendRequest, acceptRequest, rejectRequest } = useSocial();
+  const { friends, requests, sentRequests, sendRequest, acceptRequest, rejectRequest, cancelRequest, removeFriend, setActiveChatFriendId } = useSocial();
+  const navigate = useNavigate();
   
   const [searchId, setSearchId] = useState('');
   const [showQR, setShowQR] = useState(false);
@@ -53,6 +55,11 @@ export default function Social() {
     } catch (err: any) {
       setError(err.message);
     }
+  };
+
+  const handleOpenChat = (friendId: string) => {
+    setActiveChatFriendId(friendId);
+    navigate(`/chat?friend=${friendId}`);
   };
 
   return (
@@ -97,7 +104,7 @@ export default function Social() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
                 <input 
                   type="text"
-                  placeholder="ID Ex: #Otaku1234"
+                  placeholder="ID Ex: #1 ou #Otaku1234"
                   value={searchId}
                   onChange={(e) => setSearchId(e.target.value)}
                   className="w-full bg-[var(--color-bg)] h-10 pl-10 pr-4 rounded-xl border border-[var(--color-border)] text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
@@ -125,10 +132,10 @@ export default function Social() {
               {showQR && (
                 <div className="mt-6 flex flex-col items-center space-y-4 animate-in zoom-in-95 duration-300">
                   <div className="p-3 bg-white rounded-2xl shadow-2xl">
-                    <QRCode value={profile.customId || "AVALON"} size={120} />
+                    <QRCode value={profile.numericId?.toString() || profile.customId || "AVALON"} size={120} />
                   </div>
                   <p className="text-[10px] font-black text-[var(--color-text-bright)] tracking-widest uppercase">
-                    ID: <span className="text-brand">{profile.customId}</span>
+                    SEU ID: <span className="text-brand">#{profile.numericId || '??'}</span>
                   </p>
                 </div>
               )}
@@ -161,8 +168,12 @@ export default function Social() {
                             )} />
                          </div>
                          <div>
-                            <Link to={`/profile/${friend.uid}`} className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-tight italic hover:text-brand transition-colors">
-                              {friend.username}
+                            <Link to={`/profile/${friend.uid}`} className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-tight italic hover:text-brand transition-colors flex items-center gap-1.5">
+                              {friend.username} 
+                              {['caue.nanda.tavares@gmail.com'].includes((friend as any).email) && (
+                                <ShieldCheck className="w-3 h-3 text-brand fill-brand/20" title="Conselho Staff" />
+                              )}
+                              <span className="text-brand not-italic ml-1 opacity-60">#{friend.numericId || '??'}</span>
                             </Link>
                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
                               {friend.status === 'MARATONANDO' ? `Maratonando ${friend.currentActivity}` : friend.status.toLowerCase()}
@@ -171,14 +182,36 @@ export default function Social() {
                               <span className="text-[8px] font-black px-1.5 py-0.5 bg-brand/10 text-brand rounded uppercase">{friend.rank}</span>
                               <span className="text-[8px] font-black text-gray-500 italic">{friend.otakuPoints} PO</span>
                             </div>
+                            {(friend as any).lastMessage && (
+                              <p className="text-[9px] text-gray-400 mt-1 line-clamp-1 italic max-w-[150px]">
+                                {(friend as any).lastMessage}
+                              </p>
+                            )}
                          </div>
                       </div>
-                      <Link 
-                        to={`/chat?friend=${friend.uid}`}
-                        className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-500 hover:text-brand hover:bg-brand/5 transition-all"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleOpenChat(friend.uid)}
+                          className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-500 hover:text-brand hover:bg-brand/5 transition-all relative"
+                          title="Chat"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          {(friend as any).hasUnread && (
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand rounded-full border-2 border-[var(--color-card)]" />
+                          )}
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (window.confirm(`Remover ${friend.username} da lista de amigos?`)) {
+                              removeFriend(friend.uid);
+                            }
+                          }}
+                          className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-500/5 transition-all"
+                          title="Remover Amigo"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -195,7 +228,7 @@ export default function Social() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-[var(--color-text-bright)]">
-                       <span className="text-brand">@{event.username || 'Usuário'}</span>
+                       <Link to={`/profile/${event.userId || event.from}`} className="text-brand hover:underline">@{event.username || 'Usuário'}</Link>
                        {event.type === 'COMPLETED' ? ' concluiu ' : event.type === 'PROGRESS' ? ' atualizou o progresso de ' : ' desbloqueou a conquista '}
                        <span className="text-brand italic uppercase tracking-tighter">
                          {event.mediaTitle || event.achievementTitle}
@@ -209,31 +242,37 @@ export default function Social() {
           )}
 
           {activeTab === 'REQUESTS' && (
-            <div className="space-y-4">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                  <UserPlus className="w-4 h-4" /> Recebidos ({requests.length})
+                </h3>
               {requests.length === 0 ? (
-                <p className="text-center py-20 text-gray-500 text-xs font-bold uppercase tracking-widest">Nenhum pedido pendente.</p>
+                <p className="text-center py-10 bg-[var(--color-bg)] rounded-2xl text-gray-500 text-[10px] font-bold uppercase tracking-widest border border-dashed border-[var(--color-border)]">Nenhum pedido pendente.</p>
               ) : (
                 requests.map(req => (
                   <div key={req.id} className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <Link to={`/profile/${req.from}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                       <div className="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center">
                          <UserPlus className="w-5 h-5 text-brand" />
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-widest">{req.fromUsername}</p>
-                        <p className="text-[8px] text-gray-500 font-bold uppercase">Enviou um convite</p>
+                        <p className="text-[8px] text-gray-500 font-bold uppercase">Enviou um convite (Clique para ver perfil)</p>
                       </div>
-                    </div>
+                    </Link>
                     <div className="flex items-center gap-2">
                        <button 
                         onClick={() => acceptRequest(req.id)}
                         className="p-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg"
+                        title="Aceitar"
                        >
                          <Check className="w-4 h-4" />
                        </button>
                        <button 
                         onClick={() => rejectRequest(req.id)}
                         className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-lg"
+                        title="Recusar"
                        >
                          <X className="w-4 h-4" />
                        </button>
@@ -241,6 +280,37 @@ export default function Social() {
                   </div>
                 ))
               )}
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                  <Activity className="w-4 h-4" /> Enviados ({sentRequests.length})
+                </h3>
+                {sentRequests.length === 0 ? (
+                  <p className="text-center py-10 bg-[var(--color-bg)] rounded-2xl text-gray-500 text-[10px] font-bold uppercase tracking-widest border border-dashed border-[var(--color-border)]">Você não enviou convites recentemente.</p>
+                ) : (
+                  sentRequests.map(req => (
+                    <div key={req.id} className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] flex items-center justify-between opacity-80">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-500/10 rounded-lg flex items-center justify-center">
+                           <Activity className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Aguardando Resposta...</p>
+                          <p className="text-[8px] text-gray-400 font-bold uppercase">Pedido enviado</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => cancelRequest(req.id)}
+                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Cancelar Pedido"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
         </div>

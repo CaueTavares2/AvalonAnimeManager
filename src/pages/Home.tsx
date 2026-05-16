@@ -68,27 +68,28 @@ export default function Home() {
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       setLoading(true);
-      setTrending([]);
-      setPopular([]);
       try {
-        const trendingData = await jikanService.getTrending(mediaType);
-        if (trendingData) {
-          setTrending(trendingData.map(item => mapJikanToMedia(item, mediaType)));
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 300));
-        const popularData = await jikanService.getPopular(mediaType);
-        if (popularData) {
-          setPopular(popularData.map(item => mapJikanToMedia(item, mediaType)));
-        }
+        // Parallel fetch with auto-retry logic from service
+        const [trendingData, popularData, upcomingData, topRatedData] = await Promise.all([
+          jikanService.getTrending(mediaType),
+          jikanService.getPopular(mediaType),
+          jikanService.getUpcoming(mediaType),
+          jikanService.getTopRated(mediaType)
+        ]);
 
-        await new Promise(resolve => setTimeout(resolve, 300));
-        const upcomingData = await jikanService.getUpcoming(mediaType);
+        if (!isMounted) return;
+
+        if (trendingData) {
+          setTrending(trendingData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType)));
+        }
         
-        await new Promise(resolve => setTimeout(resolve, 300));
-        const topRatedData = await jikanService.getTopRated(mediaType);
+        if (popularData) {
+          setPopular(popularData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType)));
+        }
 
         setStats({
           topTrending: trendingData?.[0]?.title || 'N/A',
@@ -99,10 +100,12 @@ export default function Home() {
       } catch (error) {
         console.error(`Failed to fetch ${mediaType}:`, error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchData();
+
+    return () => { isMounted = false; };
   }, [mediaType]);
 
   return (

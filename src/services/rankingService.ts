@@ -1,5 +1,6 @@
 import { doc, getDoc, updateDoc, increment, serverTimestamp, collection, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { handleFirestoreError, OperationType } from '../context/AuthContext';
 
 export interface Achievement {
   id: string;
@@ -209,19 +210,33 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     rarity: 'LENDARIO',
     points: 1000,
     secret: true
+  },
+  'LEGADO_KAISER': {
+    id: 'LEGADO_KAISER',
+    title: 'Legado do Staff',
+    description: 'Tornar-se amigo oficial de um membro do Conselho Superior (Staff).',
+    icon: 'ShieldCheck',
+    rarity: 'LENDARIO',
+    points: 1000,
+    secret: true
   }
 };
 
 export const rankingService = {
   addPoints: async (userId: string, points: number, reason: string) => {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
-      otakuPoints: increment(points),
-      weeklyPoints: increment(points),
-      lastActivityAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    console.log(`User ${userId} earned ${points} PO: ${reason}`);
+    try {
+      await updateDoc(userRef, {
+        otakuPoints: increment(points),
+        availablePoints: increment(points),
+        weeklyPoints: increment(points),
+        lastActivityAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      console.log(`User ${userId} earned ${points} PO: ${reason}`);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
+    }
   },
 
   syncListPoints: async (userId: string, list: any[]) => {
@@ -230,43 +245,57 @@ export const rankingService = {
     if (!snap.exists()) return;
     
     const userData = snap.data();
-    let totalPO = 0;
+    let totalMediaPO = 0;
     
     list.forEach(item => {
       if (item.status === 'COMPLETED') {
         const episodes = item.episodes || 1;
         const score = item.score || 0;
         
-        // Validation: Must have a score to prevent "ghost" completions without engagement
-        // Basic PO: 50 per completed anime + 2 per episode
-        // Quality bonus: 5 extra PO for each score point > 5
         const scoreBonus = score > 5 ? (score - 5) * 10 : 0;
         const basePO = 50 + (episodes * 2) + scoreBonus;
-        
-        // Long anime bonus (e.g. > 50 episodes)
         const bonus = episodes > 100 ? 150 : episodes > 50 ? 75 : 0;
         
-        totalPO += (basePO + bonus);
+        totalMediaPO += (basePO + bonus);
       } else if (item.progress > 0) {
-        totalPO += (item.progress * 2);
+        totalMediaPO += (item.progress * 2);
       }
     });
 
+    const oldMediaPO = userData.mediaPoints || 0;
+    const diff = totalMediaPO - oldMediaPO;
+    
+    // If it's the first sync (mediaPoints undefined), we add the full amount to otakuPoints
+    const pointsToAdd = userData.mediaPoints === undefined ? totalMediaPO : Math.max(0, diff);
+
+    if (pointsToAdd <= 0 && userData.mediaPoints !== undefined) return; 
+
+    const currentTotalPO = userData.otakuPoints || 0;
+    const newTotalPO = currentTotalPO + pointsToAdd;
+    const availablePoints = userData.availablePoints || 0;
+    const newAvailablePoints = availablePoints + pointsToAdd;
+
     // Rank evaluation logic
     let newRank = 'FERRO';
-    if (totalPO >= 10000) newRank = 'DESAFIANTE';
-    else if (totalPO >= 5000) newRank = 'DIAMANTE';
-    else if (totalPO >= 2500) newRank = 'PLATINA';
-    else if (totalPO >= 1000) newRank = 'OURO';
-    else if (totalPO >= 500) newRank = 'PRATA';
-    else if (totalPO >= 200) newRank = 'BRONZE';
+    if (newTotalPO >= 10000) newRank = 'DESAFIANTE';
+    else if (newTotalPO >= 5000) newRank = 'DIAMANTE';
+    else if (newTotalPO >= 2500) newRank = 'PLATINA';
+    else if (newTotalPO >= 1000) newRank = 'OURO';
+    else if (newTotalPO >= 500) newRank = 'PRATA';
+    else if (newTotalPO >= 200) newRank = 'BRONZE';
 
-    // Update total PO and rank
-    await updateDoc(userRef, {
-      otakuPoints: totalPO,
-      rank: newRank,
-      updatedAt: serverTimestamp()
-    });
+    // Update total PO, media PO, rank AND available points
+    try {
+      await updateDoc(userRef, {
+        otakuPoints: newTotalPO,
+        mediaPoints: totalMediaPO,
+        availablePoints: newAvailablePoints,
+        rank: newRank,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
+    }
   },
 
   checkAchievements: async (userId: string, stats: any) => {
@@ -292,7 +321,7 @@ export const rankingService = {
     if (!snap.exists()) {
       await setDoc(achRef, {
         ...achievement,
-        unlockedAt: new Date().toISOString()
+        unlockedAt: serverTimestamp()
       });
       await rankingService.addPoints(userId, achievement.points, `Conquista: ${achievement.title}`);
       return true;

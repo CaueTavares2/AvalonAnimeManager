@@ -2,34 +2,75 @@
 
 Avalon é uma plataforma refinada de rastreamento de animes com uma interface cinematográfica, sistema de progressão otaku e recursos sociais.
 
-## 🚀 Como Rodar Localmente (Dependências Completas)
+---
 
-Para garantir que você tenha todas as dependências e o ambiente configurado como um "EXE" de fácil execução, siga estes passos:
+## 🚀 Como Rodar Localmente (Ambiente Independente)
 
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) (v18 ou superior)
-- [npm](https://www.npmjs.com/) (Vem com o Node)
+O projeto foi preparado para execução local sem dependência obrigatória de infraestrutura na nuvem (usando Emuladores do Firebase para Auth e Banco de Dados Local).
 
-### Instalação
-1. Extraia o arquivo ZIP do projeto.
-2. Abra o terminal na pasta do projeto.
-3. Instale todas as dependências necessárias de uma vez:
+### 🛠️ Pré-requisitos
+- **Node.js** (v18 ou superior)
+- **Java JRE/JDK** (Necessário para a execução do Firebase Local Emulator)
+- **npm** (Vem com o Node)
+
+O projeto contém um script interno de validação (`npm run dev` rodará o checklist de pré-requisitos antes de subir).
+
+### ⚙️ 1. Configuração de Variáveis de Ambiente
+1. Copie o arquivo de exemplo de ambiente:
    ```bash
-   npm install
+   cp .env.example .env
    ```
+2. Caso use as APIs mockadas não modifique, se desejar conectar com backend real apenas preencha as chaves no novo arquivo `.env`. Em `.env` as variáveis padrão já estão configuradas para o funcionamento de modo local/default.
 
-### Execução
-Para iniciar o servidor de desenvolvimento:
+### 📦 2. Instalação e Inicialização
+Criamos atalhos no `package.json` para facilitar sua vida. 
+Abra o seu terminal na pasta do projeto e execute:
+
+```bash
+# 1. Instalação de dependências e setup inicial
+npm install
+npm run build
+```
+
+### 💻 3. Como Executar o App (2 Opções)
+
+**OPÇÃO A: Desenvolvimento Local Total (DB Simulado / Firebase Emulator)**
+*Recomendado para evitar custos ou problemas de conexão de nuvem.*
+
+Primeiro, em um terminal separado, instale o emulador (se não tiver) e inicie:
+```bash
+npx firebase-tools emulators:start --only auth,firestore --config firebase.emulator.json
+```
+
+Depois, em outro terminal, inicie o front-end:
+```bash
+VITE_USE_FIREBASE_EMULATOR=true VITE_JIKAN_API_URL=https://api.jikan.moe/v4 npm run dev
+```
+O app estará rodando em `http://localhost:3000` conectado ao seu banco local!
+
+Em um terceiro terminal, popule os dados iniciais do banco utilizando o nosso seed script:
+```bash
+VITE_USE_FIREBASE_EMULATOR=true npx tsx scripts/seed.ts
+```
+
+**OPÇÃO B: Desenvolvimento com Backend Real**
+Caso as chaves já estejam configuradas ou se estiver num preview/ambiente de produção:
 ```bash
 npm run dev
 ```
-O app estará disponível em `http://localhost:3000`.
 
-### Build para Produção
-Para criar uma versão otimizada e leve:
+### 🔨 4. Build para Produção
 ```bash
 npm run build
 ```
+
+---
+
+## 📂 Estrutura do Projeto e Isolamento
+- `.env.example`: Centraliza os endpoints e credenciais (ex: Jikan API URL).
+- `scripts/pre-run-check.ts`: Verifica a versão do Node.js, arquivos cruciais e faz análise de sanidade antes do ambiente rodar.
+- `src/lib/firebase.ts`: O sistema conecta automaticamente aos Emuladores se a flag `VITE_USE_FIREBASE_EMULATOR` estiver presente no momento da build (`npm run dev:local`).
+- Componentes estão isolados, caminhos de importação são todos relativos (ex: `../../` ou `@/`) para garantir a portabilidade total.
 
 ---
 
@@ -37,29 +78,7 @@ npm run build
 - **Frontend:** React + Vite + TypeScript
 - **Estilização:** Tailwind CSS (Modern v4)
 - **Animações:** Motion (Framer Motion)
-- **Backend:** Firebase (Auth, Firestore)
+- **Backend/DB:** Firebase (Auth, Firestore) & Firebase Local Emulators
 - **Dados:** Jikan API (MyAnimeList)
 
-## 👑 Administradores
-Os administradores têm acesso a:
-- Visualização de **Conquistas Secretas** bloqueadas.
-- Painel de Analytics avançado.
-- Selo exclusivo no perfil.
-
-## ⚠️ Regras de Imagem
-- **Imagens +18 são proibidas.**
-- O descumprimento resultará em banimento imediato.
-- O sistema de verificação em segundo plano monitora links externos.
-
----
-
-## 📂 Estrutura do Projeto
-- `docs/`: Documentação técnica e especificações de segurança.
-- `scripts/`: Scripts de instalação (`.sh` e `.bat`) para setup rápido.
-- `src/components/`: Componentes organizados por categoria (anime, layout, shared, home).
-- `src/services/`: Lógica de integração com APIs (Jikan, GitHub, Firebase).
-- `src/context/`: Estados globais da aplicação.
-- `src/hooks/`: Hooks customizados para lógica de dados.
-
----
-Para suporte ou atualizações, verifique o repositório oficial no GitHub.
+Para mais detalhes e arquitetura, consulte a documentação na pasta `docs/`.

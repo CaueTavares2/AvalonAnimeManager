@@ -6,6 +6,7 @@ import {
   onSnapshot, 
   addDoc, 
   updateDoc, 
+  setDoc,
   deleteDoc, 
   doc, 
   getDocs,
@@ -23,6 +24,7 @@ export interface Friend {
   username: string;
   avatar: string;
   customId: string;
+  numericId?: number;
   status: 'ONLINE' | 'OFFLINE' | 'MARATONANDO';
   currentActivity?: string;
   rank: string;
@@ -40,11 +42,16 @@ export interface FriendRequest {
 interface SocialContextType {
   friends: Friend[];
   requests: FriendRequest[];
-  sendRequest: (toCustomId: string) => Promise<void>;
+  sentRequests: FriendRequest[];
+  sendRequest: (toId: string) => Promise<void>;
   acceptRequest: (requestId: string) => Promise<void>;
   rejectRequest: (requestId: string) => Promise<void>;
+  cancelRequest: (requestId: string) => Promise<void>;
+  removeFriend: (friendId: string) => Promise<void>;
   calculateAffinity: (otherUserId: string) => Promise<number>;
   sendSalvationPill: (toUserId: string) => Promise<void>;
+  activeChatFriendId: string | null;
+  setActiveChatFriendId: (id: string | null) => void;
 }
 
 const SocialContext = createContext<SocialContextType | undefined>(undefined);
@@ -53,11 +60,14 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
+  const [activeChatFriendId, setActiveChatFriendId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
       setFriends([]);
       setRequests([]);
+      setSentRequests([]);
       return;
     }
 
@@ -74,10 +84,23 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
       handleFirestoreError(error, OperationType.LIST, 'friendRequests');
     });
 
+    const qSentRequests = query(
+      collection(db, 'friendRequests'),
+      where('from', '==', user.uid),
+      where('status', '==', 'PENDING')
+    );
+
+    const unsubSent = onSnapshot(qSentRequests, (snapshot) => {
+      setSentRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FriendRequest)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'friendRequests');
+    });
+
     // Listen to friendships
     const qFriends = query(
       collection(db, 'friendships'),
-      where('users', 'array-contains', user.uid)
+      where('users', 'array-contains', user.uid),
+      where('status', '==', 'ACCEPTED')
     );
 
     const unsubFriends = onSnapshot(qFriends, async (snapshot) => {
@@ -91,36 +114,77 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Fetch friend details
-      const friendsData: Friend[] = [];
-      for (const id of friendIds) {
-        try {
-          const friendDoc = await getDoc(doc(db, 'users', id));
-          if (friendDoc.exists()) {
-            friendsData.push({ uid: id, ...friendDoc.data() } as Friend);
-          }
-        } catch (err) {
-          handleFirestoreError(err, OperationType.GET, `users/${id}`);
-        }
+      const uniqueFriendIds = Array.from(new Set(friendIds));
+      
+      // Batch lookup users (max 30 per 'in' query)
+      const chunkedIds = [];
+      for (let i = 0; i < uniqueFriendIds.length; i += 30) {
+        chunkedIds.push(uniqueFriendIds.slice(i, i + 30));
       }
-      setFriends(friendsData);
+
+      try {
+        const userSnaps = await Promise.all(
+          chunkedIds.map(ids => 
+            getDocs(query(collection(db, 'users'), where('uid', 'in', ids)))
+          )
+        );
+
+        const usersMap = new Map();
+        userSnaps.forEach(snap => {
+          snap.forEach(doc => usersMap.set(doc.id, { uid: doc.id, ...doc.data() }));
+        });
+
+        const friendsData: Friend[] = [];
+        for (const id of uniqueFriendIds) {
+          const userData = usersMap.get(id);
+          if (userData) {
+            const chatId = [user.uid, id].sort().join('_');
+            const chatDoc = await getDoc(doc(db, 'chats', chatId));
+            const chatData = chatDoc.exists() ? chatDoc.data() : null;
+            
+            friendsData.push({
+              ...userData,
+              avatar: userData.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`,
+              lastMessage: chatData?.lastMessage,
+              hasUnread: chatData?.lastMessageAt?.toMillis() > (chatData?.lastRead?.[user.uid]?.toMillis() || 0)
+            } as unknown as Friend);
+          }
+        }
+        setFriends(friendsData);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.LIST, 'users');
+      }
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'friendships');
     });
 
     return () => {
       unsubRequests();
+      unsubSent();
       unsubFriends();
     };
   }, [user]);
 
-  const sendRequest = async (toCustomId: string) => {
+  const STAFF_EMAILS = ['caue.nanda.tavares@gmail.com'];
+
+  const sendRequest = async (toId: string) => {
     if (!user) return;
     
-    // Find user by customId
+    // Find user by customId OR numericId OR @username
     let snap;
     try {
-      const q = query(collection(db, 'users'), where('customId', '==', toCustomId));
+      const cleanId = toId.replace('#', '').replace('@', '');
+      const numId = parseInt(cleanId);
+      
+      let q;
+      if (toId.startsWith('@')) {
+        q = query(collection(db, 'users'), where('username', '==', cleanId));
+      } else if (!isNaN(numId) && cleanId === numId.toString()) {
+        q = query(collection(db, 'users'), where('numericId', '==', numId));
+      } else {
+        q = query(collection(db, 'users'), where('customId', '==', toId.startsWith('#') ? toId : `#${toId}`));
+      }
+      
       snap = await getDocs(q);
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, 'users');
@@ -135,6 +199,18 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
 
     if (targetUserId === user.uid) {
       throw new Error("Você não pode ser seu próprio amigo!");
+    }
+
+    // Check if there is already a PENDING request FROM them to me
+    const qIncoming = query(
+      collection(db, 'friendRequests'),
+      where('from', '==', targetUserId),
+      where('to', '==', user.uid),
+      where('status', '==', 'PENDING')
+    );
+    const incomingSnap = await getDocs(qIncoming);
+    if (!incomingSnap.empty) {
+      throw new Error("Este usuário já te enviou um pedido! Verifique sua aba de Pedidos.");
     }
 
     // Check existing request
@@ -242,26 +318,68 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
   };
 
   const acceptRequest = async (requestId: string) => {
-    const requestRef = doc(db, 'friendRequests', requestId);
+    if (!user) return;
     try {
+      const requestRef = doc(db, 'friendRequests', requestId);
       const snap = await getDoc(requestRef);
       if (!snap.exists()) return;
-
+      
       const data = snap.data();
-      await updateDoc(requestRef, { status: 'ACCEPTED' });
+      const friendshipId = [data.from, data.to].sort().join('_');
 
-      // Create friendship
-      await addDoc(collection(db, 'friendships'), {
+      // Update both users' friends list automatically via the listener
+      await updateDoc(requestRef, { status: 'ACCEPTED' });
+      
+      // Cleanup any other alternate pending requests between these two
+      const qOther = query(
+        collection(db, 'friendRequests'),
+        where('from', '==', data.to),
+        where('to', '==', data.from),
+        where('status', '==', 'PENDING')
+      );
+      const otherSnap = await getDocs(qOther);
+      for (const d of otherSnap.docs) {
+        await updateDoc(doc(db, 'friendRequests', d.id), { status: 'CLEANED' });
+      }
+
+      await setDoc(doc(db, 'friendships', friendshipId), {
         users: [data.from, data.to],
         since: serverTimestamp(),
         status: 'ACCEPTED'
-      });
+      }, { merge: true });
+
+      // Create/Update chat document to ensure participants array exists for rules
+      await setDoc(doc(db, 'chats', friendshipId), {
+        participants: [data.from, data.to],
+        lastMessage: "Nova amizade iniciada!",
+        lastMessageAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
 
       // Check for GOSTOS_OPOSTOS achievement
       const affinity = await calculateAffinity(data.from);
       if (affinity === 0) {
         import('../services/rankingService').then(({ rankingService }) => {
           rankingService.grantAchievement(user.uid, 'GOSTOS_OPOSTOS');
+        });
+      }
+
+      // LEGADO_KAISER ACHIEVEMENT Logic
+      // If ANY of the participants is staff, the OTHER gets the achievement
+      const fromUserRef = doc(db, 'users', data.from);
+      const toUserRef = doc(db, 'users', data.to);
+      const [fromSnap, toSnap] = await Promise.all([getDoc(fromUserRef), getDoc(toUserRef)]);
+      
+      if (fromSnap.exists() && STAFF_EMAILS.includes(fromSnap.data().email)) {
+        // Staff accepted or sent. recipient (data.to) gets achievement
+        import('../services/rankingService').then(({ rankingService }) => {
+          rankingService.grantAchievement(data.to, 'LEGADO_KAISER');
+        });
+      }
+      if (toSnap.exists() && STAFF_EMAILS.includes(toSnap.data().email)) {
+        // Staff is the recipient. sender (data.from) gets achievement
+        import('../services/rankingService').then(({ rankingService }) => {
+          rankingService.grantAchievement(data.from, 'LEGADO_KAISER');
         });
       }
       
@@ -273,6 +391,14 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `friendRequests/${requestId}`);
+    }
+  };
+
+  const cancelRequest = async (requestId: string) => {
+    try {
+      await deleteDoc(doc(db, 'friendRequests', requestId));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `friendRequests/${requestId}`);
     }
   };
 
@@ -335,8 +461,31 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
     return Math.round(totalAffinity * 100);
   };
 
+  const removeFriend = async (friendId: string) => {
+    if (!user) return;
+    const friendshipId = [user.uid, friendId].sort().join('_');
+    try {
+      // Find all requests between these two to clear them
+      const q1 = query(collection(db, 'friendRequests'), where('from', '==', user.uid), where('to', '==', friendId));
+      const q2 = query(collection(db, 'friendRequests'), where('from', '==', friendId), where('to', '==', user.uid));
+      
+      const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      const deleteReqs = [...snap1.docs, ...snap2.docs].map(d => deleteDoc(doc(db, 'friendRequests', d.id)));
+
+      await Promise.all([
+        deleteDoc(doc(db, 'friendships', friendshipId)),
+        deleteDoc(doc(db, 'chats', friendshipId)),
+        ...deleteReqs
+      ]);
+      // Update local state immediately for better UX
+      setFriends(prev => prev.filter(f => f.uid !== friendId));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `friendships/${friendshipId}`);
+    }
+  };
+
   return (
-    <SocialContext.Provider value={{ friends, requests, sendRequest, acceptRequest, rejectRequest, calculateAffinity, sendSalvationPill }}>
+    <SocialContext.Provider value={{ friends, requests, sentRequests, sendRequest, acceptRequest, rejectRequest, cancelRequest, removeFriend, calculateAffinity, sendSalvationPill, activeChatFriendId, setActiveChatFriendId }}>
       {children}
     </SocialContext.Provider>
   );

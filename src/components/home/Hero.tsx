@@ -1,6 +1,7 @@
 import { Play, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Media } from '../../types';
+import { Link } from 'react-router-dom';
 
 interface HeroProps {
   media: Media;
@@ -47,12 +48,12 @@ export default function Hero({ media }: HeroProps) {
         </motion.div>
         
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 bg-brand hover:bg-brand-dark text-white px-6 py-2.5 rounded-md font-bold transition-all transform hover:scale-105">
+          <Link to={`/${media.type.toLowerCase()}/${media.id}`} className="flex items-center gap-2 bg-brand hover:bg-brand-dark text-white px-6 py-2.5 rounded-md font-bold transition-all transform hover:scale-105">
             <Play className="w-4 h-4 fill-current" /> Play Now
-          </button>
-          <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 py-2.5 rounded-md font-bold transition-all">
+          </Link>
+          <Link to={`/${media.type.toLowerCase()}/${media.id}`} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 py-2.5 rounded-md font-bold transition-all">
             <Info className="w-4 h-4" /> View Details
-          </button>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,12 +1,12 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, Plus, Star, Calendar, Play, BookOpen, Heart, User as UserIcon } from 'lucide-react';
 import { useAnimeList } from '../hooks/useAnimeList';
 import { useFavorites } from '../context/FavoritesContext';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
-import { jikanService, JikanAnime } from '../services/jikanService';
+import { jikanService } from '../services/jikanService';
 import { cn } from '../lib/utils';
-import type { Media } from '../types';
+import type { Media, AnimeStatus } from '../types';
 
 interface MediaCharacter {
   character: {
@@ -21,7 +21,7 @@ interface MediaCharacter {
 }
 
 export default function AnimeDetails() {
-  const { id } = useParams();
+  const { type, id } = useParams();
   const navigate = useNavigate();
   const { addAnime, updateAnime, list } = useAnimeList();
   const { addCharacter, removeCharacter, isFavorite } = useFavorites();
@@ -29,6 +29,7 @@ export default function AnimeDetails() {
   const [characters, setCharacters] = useState<MediaCharacter[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [addStatus, setAddStatus] = useState<AnimeStatus>('PLANNING');
   
   const inList = list.find(a => a.id === Number(id));
 
@@ -40,22 +41,10 @@ export default function AnimeDetails() {
 
   useEffect(() => {
     const fetchDetails = async () => {
-      if (!id) return;
+      if (!id || !type) return;
       try {
-        // Try anime first, then manga if fails or if we have a hint?
-        // Better: Jikan anime/manga details are separate endpoints.
-        // For simplicity, I'll try detecting from the current page/context if possible, 
-        // or just try anime then manga.
-        let data;
-        let finalType: 'ANIME' | 'MANGA' = 'ANIME';
-        
-        try {
-          data = await jikanService.getDetails(Number(id), 'anime');
-          finalType = 'ANIME';
-        } catch (e) {
-          data = await jikanService.getDetails(Number(id), 'manga');
-          finalType = 'MANGA';
-        }
+        const finalType = (type.toUpperCase() as 'ANIME' | 'MANGA');
+        const data = await jikanService.getDetails(Number(id), type.toLowerCase() as 'anime' | 'manga');
 
         setAnime({
           id: data.mal_id,
@@ -107,7 +96,7 @@ export default function AnimeDetails() {
       title: anime.title,
       image: anime.image,
       type: anime.type,
-      status: 'PLANNING',
+      status: addStatus,
       score: 0,
       progress: 0,
       totalProgress: anime.type === 'ANIME' ? anime.episodes : anime.chapters,
@@ -139,8 +128,18 @@ export default function AnimeDetails() {
             <div className="flex flex-col gap-3">
               {inList ? (
                 <div className="space-y-4">
-                  <div className="w-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-center py-3 rounded-md font-black text-[10px] uppercase tracking-widest">
-                    ✓ Na sua lista ({inList.status})
+                  <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] space-y-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Status na Lista</p>
+                    <select 
+                      value={inList.status}
+                      onChange={(e) => updateAnime(inList.id, { status: e.target.value as AnimeStatus })}
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-brand text-center py-2 rounded-md font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
+                    >
+                      {anime.type === 'ANIME' ? <option value="WATCHING">Watching</option> : <option value="READING">Reading</option>}
+                      <option value="COMPLETED">Completed</option>
+                      <option value="PLANNING">Planning</option>
+                      <option value="DROPPED">Dropped</option>
+                    </select>
                   </div>
                   
                   <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] space-y-3">
@@ -169,12 +168,24 @@ export default function AnimeDetails() {
                   </div>
                 </div>
               ) : (
-                <button 
-                  onClick={handleAdd}
-                  className="w-full bg-brand hover:bg-brand-dark text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar à Lista
-                </button>
+                <div className="space-y-3">
+                  <select 
+                    value={addStatus}
+                    onChange={(e) => setAddStatus(e.target.value as AnimeStatus)}
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text-bright)] text-center py-2 rounded-xl font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
+                  >
+                    {anime.type === 'ANIME' ? <option value="WATCHING">Watching</option> : <option value="READING">Reading</option>}
+                    <option value="COMPLETED">Completed</option>
+                    <option value="PLANNING">Planning</option>
+                    <option value="DROPPED">Dropped</option>
+                  </select>
+                  <button 
+                    onClick={handleAdd}
+                    className="w-full bg-brand hover:bg-brand-dark text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20"
+                  >
+                    <Plus className="w-4 h-4" /> Adicionar à Lista
+                  </button>
+                </div>
               )}
             </div>
 

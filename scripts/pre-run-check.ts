@@ -20,6 +20,17 @@ async function runCheck() {
   
   let hasErrors = false;
 
+  // 0. Check Node.js Version
+  log("\n[*] Checking Node.js version...");
+  const nodeVersion = process.versions.node;
+  const majorVersion = parseInt(nodeVersion.split('.')[0], 10);
+  if (majorVersion >= 18) {
+    log(`  [OK] Node.js version is ${nodeVersion}.`, COLORS.green);
+  } else {
+    log(`  [FAIL] Node.js version ${nodeVersion} is not supported. Please use v18 or newer.`, COLORS.red);
+    hasErrors = true;
+  }
+
   // 1. Check Required Files
   const requiredFiles = [
     'src/main.tsx',

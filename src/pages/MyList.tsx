@@ -8,12 +8,14 @@ import AnimeListRow from '../components/anime/AnimeListRow';
 import { useLanguage } from '../context/LanguageContext';
 import { rankingService } from '../services/rankingService';
 import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../context/ProfileContext';
 
 const ITEMS_PER_CHUNK = 50;
 
 export default function MyList() {
   const { list, updateAnime, removeAnime } = useAnimeList();
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { t } = useLanguage();
   const [mediaType, setMediaType] = useState<'ANIME' | 'MANGA'>('ANIME');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -109,7 +111,7 @@ export default function MyList() {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">
-                {t('list.title')}
+                {t('list.title')} <span className="text-brand not-italic opacity-40 ml-1">#{profile?.numericId || '??'}</span>
               </h1>
               <span className="bg-brand text-white px-2 py-0.5 rounded text-[10px] font-bold">{filteredList.length}</span>
             </div>
@@ -149,7 +151,7 @@ export default function MyList() {
             </button>
 
             <div className="flex bg-[var(--color-card)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
-            {(['ALL', 'WATCHING', 'READING', 'COMPLETED', 'PLANNING'] as const).map(f => {
+            {(['ALL', 'WATCHING', 'READING', 'COMPLETED', 'PLANNING', 'DROPPED'] as const).map(f => {
               // Hide READING for Anime, hide WATCHING for Manga (optional UX)
               if (mediaType === 'ANIME' && f === 'READING') return null;
               if (mediaType === 'MANGA' && f === 'WATCHING') return null;

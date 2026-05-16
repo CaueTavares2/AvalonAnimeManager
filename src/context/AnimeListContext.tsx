@@ -43,6 +43,8 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
   // Sync with Firestore when user is logged in
   useEffect(() => {
     if (!user) {
+      setList([]);
+      localStorage.removeItem('avalon_anime_list');
       return;
     }
 
@@ -198,7 +200,8 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
           
           await updateDoc(userRef, {
             todayEpisodesCount: todayCount,
-            lastMarathonUpdate: serverTimestamp()
+            lastMarathonUpdate: serverTimestamp(),
+            updatedAt: serverTimestamp()
           });
 
           if (todayCount >= 12) {
@@ -214,7 +217,10 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
         if (data.status === 'DROPPED' && existingItem && existingItem.status !== 'DROPPED') {
           if (existingItem.progress <= 1) {
             const drops = (userData?.dropsCount || 0) + 1;
-            await updateDoc(userRef, { dropsCount: drops });
+            await updateDoc(userRef, { 
+              dropsCount: drops,
+              updatedAt: serverTimestamp()
+            });
             if (drops >= 5) {
               await rankingService.grantAchievement(user.uid, 'DROPADOR_PROFISSIONAL');
             }

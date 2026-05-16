@@ -30,6 +30,28 @@
   --color-brand-muted: rgba(244, 117, 33, 0.1);
 }
 
+.theme-crunchyroll.dark {
+  --color-bg: #000000;
+  --color-card: #141519;
+  --color-text: #cacaca;
+  --color-text-bright: #ffffff;
+  --color-border: #23252b;
+  --color-brand: #f47521;
+  --color-brand-dark: #d35400;
+  --color-brand-muted: rgba(244, 117, 33, 0.1);
+}
+
+.theme-crunchyroll:not(.dark) {
+  --color-bg: #f2f2f2;
+  --color-card: #ffffff;
+  --color-text: #333333;
+  --color-text-bright: #000000;
+  --color-border: #dddddd;
+  --color-brand: #f47521;
+  --color-brand-dark: #d35400;
+  --color-brand-muted: rgba(244, 117, 33, 0.1);
+}
+
 .theme-netflix {
   --color-brand: #e50914;
   --color-brand-dark: #b20710;
