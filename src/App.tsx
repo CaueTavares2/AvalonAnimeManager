@@ -112,25 +112,21 @@ function AppRoutes() {
 
       {/* Mobile Nav */}
       <div className="fixed bottom-0 left-0 right-0 h-16 bg-[var(--color-card)]/98 backdrop-blur-md border-t border-[var(--color-border)] lg:hidden flex items-center justify-around z-50">
-        <Link to="/ranking" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
+        <Link to="/" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
           <TrendingUp className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Ranking</span>
-        </Link>
-        <Link to="/shop" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-          <ShoppingBag className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Loja</span>
+          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Home</span>
         </Link>
         <Link to="/list" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
           <Search className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Lista</span>
+          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Lista</span>
         </Link>
-        <Link to="/settings" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-          <SettingsIcon className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Config</span>
+        <Link to="/shop" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
+          <ShoppingBag className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Loja</span>
         </Link>
         <Link to="/profile" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
           <User className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Perfil</span>
+          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Perfil</span>
         </Link>
       </div>
     </div>

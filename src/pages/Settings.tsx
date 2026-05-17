@@ -19,7 +19,6 @@ export default function Settings() {
     darkMode,
     colorTheme,
     language,
-    autoplay: true,
     titleLanguage: 'Romaji',
   });
 
@@ -30,7 +29,8 @@ export default function Settings() {
     const changed = 
       localSettings.darkMode !== darkMode ||
       localSettings.colorTheme !== colorTheme ||
-      localSettings.language !== language;
+      localSettings.language !== language ||
+      localSettings.titleLanguage !== 'Romaji'; // Simplified for now as it's not in context
     setHasChanges(changed);
   }, [localSettings, darkMode, colorTheme, language]);
 
@@ -325,25 +325,6 @@ export default function Settings() {
                   <Cog className="w-4 h-4 text-brand" /> Preferências do Sistema
                 </h3>
                 
-                <div className="flex items-center justify-between bg-[var(--color-bg)] p-6 rounded-2xl border border-[var(--color-border)]">
-                  <div>
-                    <p className="text-sm font-bold text-[var(--color-text-bright)]">Autoplay de Trailers</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Reproduzir vídeos automaticamente</p>
-                  </div>
-                  <button 
-                    onClick={() => setLocalSettings(s => ({ ...s, autoplay: !s.autoplay }))}
-                    className={cn(
-                      "w-14 h-7 rounded-full relative transition-all duration-300",
-                      localSettings.autoplay ? "bg-brand shadow-inner shadow-black/20" : "bg-gray-200 dark:bg-gray-700"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-lg",
-                      localSettings.autoplay ? "right-1" : "left-1"
-                    )} />
-                  </button>
-                </div>
-
                 <div className="flex items-center justify-between bg-[var(--color-bg)] p-6 rounded-2xl border border-[var(--color-border)]">
                   <div>
                     <p className="text-sm font-bold text-[var(--color-text-bright)]">Idioma do Título</p>

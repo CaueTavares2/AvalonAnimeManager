@@ -46,8 +46,8 @@ export default function AnimesByYear() {
       
       {!loading && animes.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {animes.map((anime: any) => (
-            <Link to={`/anime/${anime.mal_id}`} key={anime.mal_id} className="group">
+          {animes.map((anime: any, index: number) => (
+            <Link to={`/anime/${anime.mal_id}`} key={`${anime.mal_id}-${index}`} className="group">
               <div className="aspect-[2/3] rounded-2xl overflow-hidden mb-2 shadow-lg group-hover:scale-105 transition-transform">
                 <img src={anime.images.webp.large_image_url} alt={anime.title} className="w-full h-full object-cover" />
               </div>
