@@ -57,6 +57,15 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     points: 50,
     secret: true
   },
+  'MULTI_DISPOSITIVO': {
+    id: 'MULTI_DISPOSITIVO',
+    title: 'Onipresente',
+    description: 'Acessar o aplicativo em mais de um dispositivo simultaneamente.',
+    icon: 'MonitorSmartphone',
+    rarity: 'COMUM',
+    points: 50,
+    secret: true
+  },
 
   // Rare (+150 PO)
   'EXPLORADOR': {

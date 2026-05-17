@@ -51,6 +51,34 @@ export default function Shop() {
     }
   };
 
+  const equipItem = async (item: any) => {
+    if (!user) return;
+    
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      if (item.category === 'BADGE') {
+        const currentBadges = profile.badges || [];
+        if (currentBadges.find((b: any) => b.id === item.id)) {
+            // Unequip
+            await updateDoc(userRef, {
+                badges: currentBadges.filter((b: any) => b.id !== item.id)
+            });
+        } else {
+            // Equip (max 3 badges)
+            const newBadges = [...currentBadges, item].slice(-3);
+            await updateDoc(userRef, {
+                badges: newBadges
+            });
+        }
+      } else if (item.category === 'COSMETIC') {
+         // handle banner or frame
+         alert("Cosmético equipado! Vá ao seu perfil para ver.");
+      }
+    } catch (e) {
+      console.error("Erro ao equipar", e);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -88,17 +116,32 @@ export default function Shop() {
              }, {})).map(([category, items]: [string, any]) => (
                <div key={category} className="mb-6">
                  <h4 className="text-brand font-black text-xs uppercase mb-3 tracking-widest">{category}</h4>
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    {items.map((item: any, i: number) => {
                      const itemDef = SHOP_ITEMS.find(s => s.id === item.id);
                      const IconComponent = itemDef?.icon || Briefcase;
+                     const isEquipped = profile.badges?.some((b: any) => b.id === item.id);
+                     
                      return (
-                       <div key={i} className="flex items-center gap-4 p-4 bg-zinc-800 rounded-xl">
-                         <div className="p-2 bg-zinc-700 rounded-lg"><IconComponent className="w-5 h-5"/></div>
-                         <div>
-                           <p className="font-bold text-white text-sm">{item.name}</p>
-                           <p className="text-[10px] text-zinc-400">{item.category}</p>
+                       <div key={i} className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 bg-zinc-800 rounded-xl relative overflow-hidden group">
+                         <div className="flex items-center gap-4">
+                           <div className="p-2 bg-zinc-700 rounded-lg"><IconComponent className="w-6 h-6 md:w-5 md:h-5"/></div>
+                           <div>
+                             <p className="font-bold text-white text-base md:text-sm">{item.name}</p>
+                             <p className="text-xs md:text-[10px] text-zinc-400">{item.description}</p>
+                           </div>
                          </div>
+                         {item.category === 'BADGE' && (
+                            <button 
+                              onClick={() => equipItem(item)}
+                              className={cn(
+                                "w-full md:w-auto px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                                isEquipped ? "bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white" : "bg-brand/20 text-brand hover:bg-brand hover:text-white"
+                              )}
+                            >
+                              {isEquipped ? "Remover" : "Equipar"}
+                            </button>
+                         )}
                        </div>
                      );
                    })}

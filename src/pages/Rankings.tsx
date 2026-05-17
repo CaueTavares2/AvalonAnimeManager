@@ -164,8 +164,8 @@ export default function Rankings() {
             </p>
           </div>
 
-          {viewMode === 'GLOBAL' && (
-            <div className="flex flex-wrap gap-2">
+           {viewMode === 'GLOBAL' && (
+            <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
               {LEAGUES.map(league => (
                 <button 
                   key={league.id}
@@ -252,33 +252,33 @@ export default function Rankings() {
           </div>
 
           {/* Others List */}
-            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-border)] overflow-hidden shadow-2xl">
-               <div className="grid grid-cols-12 gap-4 px-8 py-4 bg-white/5 border-b border-[var(--color-border)] text-[9px] font-black text-gray-500 uppercase tracking-widest">
+             <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-border)] overflow-hidden shadow-2xl">
+                <div className="grid grid-cols-12 gap-2 md:gap-4 px-4 md:px-8 py-4 bg-white/5 border-b border-[var(--color-border)] text-[9px] font-black text-gray-500 uppercase tracking-widest hidden md:grid">
                   <div className="col-span-1">Pos</div>
                   <div className="col-span-6">Otaku</div>
                   <div className="col-span-2 text-center">Liga</div>
                   <div className="col-span-2 text-right">Potuação</div>
                   <div className="col-span-1"></div>
-               </div>
-               <div className="divide-y divide-[var(--color-border)]">
+                </div>
+                <div className="divide-y divide-[var(--color-border)]">
                   {others.map(u => (
                     <div key={u.uid} className={cn(
-                      "grid grid-cols-12 gap-4 px-8 py-4 items-center transition-all hover:bg-white/5",
+                      "flex md:grid md:grid-cols-12 gap-3 md:gap-4 px-4 md:px-8 py-3 md:py-4 items-center transition-all hover:bg-white/5",
                       u.uid === currentUser?.uid && "bg-brand/5 border-l-4 border-brand"
                     )}>
-                       <div className="col-span-1 font-black text-[var(--color-text-bright)] italic">#{u.currentPosition}</div>
-                       <div className="col-span-6 flex items-center gap-4">
-                          <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} className="w-10 h-10 rounded-xl border border-[var(--color-border)]" />
+                       <div className="font-black text-[var(--color-text-bright)] italic md:col-span-1 w-8 md:w-auto text-center md:text-left">#{u.currentPosition}</div>
+                       <div className="flex-1 md:col-span-6 flex items-center gap-3 md:gap-4">
+                          <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} className="w-8 h-8 md:w-10 md:h-10 rounded-xl border border-[var(--color-border)]" />
                           <div className="flex flex-col">
-                            <Link to={`/profile/${u.uid}`} className="font-black text-sm uppercase italic tracking-tight hover:text-brand transition-colors line-clamp-1">{u.username}</Link>
-                            <span className="text-[10px] font-bold text-brand opacity-60">#{u.numericId !== undefined ? u.numericId : '???'}</span>
+                            <Link to={`/profile/${u.uid}`} className="font-black text-xs md:text-sm uppercase italic tracking-tight hover:text-brand transition-colors line-clamp-1">{u.username}</Link>
+                            <span className="text-[9px] md:text-[10px] font-bold text-brand opacity-60">#{u.numericId !== undefined ? u.numericId : '???'}</span>
                           </div>
                        </div>
-                       <div className="col-span-2 flex justify-center">
+                       <div className="hidden md:flex md:col-span-2 justify-center">
                          <span className="text-[10px] font-black uppercase text-brand/70">{u.rank || 'Bronze'}</span>
                        </div>
-                       <div className="col-span-2 text-right font-black italic">{u.otakuPoints} PO</div>
-                       <div className="col-span-1 flex justify-end">
+                       <div className="md:col-span-2 text-right font-black italic text-xs md:text-base">{u.otakuPoints} PO</div>
+                       <div className="hidden md:flex md:col-span-1 justify-end">
                          <ChevronRight className="w-4 h-4 text-gray-500" />
                        </div>
                     </div>

@@ -90,7 +90,7 @@ export default function Settings() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="border-b border-[var(--color-border)] pb-6 flex justify-between items-end">
+      <div className="border-b border-[var(--color-border)] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-0">
         <div>
           <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">{t('settings.title')}</h1>
           <p className="text-gray-500 text-sm font-medium">{t('settings.subtitle')}</p>
@@ -100,7 +100,7 @@ export default function Settings() {
           onClick={handleSave}
           disabled={!hasChanges || saveStatus === 'saving'}
           className={cn(
-            "flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95",
+            "w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95",
             hasChanges 
               ? "bg-brand text-white shadow-brand/20 hover:bg-brand-dark" 
               : "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
@@ -117,14 +117,14 @@ export default function Settings() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="flex flex-row md:flex-col overflow-x-auto pb-2 md:pb-0 gap-2 md:gap-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {tabs.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                "whitespace-nowrap flex-shrink-0 flex items-center gap-2 md:gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                 activeTab === item.id 
                   ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]" 
                   : "text-gray-400 hover:bg-[var(--color-card)] hover:text-brand border border-transparent hover:border-[var(--color-border)]"
@@ -137,7 +137,7 @@ export default function Settings() {
         </div>
 
         <div className="md:col-span-2 space-y-6">
-          <div className="bg-[var(--color-card)] p-8 rounded-2xl border border-[var(--color-border)] shadow-sm space-y-8">
+          <div className="bg-[var(--color-card)] p-6 md:p-8 rounded-2xl border border-[var(--color-border)] shadow-sm space-y-8">
             {activeTab === 'appearance' ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="space-y-6">

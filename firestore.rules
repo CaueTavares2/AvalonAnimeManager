@@ -55,6 +55,9 @@ service cloud.firestore {
         allow read, list: if isSignedIn();
         allow create, update, delete: if isOwner(userId) || isStaff();
       }
+      match /activeDevices/{deviceId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
     }
 
     match /friendRequests/{requestId} {

@@ -11,6 +11,8 @@ import { UpdateNotification } from './components/shared/UpdateNotification';
 import { GlobalAnnouncement } from './components/shared/GlobalAnnouncement';
 import { AchievementNotification } from './components/shared/AchievementNotification';
 import { ChangelogModal } from './components/shared/ChangelogModal';
+import { WelcomeModal } from './components/shared/WelcomeModal';
+import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
 
 const Home = lazy(() => import('./pages/Home'));
 const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
@@ -65,8 +67,10 @@ function AppRoutes() {
       <UpdateNotification />
       <AchievementNotification />
       <ChangelogModal />
+      <WelcomeModal />
+      <MultipleDeviceWarning />
       
-      <main className="max-w-7xl mx-auto px-4 md:px-12 py-12">
+      <main className="max-w-7xl mx-auto px-4 md:px-12 py-6 md:py-12 pb-24 lg:pb-12">
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <div className="w-12 h-12 border-t-2 border-brand rounded-full animate-spin" />
@@ -93,7 +97,7 @@ function AppRoutes() {
         </Suspense>
       </main>
 
-      <footer className="max-w-7xl mx-auto px-4 md:px-12 py-12 border-t border-[var(--color-border)] mt-12 mb-20 lg:mb-0">
+      <footer className="max-w-7xl mx-auto px-4 md:px-12 py-12 border-t border-[var(--color-border)] mt-12 mb-16 lg:mb-0">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-brand rounded flex items-center justify-center">

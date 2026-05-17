@@ -268,16 +268,16 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-[var(--color-border)] pb-8">
-        <h1 className="text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-[var(--color-border)] pb-6 md:pb-8">
+        <h1 className="text-3xl md:text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-center md:text-left">
           Explorar {mediaType === 'anime' ? 'Animes' : 'Mangás'}
         </h1>
         
-        <div className="flex bg-[var(--color-card)] p-1.5 rounded-2xl border border-[var(--color-border)]">
+        <div className="flex bg-[var(--color-card)] p-1.5 rounded-2xl border border-[var(--color-border)] w-full md:w-auto">
           <button 
             onClick={() => setMediaType('anime')}
             className={cn(
-              "px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+              "flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
               mediaType === 'anime' 
                 ? "bg-brand text-white shadow-lg" 
                 : "text-gray-400 hover:text-gray-200"
@@ -288,7 +288,7 @@ export default function Home() {
           <button 
             onClick={() => setMediaType('manga')}
             className={cn(
-              "px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+              "flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
               mediaType === 'manga' 
                 ? "bg-brand text-white shadow-lg" 
                 : "text-gray-400 hover:text-gray-200"
@@ -306,37 +306,37 @@ export default function Home() {
       ) : (
         <div className="space-y-20">
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-4 mb-2">
-                <TrendingUp className="w-5 h-5 text-brand" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Trending</span>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+              <div className="flex items-center gap-2 md:gap-4 mb-2">
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-brand" />
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Trending</span>
               </div>
-              <p className="text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topTrending}</p>
+              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topTrending}</p>
             </div>
             
-            <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-4 mb-2">
-                <Award className="w-5 h-5 text-yellow-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Popular</span>
+            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+              <div className="flex items-center gap-2 md:gap-4 mb-2">
+                <Award className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Popular</span>
               </div>
-              <p className="text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topPopular}</p>
+              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topPopular}</p>
             </div>
 
-            <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-4 mb-2">
-                <Calendar className="w-5 h-5 text-red-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Próximos</span>
+            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+              <div className="flex items-center gap-2 md:gap-4 mb-2">
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Próximos</span>
               </div>
-              <p className="text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topUpcoming}</p>
+              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topUpcoming}</p>
             </div>
 
-            <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-4 mb-2">
-                <Heart className="w-5 h-5 text-emerald-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Favoritos</span>
+            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+              <div className="flex items-center gap-2 md:gap-4 mb-2">
+                <Heart className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Favoritos</span>
               </div>
-              <p className="text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topRated}</p>
+              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topRated}</p>
             </div>
           </div>
 

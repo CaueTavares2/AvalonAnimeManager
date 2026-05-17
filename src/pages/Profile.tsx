@@ -128,20 +128,20 @@ export default function Profile() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-card)] to-transparent opacity-60" />
         </div>
-        <div className="px-8 pb-8 flex flex-col md:flex-row items-end justify-between gap-6 -translate-y-12">
-          <div className="flex items-end gap-6">
-            <div className="w-32 h-32 bg-[var(--color-card)] rounded-[32px] shadow-2xl border-8 border-[var(--color-card)] overflow-hidden shrink-0 relative group/avatar">
+        <div className="px-4 md:px-8 pb-4 md:pb-8 flex flex-col items-center md:flex-row md:items-end justify-between gap-4 md:gap-6 -translate-y-16 md:-translate-y-12">
+          <div className="flex flex-col items-center md:flex-row md:items-end gap-4 md:gap-6 w-full md:w-auto text-center md:text-left">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-[var(--color-card)] rounded-[24px] md:rounded-[32px] shadow-2xl border-4 md:border-8 border-[var(--color-card)] overflow-hidden shrink-0 relative group/avatar mx-auto md:mx-0">
               {profile.photoURL || user?.photoURL ? (
                 <img src={profile.photoURL || user?.photoURL || ''} alt={profile.username} className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-500" />
               ) : (
                 <div className="w-full h-full bg-[var(--color-bg)] flex items-center justify-center text-gray-300">
-                  <UserIcon className="w-16 h-16" />
+                  <UserIcon className="w-12 h-12 md:w-16 md:h-16" />
                 </div>
               )}
             </div>
-            <div className="flex-1 pb-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">
+            <div className="flex-1 pb-2 w-full">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 mb-2 md:mb-0">
+                <h1 className="text-2xl md:text-3xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic drop-shadow-sm">
                   {profile.username} <span className="text-brand not-italic opacity-40 ml-1">#{profile.numericId !== undefined ? profile.numericId : '???'}</span>
                 </h1>
                 <div className={cn(
@@ -155,31 +155,31 @@ export default function Profile() {
                     <div className="bg-brand/10 text-brand px-2 py-0.5 rounded flex items-center gap-1 text-[8px] font-black uppercase tracking-widest border border-brand/20">
                       <ShieldCheck className="w-3 h-3" /> Staff
                     </div>
-                    <Link to="/admin" className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded flex items-center gap-1 text-[8px] font-black uppercase tracking-widest border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">
-                      Setor Staff
+                    <Link to="/admin" className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded flex items-center gap-1 text-[8px] font-black uppercase tracking-widest border border-red-500/20 hover:bg-red-500 hover:text-white transition-all hidden md:flex">
+                      Admin
                     </Link>
                   </div>
                 )}
               </div>
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2 mt-1">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 mt-1 md:mt-2 leading-loose md:leading-normal">
                   <span className="text-brand font-black" title="Seu ID Único">#{profile.numericId !== undefined ? profile.numericId : '???'}</span>
                   <span className="opacity-30">|</span>
                   <span className="text-brand italic" title="Pontos de Ranking">{profile.otakuPoints || 0} PO</span>
                   <span className="opacity-30">|</span>
                   <span className="text-blue-400 italic" title="Saldo na Loja">{profile.availablePoints || 0} AP</span>
-                  <span className="opacity-30">|</span>
-                  <Calendar className="w-3 h-3" /> Membro desde {memberSince}
+                  <span className="opacity-30 hidden md:inline">|</span>
+                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> <span className="hidden md:inline">Membro desde</span> {memberSince}</span>
                   {profile.location && (
                     <>
                       <span className="opacity-30">|</span>
-                      <MapPin className="w-3 h-3" /> {profile.location}
+                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {profile.location}</span>
                     </>
                   )}
-                </p>
+                </div>
             </div>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 md:gap-4 w-full md:w-auto -mt-2 md:mt-0">
             <div className="hidden md:flex flex-col items-end justify-center px-4 border-r border-[var(--color-border)]">
               <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Nível de Poder</p>
               <div className="flex items-center gap-2">

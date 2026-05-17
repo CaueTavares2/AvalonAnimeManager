@@ -21,6 +21,7 @@ interface ProfileData {
   badges?: string[];
   streak: number;
   lastAttendance: string | null;
+  hasSeenWelcome?: boolean;
 }
 
 interface ProfileContextType {
@@ -82,7 +83,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           inventory: data.inventory || prev.inventory || [],
           badges: data.badges || prev.badges || [],
           streak: data.streak || prev.streak || 0,
-          lastAttendance: data.lastAttendance || prev.lastAttendance || null
+          lastAttendance: data.lastAttendance || prev.lastAttendance || null,
+          hasSeenWelcome: data.hasSeenWelcome !== undefined ? data.hasSeenWelcome : true // Default true for legacy users
         }));
       }
     }, (error) => {

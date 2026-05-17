@@ -241,6 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           colorTheme: 'avalon',
           language: 'pt'
         },
+        hasSeenWelcome: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
