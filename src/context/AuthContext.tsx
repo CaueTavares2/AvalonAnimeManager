@@ -82,8 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setPersistence(auth, browserLocalPersistence);
 
     const setOffline = async () => {
-      if (user) {
-        const userRef = doc(db, 'users', user.uid);
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userRef = doc(db, 'users', currentUser.uid);
         try {
           await updateDoc(userRef, {
             status: 'OFFLINE',
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             updatedAt: serverTimestamp()
           });
         } catch (error) {
-          handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+          // Ignore logout errors on close
         }
       }
     };
@@ -191,6 +192,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('beforeunload', setOffline);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(async () => {
+      if (document.visibilityState === 'visible') {
+        try {
+          await updateDoc(doc(db, 'users', user.uid), {
+            heartbeatAt: serverTimestamp(),
+            lastActivityAt: serverTimestamp()
+          });
+        } catch (e) { /* ignore */ }
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const createNewUserProfile = async (authUser: User) => {
     const userRef = doc(db, 'users', authUser.uid);

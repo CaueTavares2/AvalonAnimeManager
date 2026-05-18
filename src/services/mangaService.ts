@@ -1,4 +1,5 @@
 const MANGADEX_API_URL = 'https://api.mangadex.org';
+const PROXY_URL = '/api/proxy?url=';
 
 export const mangaService = {
   searchManga: async (title: string) => {
@@ -8,12 +9,8 @@ export const mangaService = {
       url.searchParams.append('limit', '5');
       url.searchParams.append('includes[]', 'cover_art');
       url.searchParams.append('order[relevance]', 'desc');
-      url.searchParams.append('hasAvailableChapters', 'true');
-      url.searchParams.append('availableTranslatedLanguage[]', 'pt-br');
-      url.searchParams.append('availableTranslatedLanguage[]', 'pt');
-      url.searchParams.append('availableTranslatedLanguage[]', 'en');
       
-      const response = await fetch(url.toString());
+      const response = await fetch(`${PROXY_URL}${encodeURIComponent(url.toString())}`);
       if (!response.ok) throw new Error(`Status: ${response.status}`);
       return await response.json();
     } catch (error) {
@@ -22,32 +19,63 @@ export const mangaService = {
     }
   },
 
-  getMangaFeed: async (mangaId: string, page: number = 0) => {
+  getMangaFeed: async (mangaId: string) => {
     try {
-      const url = new URL(`${MANGADEX_API_URL}/manga/${mangaId}/feed`);
-      url.searchParams.append('limit', '500');
-      url.searchParams.append('offset', (page * 500).toString());
-      url.searchParams.append('translatedLanguage[]', 'pt-br');
-      url.searchParams.append('translatedLanguage[]', 'pt');
-      url.searchParams.append('translatedLanguage[]', 'en');
-      url.searchParams.append('order[chapter]', 'asc');
-      // Do not include external chapters if we can avoid it. MangaDex doesn't have a param for that, so we filter it later.
+      let allChapters: any[] = [];
+      let offset = 0;
+      let total = 1;
 
-      const response = await fetch(url.toString());
-      if (!response.ok) throw new Error(`Status: ${response.status}`);
-      const data = await response.json();
-      return data;
+      while (offset < total) {
+        const url = new URL(`${MANGADEX_API_URL}/manga/${mangaId}/feed`);
+        url.searchParams.append('limit', '500');
+        url.searchParams.append('offset', offset.toString());
+        url.searchParams.append('translatedLanguage[]', 'pt-br');
+        url.searchParams.append('translatedLanguage[]', 'pt');
+        url.searchParams.append('translatedLanguage[]', 'en');
+        url.searchParams.append('order[chapter]', 'asc');
+        
+        const response = await fetch(`${PROXY_URL}${encodeURIComponent(url.toString())}`);
+        if (!response.ok) break;
+        const data = await response.json();
+        
+        if (data.data) {
+          allChapters = [...allChapters, ...data.data];
+        }
+        
+        total = data.total || 0;
+        offset += 500;
+        
+        // Safety break
+        if (offset > 5000) break;
+      }
+      
+      return { data: allChapters };
     } catch (error) {
       console.error("MangaDex Feed Error:", error);
       return null;
     }
   },
 
-  getChapterPages: async (chapterId: string) => {
+  getChapterPages: async (chapterId: string, forceDataSaver = false) => {
     try {
-      const response = await fetch(`${MANGADEX_API_URL}/at-home/server/${chapterId}`);
+      const url = `${MANGADEX_API_URL}/at-home/server/${chapterId}`;
+      const response = await fetch(`${PROXY_URL}${encodeURIComponent(url)}`);
       if (!response.ok) throw new Error(`Status: ${response.status}`);
-      return await response.json();
+      const data = await response.json();
+      
+      if (data.chapter) {
+        const { baseUrl, chapter: chapData } = data;
+        const h = chapData.hash;
+        const images = forceDataSaver && chapData.dataSaver ? chapData.dataSaver : chapData.data;
+        const path = forceDataSaver && chapData.dataSaver ? 'data-saver' : 'data';
+        
+        return {
+          pages: images.map((file: string) => 
+            `${PROXY_URL}${encodeURIComponent(baseUrl ? `${baseUrl}/${path}/${h}/${file}` : file)}`
+          )
+        };
+      }
+      return null;
     } catch (error) {
       console.error("MangaDex Pages Error:", error);
       return null;

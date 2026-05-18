@@ -1,44 +1,43 @@
-const COMICK_API_URL = 'https://api.comick.app';
+const COMICK_API_URL = 'https://api.comick.io'; // updated from .fun
+const PROXY_URL = '/api/proxy?url=';
 
 export const comickService = {
-  searchManga: async (title: string) => {
+  searchManga: async (query: string) => {
     try {
-      const url = new URL(`${COMICK_API_URL}/v1.0/search`);
-      url.searchParams.append('q', title);
-      url.searchParams.append('limit', '3');
-      const response = await fetch(url.toString());
-      if (!response.ok) return null;
-      return await response.json();
-    } catch {
-      return null;
+      const url = `${COMICK_API_URL}/v1.0/search?q=${encodeURIComponent(query)}&limit=10&page=1`;
+      const response = await fetch(`${PROXY_URL}${encodeURIComponent(url)}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      return Array.isArray(data) ? data : (data.data || data.results || []);
+    } catch (error) {
+      console.error("Comick Search Error:", error);
+      return [];
     }
   },
 
-  getMangaFeed: async (comicId: string) => {
-     try {
-       // get comic details to get hid
-       const response = await fetch(`${COMICK_API_URL}/comic/${comicId}`);
-       if (!response.ok) return null;
-       const data = await response.json();
-       const hid = data.comic.hid;
-       
-       // get chapters
-       const chaptersRes = await fetch(`${COMICK_API_URL}/comic/${hid}/chapters?lang=pt-br,en&limit=300`);
-       if (!chaptersRes.ok) return null;
-       return await chaptersRes.json();
-     } catch {
-       return null;
-     }
+  getMangaChapters: async (hid: string, limit: number = 1000) => {
+    try {
+      // Comick uses hid for series
+      const url = `${COMICK_API_URL}/manga/${hid}/chapters?limit=${limit}&lang=pt-br,en`;
+      const response = await fetch(`${PROXY_URL}${encodeURIComponent(url)}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.chapters || [];
+    } catch (error) {
+      console.error("Comick Chapters Error:", error);
+      return [];
+    }
   },
 
-  getChapterPages: async (hid: string) => {
-     try {
-       const response = await fetch(`${COMICK_API_URL}/chapter/${hid}`);
-       if (!response.ok) return null;
-       const data = await response.json();
-       return data.chapter; // { images: [...] }
-     } catch {
-       return null;
-     }
+  getChapterDetails: async (hid: string) => {
+    try {
+      const url = `${COMICK_API_URL}/chapter/${hid}`;
+      const response = await fetch(`${PROXY_URL}${encodeURIComponent(url)}`);
+      if (!response.ok) return null;
+      return await response.json();
+    } catch (error) {
+      console.error("Comick Pages Error:", error);
+      return null;
+    }
   }
 };

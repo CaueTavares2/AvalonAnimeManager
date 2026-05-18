@@ -49,7 +49,11 @@ export default function Admin() {
     setLoadingStats(true);
     try {
       const snapObj = await getCountFromServer(collection(db, 'users'));
-      const onlineSnap = await getCountFromServer(query(collection(db, 'users'), where('status', '==', 'ONLINE')));
+      
+      // Real Online Detection: Heartbeat in the last 3 minutes
+      const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
+      const onlineSnap = await getCountFromServer(query(collection(db, 'users'), where('heartbeatAt', '>=', threeMinutesAgo)));
+      
       const bannedSnap = await getCountFromServer(query(collection(db, 'users'), where('banned', '==', true)));
       setStats({
         totalUsers: snapObj.data().count,

@@ -51,6 +51,12 @@ export default function AnimeDetails() {
         const finalType = (type.toUpperCase() as 'ANIME' | 'MANGA');
         const data = await jikanService.getDetails(Number(id), type.toLowerCase() as 'anime' | 'manga');
 
+        if (!data) {
+          setError("Informações não encontradas.");
+          setLoading(false);
+          return;
+        }
+
         setAnime({
           id: data.mal_id,
           title: data.title,
