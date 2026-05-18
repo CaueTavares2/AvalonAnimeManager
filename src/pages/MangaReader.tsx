@@ -28,24 +28,72 @@ export default function MangaReader() {
     const init = async () => {
       try {
         setLoading(true);
-        // 1. Fetch from Jikan to get exact title
+        // 1. Fetch from Jikan to get titles
         const jikanData = await jikanService.getDetails(Number(id), 'manga');
-        const title = jikanData.title;
-        setMangaTitle(title);
+        const titlesToTry = [
+          jikanData.title, 
+          jikanData.title_english, 
+          jikanData.title_japanese,
+          ...(jikanData.title_synonyms || [])
+        ].filter(Boolean);
         
-        // 2. Search MangaDex
-        const searchRes = await mangaService.searchManga(title);
-        if (searchRes && searchRes.data && searchRes.data.length > 0) {
-          const mdId = searchRes.data[0].id;
+        const uniqueTitles = Array.from(new Set(titlesToTry));
+        
+        let mdId = null;
+        let finalTitle = jikanData.title;
+
+        // 2. Search MangaDex with fallbacks
+        for (const title of uniqueTitles) {
+          const searchRes = await mangaService.searchManga(title);
+          // Just take the first result if it exists. MangaDex relevance sort usually puts exact match first
+          if (searchRes && searchRes.data && searchRes.data.length > 0) {
+            mdId = searchRes.data[0].id;
+            // Optionally, we could verify if the found manga title matches closely, but relevance is usually good enough
+            finalTitle = title;
+            break; // Found it!
+          }
+        }
+        
+        setMangaTitle(finalTitle);
+
+        if (mdId) {
           setMangaDexId(mdId);
           
           // 3. Fetch Feed
           const feedRes = await mangaService.getMangaFeed(mdId);
           if (feedRes && feedRes.data) {
-            setChapters(feedRes.data);
+            // Filter unique chapters: Prefer PT-BR/PT, then EN.
+            const uniqueChapters = new Map();
+            for (const cap of feedRes.data) {
+              const chapterNum = cap.attributes.chapter;
+              const lang = cap.attributes.translatedLanguage;
+              
+              if (!chapterNum) continue; // Skip oneshot or null chapter items sometimes
+              
+              const existing = uniqueChapters.get(chapterNum);
+              if (!existing) {
+                uniqueChapters.set(chapterNum, cap);
+              } else {
+                // If existing is EN and new is PT-BR or PT, replace it
+                const existingLang = existing.attributes.translatedLanguage;
+                if ((existingLang === 'en' || !existingLang) && (lang === 'pt-br' || lang === 'pt')) {
+                   uniqueChapters.set(chapterNum, cap);
+                }
+              }
+            }
+            
+            // Convert back to array and sort numerically
+            let finalChapters = Array.from(uniqueChapters.values());
+            finalChapters.sort((a, b) => {
+               const numA = parseFloat(a.attributes.chapter) || 0;
+               const numB = parseFloat(b.attributes.chapter) || 0;
+               return numA - numB;
+            });
+            
+            setChapters(finalChapters);
           }
         } else {
-          setError('Mangá não encontrado na base de leitura (MangaDex).');
+          setError('Mangá não encontrado na base de leitura (MangaDex e Alternativas).');
         }
       } catch (err) {
         console.error(err);
@@ -91,7 +139,15 @@ export default function MangaReader() {
       if (pageRes && pageRes.chapter) {
         const baseUrl = pageRes.baseUrl;
         const hash = pageRes.chapter.hash;
-        const images = pageRes.chapter.data.map((file: string) => `${baseUrl}/data/${hash}/${file}`);
+        
+        let images = [];
+        if (baseUrl) {
+          images = pageRes.chapter.data.map((file: string) => `${baseUrl}/data/${hash}/${file}`);
+        } else {
+          // Fallback case where data array contains full URLs already
+          images = pageRes.chapter.data;
+        }
+        
         setPages(images);
       }
     } catch (err) {

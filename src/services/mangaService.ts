@@ -6,7 +6,7 @@ export const mangaService = {
     try {
       const url = new URL(`${MANGADEX_API_URL}/manga`);
       url.searchParams.append('title', title);
-      url.searchParams.append('limit', '1');
+      url.searchParams.append('limit', '5');
       url.searchParams.append('includes[]', 'cover_art');
       url.searchParams.append('order[relevance]', 'desc');
       
@@ -52,16 +52,21 @@ export const mangaService = {
   getMangaFeed: async (mangaId: string, page: number = 0) => {
     try {
       const url = new URL(`${MANGADEX_API_URL}/manga/${mangaId}/feed`);
-      url.searchParams.append('limit', '100');
-      url.searchParams.append('offset', (page * 100).toString());
+      url.searchParams.append('limit', '400');
+      url.searchParams.append('offset', (page * 400).toString());
       url.searchParams.append('translatedLanguage[]', 'pt-br');
       url.searchParams.append('translatedLanguage[]', 'pt');
+      url.searchParams.append('translatedLanguage[]', 'en');
       url.searchParams.append('order[chapter]', 'asc');
       url.searchParams.append('includes[]', 'scanlation_group');
 
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error(`Status: ${response.status}`);
-      return await response.json();
+      const data = await response.json();
+      
+      // Filter out duplicate chapters locally if necessary, or just return them
+      // E.g. we might have same chapter in 'pt-br' and 'en'. Let's return all, and the client will group them or filter
+      return data;
     } catch (error) {
       console.error("MangaDex Feed Error, trying fallback:", error);
       return mangaService.getMangaFeedFallback(mangaId);

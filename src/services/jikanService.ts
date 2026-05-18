@@ -54,6 +54,9 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<a
 export interface JikanAnime {
   mal_id: number;
   title: string;
+  title_english?: string;
+  title_japanese?: string;
+  title_synonyms?: string[];
   images: {
     webp: {
       image_url: string;
