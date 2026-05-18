@@ -106,6 +106,9 @@ export default function MangaReader() {
   });
   const [controlsVisible, setControlsVisible] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showBanner, setShowBanner] = useState(() => {
+    return localStorage.getItem('hide_experimental_banner') !== 'true';
+  });
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -641,9 +644,19 @@ export default function MangaReader() {
           </motion.div>
           
           {loadingChapter ? (
-            <div className="py-32 flex flex-col items-center justify-center gap-4">
-               <Loader2 className="w-12 h-12 text-brand animate-spin" />
-               <p className="font-bold text-gray-400 uppercase tracking-widest text-xs">Carregando páginas...</p>
+            <div className="py-32 flex flex-col items-center justify-center gap-8 animate-pulse">
+              <div className="relative">
+                <div className="w-24 h-24 border-t-2 border-brand rounded-full animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-brand animate-pulse" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <p className="font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-xl">Sincronizando Páginas</p>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Codificando sequência do capítulo</p>
+              </div>
             </div>
           ) : (
             <div className={cn("w-full transition-all", isLongStrip ? "flex flex-col gap-4" : "max-w-xl")}>

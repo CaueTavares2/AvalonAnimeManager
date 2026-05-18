@@ -321,8 +321,36 @@ export default function Home() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-40">
-          <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+        <div className="space-y-16 animate-pulse px-4 md:px-0">
+          {/* Skeleton Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] h-24" />
+            ))}
+          </div>
+          
+          {/* Skeleton Banner */}
+          <div className="h-[220px] bg-white/5 rounded-[32px] border border-white/5 flex items-center justify-center overflow-hidden relative">
+             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+          </div>
+          
+          {/* Skeleton Grids */}
+          {[1, 2].map(section => (
+            <div key={section} className="space-y-8">
+              <div className="h-10 w-64 bg-white/5 rounded-2xl mb-8" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-6">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="space-y-4">
+                    <div className="aspect-[2/3] bg-white/5 rounded-3xl" />
+                    <div className="space-y-2">
+                       <div className="h-4 w-full bg-white/5 rounded-lg" />
+                       <div className="h-3 w-1/2 bg-white/5 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-20">

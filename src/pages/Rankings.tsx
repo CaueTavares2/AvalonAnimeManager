@@ -185,8 +185,13 @@ export default function Rankings() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-40">
-            <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-20 animate-pulse">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto pt-12 items-end px-4 md:px-0">
+               <div className="h-48 bg-white/5 rounded-[2rem] border border-white/5" />
+               <div className="h-64 bg-white/5 rounded-[2.5rem] border border-white/5" />
+               <div className="h-48 bg-white/5 rounded-[2rem] border border-white/5" />
+            </div>
+            <div className="bg-[var(--color-card)] rounded-[40px] border border-[var(--color-border)] h-[500px]" />
           </div>
         ) : (
           <div className="space-y-16">

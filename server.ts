@@ -12,9 +12,19 @@ async function startServer() {
 
   // Proxy endpoint to bypass CORS and set headers
   app.get('/api/proxy', async (req, res) => {
-    const targetUrl = req.query.url as string;
-    if (!targetUrl) {
+    const targetUrlRaw = req.query.url as string;
+    if (!targetUrlRaw) {
       return res.status(400).json({ error: 'Missing url parameter' });
+    }
+
+    // Attempt to decode in case of double encoding
+    let targetUrl = targetUrlRaw;
+    if (targetUrl.includes('%') && !targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+       try {
+         targetUrl = decodeURIComponent(targetUrlRaw);
+       } catch (e) {
+         console.warn(`[Proxy] Failed to decode targetUrl: ${targetUrlRaw}`);
+       }
     }
 
     // Check cache
@@ -33,12 +43,12 @@ async function startServer() {
     let urlObj: URL;
     try {
       if (!targetUrl.startsWith('http')) {
-        throw new Error('Target URL must be absolute (start with http/https)');
+        throw new Error(`Target URL must be absolute (starts with http/https). Received: "${targetUrl}"`);
       }
       urlObj = new URL(targetUrl);
     } catch (e: any) {
       console.error(`[Proxy] Invalid target URL: "${targetUrl}" - ${e.message}`);
-      return res.status(400).json({ error: 'Invalid URL provided' });
+      return res.status(400).json({ error: `Invalid URL provided: ${e.message}` });
     }
 
     try {
@@ -107,7 +117,7 @@ async function startServer() {
       const getHeaders = (simple = false) => {
         const base: any = {
           'Accept': '*/*',
-          'Referer': referer,
+          'Referer': targetUrl.includes('mangadex') ? 'https://mangadex.org' : referer,
           'Connection': 'keep-alive',
         };
         if (simple) return base;
