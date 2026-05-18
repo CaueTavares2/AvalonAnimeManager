@@ -65,14 +65,17 @@ export const mangaService = {
       
       if (data.chapter) {
         const { baseUrl, chapter: chapData } = data;
+        if (!baseUrl) throw new Error("Missing baseUrl from MangaDex");
+        
         const h = chapData.hash;
         const images = forceDataSaver && chapData.dataSaver ? chapData.dataSaver : chapData.data;
         const path = forceDataSaver && chapData.dataSaver ? 'data-saver' : 'data';
         
         return {
-          pages: images.map((file: string) => 
-            `${PROXY_URL}${encodeURIComponent(baseUrl ? `${baseUrl}/${path}/${h}/${file}` : file)}`
-          )
+          pages: images.map((file: string) => {
+            const fullUrl = `${baseUrl}/${path}/${h}/${file}`;
+            return `${PROXY_URL}${encodeURIComponent(fullUrl)}`;
+          })
         };
       }
       return null;

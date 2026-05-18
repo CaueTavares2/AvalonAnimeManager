@@ -18,7 +18,9 @@ async function startServer() {
     }
 
     // Check cache
-    const cached = cache.get(targetUrl);
+    const isRetry = req.query.retry !== undefined;
+    const cached = isRetry ? null : cache.get(targetUrl);
+    
     if (cached && cached.expiry > Date.now()) {
       console.log(`[Proxy] Cache hit: ${targetUrl}`);
       res.status(cached.status);
@@ -28,8 +30,18 @@ async function startServer() {
 
     console.log(`[Proxy] Requesting: ${targetUrl}`);
 
+    let urlObj: URL;
     try {
-      const urlObj = new URL(targetUrl);
+      if (!targetUrl.startsWith('http')) {
+        throw new Error('Target URL must be absolute (start with http/https)');
+      }
+      urlObj = new URL(targetUrl);
+    } catch (e: any) {
+      console.error(`[Proxy] Invalid target URL: "${targetUrl}" - ${e.message}`);
+      return res.status(400).json({ error: 'Invalid URL provided' });
+    }
+
+    try {
       const referer = urlObj.origin + '/';
 
       const USER_AGENTS = [
