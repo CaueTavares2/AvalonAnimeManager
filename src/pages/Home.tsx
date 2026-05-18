@@ -94,6 +94,7 @@ export default function Home() {
 
   useEffect(() => {
     let isMounted = true;
+    let intervalId: NodeJS.Timeout;
 
     const fetchData = async () => {
       setLoading(true);
@@ -116,21 +117,41 @@ export default function Home() {
           setPopular(popularData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType)));
         }
 
-        setStats({
-          topTrending: trendingData?.[0]?.title || 'N/A',
-          topPopular: popularData?.[0]?.title || 'N/A',
-          topUpcoming: (upcomingData && upcomingData[0]?.title) || 'N/A',
-          topRated: (topRatedData && topRatedData[0]?.title) || 'N/A'
-        });
+        const getRandomTitle = (arr: any[]) => {
+          if (!arr || !arr.length) return 'N/A';
+          const max = Math.min(20, arr.length);
+          const i = Math.floor(Math.random() * max);
+          return arr[i]?.title || 'N/A';
+        };
+
+        const updateStats = () => {
+          if (!isMounted) return;
+          setStats({
+            topTrending: getRandomTitle(trendingData),
+            topPopular: getRandomTitle(popularData),
+            topUpcoming: getRandomTitle(upcomingData),
+            topRated: getRandomTitle(topRatedData)
+          });
+        };
+
+        updateStats();
+
+        // Rotate titles every 5 seconds
+        intervalId = setInterval(updateStats, 5000);
+
       } catch (error) {
         console.error(`Failed to fetch ${mediaType}:`, error);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
+
     fetchData();
 
-    return () => { isMounted = false; };
+    return () => { 
+      isMounted = false; 
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [mediaType]);
 
   return (

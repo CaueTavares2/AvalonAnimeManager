@@ -6,7 +6,7 @@ export const mangaService = {
     try {
       const url = new URL(`${MANGADEX_API_URL}/manga`);
       url.searchParams.append('title', title);
-      url.searchParams.append('limit', '5');
+      url.searchParams.append('limit', '10');
       url.searchParams.append('includes[]', 'cover_art');
       url.searchParams.append('order[relevance]', 'desc');
       

@@ -1,4 +1,4 @@
-const CONSUMET_API_URL = 'https://api.consumet.org'; // Official domain usually works or redirects
+const CONSUMET_API_URL = 'https://consumet-api-clone.vercel.app'; // Works and doesn't return 451
 const PROXY_URL = '/api/proxy?url=';
 
 export const consumetService = {

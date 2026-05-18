@@ -187,66 +187,24 @@ export default function MangaReader() {
   };
 
   const providers = [
-    { id: 'mangalivre', name: 'MangaLivre', lang: 'PT', fn: async (t: string) => {
-      const res = await mangaLivreService.searchManga(t).catch(() => []);
+    { id: 'comick', name: 'Comick', lang: 'PT/EN', fn: async (t: string) => {
+      const res = await comickService.searchManga(t).catch(() => []);
       if (!res?.length) return [];
-      const matches = res.slice(0, 2);
-      const feeds = await Promise.all(matches.map(m => mangaLivreService.getChapters(m.id).catch(() => [])));
-      return feeds.flat();
+      for (const manga of res.slice(0, 3)) {
+        if (!manga.hid) continue;
+        const info = await comickService.getMangaChapters(manga.hid).catch(() => []);
+        if (info?.length > 0) return info;
+      }
+      return [];
     }},
     { id: 'mangadex', name: 'MangaDex', lang: 'EN/PT', fn: async (t: string) => {
       const res = await mangaService.searchManga(t).catch(() => null);
       if (!res?.data?.length) return [];
-      const feed = await mangaService.getMangaFeed(res.data[0].id).catch(() => null);
-      return feed?.data || [];
-    }},
-    { id: 'comick', name: 'Comick', lang: 'PT/EN', fn: async (t: string) => {
-      const res = await comickService.searchManga(t).catch(() => []);
-      if (!res?.length) return [];
-      const info = await comickService.getMangaChapters(res[0].hid).catch(() => []);
-      return info;
-    }},
-    { id: 'bato', name: 'Bato', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'bato').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'bato').catch(() => null);
-      return info?.chapters || [];
-    }},
-    { id: 'manganato', name: 'Nato', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'manganato').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'manganato').catch(() => null);
-      return info?.chapters || [];
-    }},
-    { id: 'mangakakalot', name: 'Kakalot', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'mangakakalot').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'mangakakalot').catch(() => null);
-      return info?.chapters || [];
-    }},
-     { id: 'mangasee', name: 'MangaSee', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'mangasee123').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'mangasee123').catch(() => null);
-      return info?.chapters || [];
-    }},
-    { id: 'readm', name: 'ReadM', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'readm').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'readm').catch(() => null);
-      return info?.chapters || [];
-    }},
-    { id: 'mangapark', name: 'Park', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'mangapark').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'mangapark').catch(() => null);
-      return info?.chapters || [];
-    }},
-    { id: 'mangareader', name: 'Reader', lang: 'EN', fn: async (t: string) => {
-      const res = await consumetService.searchManga(t, 'mangareader').catch(() => null);
-      if (!res?.results?.length) return [];
-      const info = await consumetService.getMangaInfo(res.results[0].id, 'mangareader').catch(() => null);
-      return info?.chapters || [];
+      for (const manga of res.data.slice(0, 3)) {
+        const feed = await mangaService.getMangaFeed(manga.id).catch(() => null);
+        if (feed?.data?.length > 0) return feed.data;
+      }
+      return [];
     }}
   ];
 
@@ -456,7 +414,7 @@ export default function MangaReader() {
           return pageRes?.map((img: any) => `${PROXY_URL}${encodeURIComponent(img.legacy || img.full || `${img.folder}${img.file}`)}`);
         } else if (src === 'comick') {
           const pageRes = await comickService.getChapterDetails(cap.hid || cap.id);
-          return pageRes?.chapter?.images?.map((img: any) => `${PROXY_URL}${encodeURIComponent(`https://meo.comick.pictures/${img.url}`)}`);
+          return pageRes?.chapter?.images?.map((img: any) => `https://meo.comick.pictures/${img.url || img.b2key}`);
         } else if (src.startsWith('consumet')) {
           const provider = src.split('-')[1] || 'mangadex';
           const pageRes = await consumetService.getChapterPages(cap.id, provider);
@@ -507,6 +465,24 @@ export default function MangaReader() {
 
   return (
     <div className="min-h-screen pt-20 px-4 md:px-12 pb-12 max-w-5xl mx-auto" style={{ filter: `brightness(${brightness}%)` }}>
+      
+      {/* Experimental Warning */}
+      {!selectedChapter && (
+        <div className="bg-orange-500/10 border border-orange-500/20 p-4 lg:p-6 rounded-3xl mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:gap-6 backdrop-blur-sm shadow-xl shadow-orange-500/5">
+          <div className="bg-orange-500/20 p-3 rounded-2xl shrink-0">
+            <BookOpen className="text-orange-500 w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-orange-500 font-black uppercase tracking-widest text-xs lg:text-sm mb-1.5 flex items-center gap-2">
+              Leitor Experimental <span className="text-orange-400 text-[10px] bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-500/30">BETA</span>
+            </h3>
+            <p className="text-orange-200/70 text-xs lg:text-sm font-medium leading-relaxed max-w-3xl">
+              Estamos testando novas fontes e desenvolvendo um <strong>scraper interno</strong> para trazer uma biblioteca mais completa. Se encontrar instabilidades ou capítulos faltando, não se preocupe: a experiência final será muito melhor!
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header Info */}
       <div className="flex items-center justify-between gap-4 mb-8">
         <button 

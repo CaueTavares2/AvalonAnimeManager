@@ -78,7 +78,9 @@ async function startServer() {
             return response;
           } catch (err: any) {
             lastError = err;
-            console.error(`[Proxy] Attempt ${attempt + 1} failed for ${url}: ${err.message}`);
+            if (!err.message?.includes('fetch failed') && !err.message?.includes('getaddrinfo')) {
+              console.error(`[Proxy] Attempt ${attempt + 1} failed for ${url}: ${err.message}`);
+            }
             if (attempt < maxRetries - 1) {
               const delay = 1000 * (attempt + 1);
               await new Promise(r => setTimeout(r, delay));
@@ -134,6 +136,12 @@ async function startServer() {
       
       const data = await response.arrayBuffer();
       const buffer = Buffer.from(data);
+      
+      if (response.status >= 400) {
+        if (contentType && !contentType.includes('text/html')) {
+          console.log(`[Proxy] Error Response Body (${targetUrl}): ${buffer.toString('utf-8').slice(0, 500)}`);
+        }
+      }
       
       // Store in cache for successful 200 responses
       if (response.status === 200) {
