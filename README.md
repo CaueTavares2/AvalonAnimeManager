@@ -75,6 +75,10 @@ npm run build
 ---
 
 ## 🆕 Novidades
+- **Leitor de Mangás (Experimental Beta):** Nova UI no Manga Reader com aviso de sistema experimental, enquanto estruturamos novas fontes seguras de conteúdo.
+- **Scraper Interno e Proxy Inteligente:** Adição de um sistema escalável no backend (`/server/scraper/`) equipado com `cheerio` para futura extração local, protegendo contra falhas de conexão ou indisponibilidades de APIs de terceiros. Ajustes no Proxy para lidar com erros de getaddrinfo.
+- **Home Stats Carrosel (Fix):** Correção do hook de rotação das estatísticas na tela Home para prevenir memory leaks e inconsistências.
+- **Integrações de API (Comick & MangaDex):** Fix de instabilidades nos subdomínios da Comick originando timeouts na home e busca.
 - **Sistema de Notificações de Conquistas:** Notificações visuais e animadas (Motion) para desbloqueio de conquistas, adaptadas ao nível de raridade.
 - **Painel de Testes (Staff):** Área administrativa para testar o sistema de notificações de conquistas sem impactar o banco de dados.
 

@@ -419,6 +419,7 @@ export default function MangaReader() {
           const provider = src.split('-')[1] || 'mangadex';
           const pageRes = await consumetService.getChapterPages(cap.id, provider);
           return pageRes?.map((p: any) => `${PROXY_URL}${encodeURIComponent(p.img)}`);
+
         } else {
           // mangadex
           const pageRes = await mangaService.getChapterPages(cap.id, useDataSaver);
