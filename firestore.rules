@@ -68,9 +68,9 @@ service cloud.firestore {
     }
 
     match /friendships/{friendshipId} {
-      allow read, list: if isSignedIn() && (request.auth.uid in resource.data.users);
-      allow create: if isSignedIn() && (request.auth.uid in incoming().users);
-      allow delete: if isSignedIn() && (request.auth.uid in resource.data.users || isStaff());
+      allow read, list: if isSignedIn() && ((resource.data.get('users', null) != null && request.auth.uid in resource.data.users) || friendshipId.matches('.*' + request.auth.uid + '.*') || isStaff());
+      allow create: if isSignedIn() && ((incoming().get('users', null) != null && request.auth.uid in incoming().users) || friendshipId.matches('.*' + request.auth.uid + '.*'));
+      allow delete: if isSignedIn() && ((resource.data.get('users', null) != null && request.auth.uid in resource.data.users) || friendshipId.matches('.*' + request.auth.uid + '.*') || isStaff());
     }
 
     match /activityFeed/{eventId} {
@@ -80,14 +80,22 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      allow read, update, list: if isSignedIn() && (request.auth.uid in resource.data.participants || isStaff());
-      allow create: if isSignedIn() && (request.auth.uid in incoming().participants);
-      allow delete: if isStaff();
+      allow read, update, list: if isSignedIn() && ((resource.data.get('participants', null) != null && request.auth.uid in resource.data.participants) || chatId.matches('.*' + request.auth.uid + '.*') || isStaff());
+      allow create: if isSignedIn() && ((incoming().get('participants', null) != null && request.auth.uid in incoming().participants) || chatId.matches('.*' + request.auth.uid + '.*'));
+      allow delete: if isSignedIn() && ((resource.data.get('participants', null) != null && request.auth.uid in resource.data.participants) || chatId.matches('.*' + request.auth.uid + '.*') || isStaff());
       
       match /messages/{messageId} {
-        allow read, list: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isStaff());
+        allow read, list: if isSignedIn() && (
+          (get(/databases/$(database)/documents/chats/$(chatId)).data.get('participants', null) != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants) || 
+          chatId.matches('.*' + request.auth.uid + '.*') || 
+          isStaff()
+        );
         allow create: if isSignedIn() && (incoming().senderId == request.auth.uid);
-        allow delete: if isStaff();
+        allow delete: if isSignedIn() && (
+          (get(/databases/$(database)/documents/chats/$(chatId)).data.get('participants', null) != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants) || 
+          chatId.matches('.*' + request.auth.uid + '.*') || 
+          isStaff()
+        );
       }
     }
 

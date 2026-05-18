@@ -138,6 +138,16 @@ export default function AnimeDetails() {
               <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
             </motion.div>
 
+            {anime.type === 'MANGA' && (
+              <button 
+                onClick={() => navigate(`/manga/${anime.id}/read`)}
+                className="w-full bg-brand text-white font-black uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20 active:scale-95"
+              >
+                <BookOpen className="w-5 h-5" />
+                Ler Mangá
+              </button>
+            )}
+
             <div className="flex flex-col gap-3">
               {inList ? (
                 <div className="space-y-4">

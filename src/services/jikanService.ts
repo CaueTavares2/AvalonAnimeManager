@@ -107,9 +107,10 @@ export const jikanService = {
     return data.data;
   },
 
-  getByYear: async (year: number) => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=12&type=tv`);
-    return data.data;
+  getByYear: async (year: number, page: number = 1) => {
+    // Fetch larger limit, remove hardcoded type=tv so we can fetch all and filter, or we can use type=tv and let the client fetch movies separately if jikan doesn't support an OR. Let's just fetch all and filter in client
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=25&page=${page}`);
+    return data; // Return full response to get pagination info
   },
   
   searchCharacters: async (query: string) => {

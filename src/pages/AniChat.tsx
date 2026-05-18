@@ -78,6 +78,7 @@ export default function AniChat() {
     const updateReadStatus = async () => {
       try {
         await setDoc(doc(db, 'chats', chatId), {
+          participants: [user.uid, activeFriendId],
           lastRead: {
             [user.uid]: serverTimestamp()
           }
@@ -122,6 +123,7 @@ export default function AniChat() {
           createdAt: serverTimestamp()
         }),
         setDoc(doc(db, 'chats', activeChatId), {
+          participants: [user.uid, activeFriendId],
           lastMessage: messageText,
           lastMessageAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -151,6 +153,7 @@ export default function AniChat() {
           createdAt: serverTimestamp()
         }),
         setDoc(doc(db, 'chats', activeChatId), {
+          participants: [user.uid, activeFriendId],
           lastMessage: "Enviou um sticker",
           lastMessageAt: serverTimestamp(),
           updatedAt: serverTimestamp(),

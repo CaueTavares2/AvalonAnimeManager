@@ -13,6 +13,7 @@ import { AchievementNotification } from './components/shared/AchievementNotifica
 import { ChangelogModal } from './components/shared/ChangelogModal';
 import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
+import MangaReader from './pages/MangaReader';
 
 const Home = lazy(() => import('./pages/Home'));
 const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
@@ -80,6 +81,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/:type/:id" element={<AnimeDetails />} />
+            <Route path="/manga/:id/read" element={<MangaReader />} />
             <Route path="/list" element={<MyList />} />
             <Route path="/community" element={<Community />} />
             <Route path="/ranking" element={<Rankings />} />
