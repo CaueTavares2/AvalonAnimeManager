@@ -67,8 +67,11 @@ export default function MangaReader() {
             for (const cap of feedRes.data) {
               const chapterNum = cap.attributes.chapter;
               const lang = cap.attributes.translatedLanguage;
+              const pages = cap.attributes.pages;
+              const externalUrl = cap.attributes.externalUrl;
               
               if (!chapterNum) continue; // Skip oneshot or null chapter items sometimes
+              if (pages === 0 || externalUrl) continue; // Skip external links (MangaPlus etc) as they don't have images in MangaDex
               
               const existing = uniqueChapters.get(chapterNum);
               if (!existing) {
