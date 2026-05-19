@@ -13,70 +13,172 @@ async function startServer() {
   // Proxy endpoint to bypass CORS and set headers
   app.get('/api/proxy', async (req, res) => {
     const targetUrl = req.query.url as string;
-    if (!targetUrl) return res.status(400).json({ error: 'Missing url parameter' });
+    if (!targetUrl) {
+      return res.status(400).json({ error: 'Missing url parameter' });
+    }
 
     // Check cache
-    const cached = cache.get(targetUrl);
+    const isRetry = req.query.retry !== undefined;
+    const cached = isRetry ? null : cache.get(targetUrl);
+    
     if (cached && cached.expiry > Date.now()) {
+      console.log(`[Proxy] Cache hit: ${targetUrl}`);
+      res.status(cached.status);
       if (cached.contentType) res.setHeader('Content-Type', cached.contentType);
-      return res.status(cached.status).send(cached.data);
+      return res.send(cached.data);
+    }
+
+    console.log(`[Proxy] Requesting: ${targetUrl}`);
+
+    let urlObj: URL;
+    try {
+      if (!targetUrl.startsWith('http')) {
+        throw new Error('Target URL must be absolute (start with http/https)');
+      }
+      urlObj = new URL(targetUrl);
+    } catch (e: any) {
+      console.error(`[Proxy] Invalid target URL: "${targetUrl}" - ${e.message}`);
+      return res.status(400).json({ error: 'Invalid URL provided' });
     }
 
     try {
-      const urlObj = new URL(targetUrl);
-      const isMangaDex = targetUrl.includes('mangadex');
-      
-      const response = await fetch(targetUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-          'Referer': isMangaDex ? 'https://mangadex.org' : urlObj.origin + '/',
-          'Accept': '*/*',
-          'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-        }
-      });
+      const referer = urlObj.origin + '/';
 
-      const contentType = response.headers.get('content-type') || 'application/octet-stream';
-      const buffer = Buffer.from(await response.arrayBuffer());
+      const USER_AGENTS = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0',
+      ];
+
+      const fetchWithRetry = async (url: string, options: any, maxRetries = 3) => {
+        let lastError: any;
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          const controller = new AbortController();
+          const timeout = 15000 + (attempt * 5000); // Increasing timeout
+          const id = setTimeout(() => controller.abort(), timeout);
+          
+          try {
+            const ua = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+            const headers = { 
+              ...options.headers, 
+              'User-Agent': ua,
+              'X-Forwarded-For': `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`
+            };
+
+            const response = await fetch(url, { 
+              ...options, 
+              headers,
+              signal: controller.signal,
+              // Some servers act up with certain TLS settings
+            });
+
+            if (response.status === 429) {
+              const retryAfter = response.headers.get('retry-after');
+              const wait = retryAfter ? parseInt(retryAfter) * 1000 : 2000 * (attempt + 1);
+              console.warn(`[Proxy] 429 for ${url}. Waiting ${wait}ms...`);
+              await new Promise(r => setTimeout(r, wait));
+              continue;
+            }
+
+            if (!response.ok && attempt < maxRetries - 1 && response.status >= 500) {
+              console.warn(`[Proxy] ${response.status} for ${url}. Retrying...`);
+              await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+              continue;
+            }
+
+            return response;
+          } catch (err: any) {
+            lastError = err;
+            if (!err.message?.includes('fetch failed') && !err.message?.includes('getaddrinfo')) {
+              console.error(`[Proxy] Attempt ${attempt + 1} failed for ${url}: ${err.message}`);
+            }
+            if (attempt < maxRetries - 1) {
+              const delay = 1000 * (attempt + 1);
+              await new Promise(r => setTimeout(r, delay));
+            }
+          } finally {
+            clearTimeout(id);
+          }
+        }
+        throw lastError;
+      };
+
+      const getHeaders = (simple = false) => {
+        const base: any = {
+          'Accept': '*/*',
+          'Referer': referer,
+          'Connection': 'keep-alive',
+        };
+        if (simple) return base;
+        
+        return {
+          ...base,
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Origin': referer.replace(/\/$/, ''),
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+          'sec-ch-ua-mobile': '?0',
+          'sec-ch-ua-platform': '"Windows"',
+          'sec-fetch-dest': 'empty',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'cross-site',
+          'Upgrade-Insecure-Requests': '1',
+        };
+      };
+
+      let response;
+      try {
+        response = await fetchWithRetry(targetUrl, { headers: getHeaders() });
+      } catch (err: any) {
+        // Final fallback with very simple headers
+        console.warn(`[Proxy] All standard attempts failed for ${targetUrl}. Trying simple headers fallback...`);
+        response = await fetchWithRetry(targetUrl, { headers: getHeaders(true) }, 1);
+      }
+
+      console.log(`[Proxy] Response: ${response.status} ${response.statusText}`);
+
+      res.status(response.status);
+      const contentType = response.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
       
-      // Cache success responses
+      const data = await response.arrayBuffer();
+      const buffer = Buffer.from(data);
+      
+      if (response.status >= 400) {
+        if (contentType && !contentType.includes('text/html')) {
+          console.log(`[Proxy] Error Response Body (${targetUrl}): ${buffer.toString('utf-8').slice(0, 500)}`);
+        }
+      }
+      
+      // Store in cache for successful 200 responses
       if (response.status === 200) {
-        cache.set(targetUrl, { 
-          data: buffer, 
-          contentType, 
-          status: 200, 
-          expiry: Date.now() + CACHE_TTL 
+        cache.set(targetUrl, {
+          data: buffer,
+          contentType: contentType || 'application/octet-stream',
+          status: response.status,
+          expiry: Date.now() + CACHE_TTL
         });
-        if (cache.size > 1000) {
-          const firstKey = cache.keys().next().value;
-          if (firstKey) cache.delete(firstKey);
+
+        // Basic cache size management
+        if (cache.size > 2000) {
+          const now = Date.now();
+          for (const [key, val] of cache.entries()) {
+            if (val.expiry < now) cache.delete(key);
+            if (cache.size <= 1500) break;
+          }
         }
       }
 
-      res.status(response.status).setHeader('Content-Type', contentType).send(buffer);
+      res.send(buffer);
     } catch (error) {
-      console.error('[Proxy Error]', targetUrl, error);
-      if (!res.headersSent) res.status(500).json({ error: 'Proxy failed', message: String(error) });
+      console.error(`[Proxy] Error for ${targetUrl}:`, error);
+      res.status(500).json({ error: 'Failed to fetch target URL' });
     }
-  });
-
-  // Image proxy
-  app.get('/api/image-proxy', async (req, res) => {
-    const url = req.query.url as string;
-    if (!url) return res.status(400).send('Missing url');
-    
-    const cached = cache.get(url);
-    if (cached && cached.expiry > Date.now()) {
-      if (cached.contentType) res.setHeader('Content-Type', cached.contentType);
-      return res.status(cached.status).send(cached.data);
-    }
-
-    try {
-      const resp = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-      const contentType = resp.headers.get('content-type') || 'image/jpeg';
-      const buffer = Buffer.from(await resp.arrayBuffer());
-      cache.set(url, { data: buffer, contentType, status: resp.status, expiry: Date.now() + (CACHE_TTL * 6) });
-      res.status(resp.status).setHeader('Content-Type', contentType).send(buffer);
-    } catch (e) { res.status(500).send('Fail'); }
   });
 
   if (process.env.NODE_ENV !== 'production') {

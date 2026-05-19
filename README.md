@@ -75,21 +75,12 @@ npm run build
 ---
 
 ## 🆕 Novidades
-
-### 📖 Leitor de Mangás 2.0 (Otimizado)
-- **Interface Imersiva:** Controles inteligentes que se ocultam automaticamente durante a rolagem para leitura sem distrações. Recupere o menu instantaneamente clicando na área superior da tela ou rolando para cima.
-- **Sincronização MangaDex & Proxy:** Integração robusta com MangaDex priorizando conteúdo PT-BR. Proxy otimizado para contornar restrições de referer e CDN, garantindo que as páginas carreguem sempre na melhor resolução.
-- **Data Saver Inteligente:** Redução significativa no consumo de dados (até 50%) com a nova opção MangaDex Data Saver, ideal para conexões móveis.
-- **Navegação Fluida:** Adição de botão "Voltar ao Topo" animado para capítulos longos e transições suaves entre capítulos.
-
-### ⚡ Performance & Estética Cinematográfica
-- **Skeleton Loaders (Shimmer Effect):** Substituição de spinners genéricos por estados de carregamento modernos e estruturados em todas as páginas principais (Home, Rankings, Reader).
-- **UX Adaptativa:** O banner experimental e informativos agora podem ser ocultados permanentemente, salvando a preferência no navegador do usuário.
-- **Fix de Proxy e Cache:** Sistema de cache inteligente no servidor que respeita retentativas do usuário e limpa erros de URL automaticamente.
-
-### 🛠️ Melhorias de Sistema
-- **Integrações de API:** Otimização da busca por títulos no MangaDex usando múltiplos parâmetros (Title, Title English, Title Japanese).
-- **Progresso Automático:** Sincronização em tempo real do progresso de leitura com a lista pessoal do usuário diretamente pelo leitor.
+- **Leitor de Mangás (Experimental Beta):** Nova UI no Manga Reader com aviso de sistema experimental, enquanto estruturamos novas fontes seguras de conteúdo.
+- **Scraper Interno e Proxy Inteligente:** Adição de um sistema escalável no backend (`/server/scraper/`) equipado com `cheerio` para futura extração local, protegendo contra falhas de conexão ou indisponibilidades de APIs de terceiros. Ajustes no Proxy para lidar com erros de getaddrinfo.
+- **Home Stats Carrosel (Fix):** Correção do hook de rotação das estatísticas na tela Home para prevenir memory leaks e inconsistências.
+- **Integrações de API (Comick & MangaDex):** Fix de instabilidades nos subdomínios da Comick originando timeouts na home e busca.
+- **Sistema de Notificações de Conquistas:** Notificações visuais e animadas (Motion) para desbloqueio de conquistas, adaptadas ao nível de raridade.
+- **Painel de Testes (Staff):** Área administrativa para testar o sistema de notificações de conquistas sem impactar o banco de dados.
 
 ## 📱 Instalação como App (PWA)
 Avalon agora funciona como um Progressive Web App (PWA). Você pode instalá-lo no seu computador ou dispositivo móvel para uma experiência nativa:

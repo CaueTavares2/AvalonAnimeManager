@@ -57,7 +57,7 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
       )}
 
       <motion.img 
-        src={status !== 'error' ? `${url}${retryCount > 0 ? (url.includes('?') ? '&' : '?') + `retry=${retryCount}` : ''}` : undefined}
+        src={status !== 'error' ? `${url}${retryCount > 0 ? `&retry=${retryCount}` : ''}` : undefined}
         alt={`Pagina ${index + 1}`} 
         className={cn(
           "w-full h-auto block transition-opacity duration-700",
@@ -104,33 +104,18 @@ export default function MangaReader() {
   const [useDataSaver, setUseDataSaver] = useState(() => {
     return localStorage.getItem('manga_data_saver') === 'true';
   });
-  const [controlsVisible, setControlsVisible] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showBanner, setShowBanner] = useState(() => {
     return localStorage.getItem('hide_experimental_banner') !== 'true';
   });
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setShowScrollTop(currentScrollY > 1000);
-
-      // Auto-hide controls on scroll down, show on scroll up
-      if (selectedChapter) {
-        if (currentScrollY > 150 && currentScrollY > lastScrollY.current + 5) {
-          setControlsVisible(false);
-        } else if (currentScrollY < lastScrollY.current - 5) {
-          setControlsVisible(true);
-        }
-      } else {
-        setControlsVisible(true);
-      }
-      lastScrollY.current = currentScrollY;
+      setShowScrollTop(window.scrollY > 1000);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [selectedChapter]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('manga_data_saver', String(useDataSaver));
@@ -580,24 +565,7 @@ export default function MangaReader() {
         </div>
       ) : (
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6 pb-32 px-4 md:px-0">
-          
-          {/* Interaction Zone to restore controls */}
-          {!controlsVisible && (
-            <div 
-              className="fixed top-0 left-0 w-full h-32 z-50 cursor-pointer"
-              onClick={() => setControlsVisible(true)}
-            />
-          )}
-
-          <motion.div 
-            animate={{ 
-              y: controlsVisible ? 0 : -120,
-              opacity: controlsVisible ? 1 : 0,
-              pointerEvents: controlsVisible ? 'auto' : 'none'
-            }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="w-full flex justify-between items-center bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] sticky top-24 z-[70] shadow-xl flex-wrap gap-4 backdrop-blur-md bg-opacity-80"
-          >
+          <div className="w-full flex justify-between items-center bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] sticky top-24 z-10 shadow-xl flex-wrap gap-4 backdrop-blur-md bg-opacity-80">
             <div className="flex items-center gap-4">
               <button 
                 onClick={clearChapter}
@@ -641,22 +609,12 @@ export default function MangaReader() {
                 Próximo
               </button>
             </div>
-          </motion.div>
+          </div>
           
           {loadingChapter ? (
-            <div className="py-32 flex flex-col items-center justify-center gap-8 animate-pulse">
-              <div className="relative">
-                <div className="w-24 h-24 border-t-2 border-brand rounded-full animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 text-brand animate-pulse" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <p className="font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-xl">Sincronizando Páginas</p>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Codificando sequência do capítulo</p>
-              </div>
+            <div className="py-32 flex flex-col items-center justify-center gap-4">
+               <Loader2 className="w-12 h-12 text-brand animate-spin" />
+               <p className="font-bold text-gray-400 uppercase tracking-widest text-xs">Carregando páginas...</p>
             </div>
           ) : (
             <div className={cn("w-full transition-all", isLongStrip ? "flex flex-col gap-4" : "max-w-xl")}>
