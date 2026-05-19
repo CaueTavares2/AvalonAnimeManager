@@ -4,7 +4,7 @@
  */
 
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
 import { UpdateNotification } from './components/shared/UpdateNotification';
@@ -40,7 +40,7 @@ import { SocialProvider } from './context/SocialContext';
 
 function AppRoutes() {
   const { loading } = useAuth();
-
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
@@ -147,9 +147,9 @@ export default function App() {
             <AnimeListProvider>
               <FavoritesProvider>
                 <ProfileProvider>
-                  <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/AvalonAnimeManager/' : '/'}>
+                  <HashRouter>
                     <AppRoutes />
-                  </BrowserRouter>
+                  </HashRouter>
                 </ProfileProvider>
               </FavoritesProvider>
             </AnimeListProvider>
