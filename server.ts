@@ -18,14 +18,17 @@ async function startServer() {
     }
 
     // Attempt to decode in case of double encoding
-    let targetUrl = targetUrlRaw;
-    if (targetUrl.includes('%') && !targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    let targetUrl = targetUrlRaw.trim();
+    if (targetUrl.includes('%') && !targetUrl.toLowerCase().startsWith('http')) {
        try {
-         targetUrl = decodeURIComponent(targetUrlRaw);
+         targetUrl = decodeURIComponent(targetUrl);
        } catch (e) {
          console.warn(`[Proxy] Failed to decode targetUrl: ${targetUrlRaw}`);
        }
     }
+
+    // Clean up potential double slashes (except after protocol)
+    targetUrl = targetUrl.replace(/([^:]\/)\/+/g, "$1");
 
     // Check cache
     const isRetry = req.query.retry !== undefined;
@@ -42,17 +45,18 @@ async function startServer() {
 
     let urlObj: URL;
     try {
-      if (!targetUrl.startsWith('http')) {
+      if (!targetUrl.toLowerCase().startsWith('http')) {
         throw new Error(`Target URL must be absolute (starts with http/https). Received: "${targetUrl}"`);
       }
       urlObj = new URL(targetUrl);
     } catch (e: any) {
       console.error(`[Proxy] Invalid target URL: "${targetUrl}" - ${e.message}`);
-      return res.status(400).json({ error: `Invalid URL provided: ${e.message}` });
+      return res.status(400).json({ error: `Invalid URL provided: ${e.message}`, url: targetUrl });
     }
 
     try {
       const referer = urlObj.origin + '/';
+      const isMangaDex = targetUrl.includes('mangadex');
 
       const USER_AGENTS = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
@@ -117,7 +121,7 @@ async function startServer() {
       const getHeaders = (simple = false) => {
         const base: any = {
           'Accept': '*/*',
-          'Referer': targetUrl.includes('mangadex') ? 'https://mangadex.org' : referer,
+          'Referer': isMangaDex ? 'https://mangadex.org' : referer,
           'Connection': 'keep-alive',
         };
         if (simple) return base;
@@ -126,7 +130,7 @@ async function startServer() {
           ...base,
           'Accept': 'application/json, text/plain, */*',
           'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Origin': referer.replace(/\/$/, ''),
+          'Origin': isMangaDex ? 'https://mangadex.org' : referer.replace(/\/$/, ''),
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
           'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',

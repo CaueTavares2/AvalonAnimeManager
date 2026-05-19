@@ -32,20 +32,33 @@ function setCachedData(url: string, data: any) {
   }
 }
 
+const PROXY_URL = '/api/proxy?url=';
+
 async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<any> {
   const cached = getCachedData(url);
   if (cached) return cached;
 
   try {
-    const response = await axios.get(url);
+    const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
+    const response = await axios.get(proxyUrl);
     const data = response.data;
     setCachedData(url, data);
     return data;
   } catch (error: any) {
-    if (error.response?.status === 429 && retries > 0) {
+    if ((error.response?.status === 429 || error.status === 429) && retries > 0) {
       console.warn(`Rate limit hit. Retrying in ${delay}ms... (${retries} left)`);
       await sleep(delay);
       return fetchWithRetry(url, retries - 1, delay * 2);
+    }
+    // Fallback to direct call if proxy fails? No, proxy is usually more reliable here.
+    // But let's try direct as a last resort if it's not a rate limit
+    if (retries === 0) {
+       try {
+         const directResponse = await axios.get(url);
+         return directResponse.data;
+       } catch (e) {
+         throw error;
+       }
     }
     throw error;
   }
