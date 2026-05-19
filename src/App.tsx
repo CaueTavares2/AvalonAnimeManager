@@ -139,6 +139,10 @@ function AppRoutes() {
 }
 
 export default function App() {
+  useEffect(() => {
+    console.log('Avalon: App component mounted successfully');
+  }, []);
+
   return (
     <ThemeProvider>
       <LanguageProvider>
@@ -147,7 +151,7 @@ export default function App() {
             <AnimeListProvider>
               <FavoritesProvider>
                 <ProfileProvider>
-                  <BrowserRouter>
+                  <BrowserRouter basename={import.meta.env.BASE_URL}>
                     <AppRoutes />
                   </BrowserRouter>
                 </ProfileProvider>
