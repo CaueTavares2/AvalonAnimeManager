@@ -147,7 +147,7 @@ export default function App() {
             <AnimeListProvider>
               <FavoritesProvider>
                 <ProfileProvider>
-                  <BrowserRouter basename={import.meta.env.BASE_URL}>
+                  <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/AvalonAnimeManager/' : '/'}>
                     <AppRoutes />
                   </BrowserRouter>
                 </ProfileProvider>
