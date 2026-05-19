@@ -33,25 +33,31 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
 
   return (
     <div className={cn(
-      "relative w-full overflow-hidden transition-all duration-500",
-      status === 'loading' ? "bg-zinc-900 aspect-[3/4] animate-pulse rounded-2xl" : "",
-      !isLongStrip ? "shadow-2xl rounded-2xl bg-zinc-900 border border-white/5" : ""
+      "relative w-full overflow-hidden transition-all duration-700",
+      status === 'loading' ? "bg-white/[0.03] aspect-[2/3] animate-pulse rounded-3xl" : "bg-transparent",
+      !isLongStrip ? "shadow-2xl rounded-3xl border border-white/5" : "border-none"
     )}>
       {status === 'loading' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <Loader2 className="w-8 h-8 text-brand/20 animate-spin" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          <div className="w-10 h-10 border-t-2 border-brand rounded-full animate-spin opacity-40" />
+          <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest animate-pulse">Página {index + 1}</span>
         </div>
       )}
 
       {status === 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-zinc-950 border border-white/5 rounded-2xl p-6">
-          <RotateCcw className="w-8 h-8 text-red-500/50" />
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Erro ao carregar página {index + 1}</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-red-500/5 rounded-3xl p-12 border border-red-500/10">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+            <RotateCcw className="w-8 h-8 text-red-500 animate-spin-reverse" />
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-[10px] text-red-500 font-black uppercase tracking-widest italic">Falha na Rede Neural</p>
+            <p className="text-[9px] text-gray-500 uppercase font-bold tracking-tight">O servidor negou o acesso ao frame {index + 1}</p>
+          </div>
           <button 
             onClick={handleRetry}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+            className="px-8 py-3 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/20"
           >
-            Tentar Novamente
+            Recarregar Fragmento
           </button>
         </div>
       )}
@@ -60,18 +66,18 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
         src={status !== 'error' ? `${url}${retryCount > 0 ? `&retry=${retryCount}` : ''}` : undefined}
         alt={`Pagina ${index + 1}`} 
         className={cn(
-          "w-full h-auto block transition-opacity duration-700",
-          status === 'loaded' ? "opacity-100" : "opacity-0 absolute pointer-events-none"
+          "w-full h-auto block transition-all duration-1000",
+          status === 'loaded' ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute pointer-events-none"
         )}
         onLoad={() => setStatus('loaded')}
         onError={() => setStatus('error')}
         loading="lazy"
-        initial={{ opacity: 0, y: 10 }}
-        animate={status === 'loaded' ? { opacity: 1, y: 0 } : {}}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={status === 'loaded' ? { opacity: 1, scale: 1 } : {}}
       />
       
-      <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md border border-white/5 text-[10px] font-mono text-white/40 pointer-events-none">
-        P.{index + 1}
+      <div className="absolute bottom-6 right-6 px-3 py-1.5 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 text-[9px] font-black text-white/50 pointer-events-none uppercase tracking-widest shadow-xl">
+        Pag.{index + 1}
       </div>
     </div>
   );

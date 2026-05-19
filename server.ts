@@ -9,6 +9,7 @@ async function startServer() {
   // Simple in-memory cache
   const cache = new Map<string, { data: Buffer, contentType: string, status: number, expiry: number }>();
   const CACHE_TTL = 1000 * 60 * 10; // 10 minutes
+  const pendingRequests = new Map<string, Promise<any>>();
 
   // Proxy endpoint to bypass CORS and set headers
   app.get('/api/proxy', async (req, res) => {
@@ -32,13 +33,35 @@ async function startServer() {
 
     // Check cache
     const isRetry = req.query.retry !== undefined;
+    const isMetadata = targetUrl.includes('/v4/anime/') || targetUrl.includes('/v4/manga/') || (targetUrl.includes('mangadex') && !targetUrl.includes('/feed') && !targetUrl.includes('/at-home/'));
+    const isImage = targetUrl.includes('/at-home/server/') || targetUrl.includes('.jpg') || targetUrl.includes('.png') || targetUrl.includes('.webp');
+    
+    // Adaptive TTL: Metadata (1hr), Images (24hrs), Others (10min)
+    let dynamicTTL = CACHE_TTL;
+    if (isMetadata) dynamicTTL = 1000 * 60 * 60; // 1 hour
+    if (isImage) dynamicTTL = 1000 * 60 * 60 * 24; // 24 hours
+    
     const cached = isRetry ? null : cache.get(targetUrl);
     
     if (cached && cached.expiry > Date.now()) {
-      console.log(`[Proxy] Cache hit: ${targetUrl}`);
       res.status(cached.status);
       if (cached.contentType) res.setHeader('Content-Type', cached.contentType);
       return res.send(cached.data);
+    }
+
+    // If there's already a pending request for this URL, wait for it
+    if (pendingRequests.has(targetUrl)) {
+      try {
+        await pendingRequests.get(targetUrl);
+        const secondAttemptCache = cache.get(targetUrl);
+        if (secondAttemptCache) {
+          res.status(secondAttemptCache.status);
+          if (secondAttemptCache.contentType) res.setHeader('Content-Type', secondAttemptCache.contentType);
+          return res.send(secondAttemptCache.data);
+        }
+      } catch (e) {
+        // Fall through to try again if the pending one failed
+      }
     }
 
     console.log(`[Proxy] Requesting: ${targetUrl}`);
@@ -54,7 +77,7 @@ async function startServer() {
       return res.status(400).json({ error: `Invalid URL provided: ${e.message}`, url: targetUrl });
     }
 
-    try {
+    const performFetch = async () => {
       const referer = urlObj.origin + '/';
       const isMangaDex = targetUrl.includes('mangadex');
 
@@ -69,7 +92,7 @@ async function startServer() {
         let lastError: any;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
           const controller = new AbortController();
-          const timeout = 15000 + (attempt * 5000); // Increasing timeout
+          const timeout = 15000 + (attempt * 5000); 
           const id = setTimeout(() => controller.abort(), timeout);
           
           try {
@@ -80,36 +103,24 @@ async function startServer() {
               'X-Forwarded-For': `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`
             };
 
-            const response = await fetch(url, { 
-              ...options, 
-              headers,
-              signal: controller.signal,
-              // Some servers act up with certain TLS settings
-            });
+            const response = await fetch(url, { ...options, headers, signal: controller.signal });
 
             if (response.status === 429) {
               const retryAfter = response.headers.get('retry-after');
               const wait = retryAfter ? parseInt(retryAfter) * 1000 : 2000 * (attempt + 1);
-              console.warn(`[Proxy] 429 for ${url}. Waiting ${wait}ms...`);
               await new Promise(r => setTimeout(r, wait));
               continue;
             }
 
             if (!response.ok && attempt < maxRetries - 1 && response.status >= 500) {
-              console.warn(`[Proxy] ${response.status} for ${url}. Retrying...`);
               await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
               continue;
             }
-
             return response;
           } catch (err: any) {
             lastError = err;
-            if (!err.message?.includes('fetch failed') && !err.message?.includes('getaddrinfo')) {
-              console.error(`[Proxy] Attempt ${attempt + 1} failed for ${url}: ${err.message}`);
-            }
             if (attempt < maxRetries - 1) {
-              const delay = 1000 * (attempt + 1);
-              await new Promise(r => setTimeout(r, delay));
+              await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
             }
           } finally {
             clearTimeout(id);
@@ -125,7 +136,6 @@ async function startServer() {
           'Connection': 'keep-alive',
         };
         if (simple) return base;
-        
         return {
           ...base,
           'Accept': 'application/json, text/plain, */*',
@@ -133,12 +143,6 @@ async function startServer() {
           'Origin': isMangaDex ? 'https://mangadex.org' : referer.replace(/\/$/, ''),
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
-          'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-          'sec-ch-ua-mobile': '?0',
-          'sec-ch-ua-platform': '"Windows"',
-          'sec-fetch-dest': 'empty',
-          'sec-fetch-mode': 'cors',
-          'sec-fetch-site': 'cross-site',
           'Upgrade-Insecure-Requests': '1',
         };
       };
@@ -147,38 +151,16 @@ async function startServer() {
       try {
         response = await fetchWithRetry(targetUrl, { headers: getHeaders() });
       } catch (err: any) {
-        // Final fallback with very simple headers
-        console.warn(`[Proxy] All standard attempts failed for ${targetUrl}. Trying simple headers fallback...`);
         response = await fetchWithRetry(targetUrl, { headers: getHeaders(true) }, 1);
       }
 
-      console.log(`[Proxy] Response: ${response.status} ${response.statusText}`);
-
-      res.status(response.status);
-      const contentType = response.headers.get('content-type');
-      if (contentType) {
-        res.setHeader('Content-Type', contentType);
-      }
-      
+      const contentType = response.headers.get('content-type') || 'application/octet-stream';
       const data = await response.arrayBuffer();
       const buffer = Buffer.from(data);
+      const result = { data: buffer, contentType, status: response.status };
       
-      if (response.status >= 400) {
-        if (contentType && !contentType.includes('text/html')) {
-          console.log(`[Proxy] Error Response Body (${targetUrl}): ${buffer.toString('utf-8').slice(0, 500)}`);
-        }
-      }
-      
-      // Store in cache for successful 200 responses
       if (response.status === 200) {
-        cache.set(targetUrl, {
-          data: buffer,
-          contentType: contentType || 'application/octet-stream',
-          status: response.status,
-          expiry: Date.now() + CACHE_TTL
-        });
-
-        // Basic cache size management
+        cache.set(targetUrl, { ...result, expiry: Date.now() + dynamicTTL });
         if (cache.size > 2000) {
           const now = Date.now();
           for (const [key, val] of cache.entries()) {
@@ -187,12 +169,41 @@ async function startServer() {
           }
         }
       }
+      return result;
+    };
 
-      res.send(buffer);
-    } catch (error) {
-      console.error(`[Proxy] Error for ${targetUrl}:`, error);
-      res.status(500).json({ error: 'Failed to fetch target URL' });
-    }
+    const run = async () => {
+      let result;
+      if (pendingRequests.has(targetUrl)) {
+        try {
+          await pendingRequests.get(targetUrl);
+          result = cache.get(targetUrl);
+        } catch (e) {}
+      }
+
+      if (!result) {
+        const p = performFetch();
+        pendingRequests.set(targetUrl, p);
+        try {
+          result = await p;
+        } finally {
+          pendingRequests.delete(targetUrl);
+        }
+      }
+
+      if (result) {
+        res.status(result.status);
+        res.setHeader('Content-Type', result.contentType);
+        res.send(result.data);
+      } else {
+        res.status(500).json({ error: 'Failed to fetch target URL' });
+      }
+    };
+
+    run().catch(err => {
+      console.error(`[Proxy] Critical error for ${targetUrl}:`, err);
+      if (!res.headersSent) res.status(500).json({ error: 'Internal Server Error' });
+    });
   });
 
   if (process.env.NODE_ENV !== 'production') {
