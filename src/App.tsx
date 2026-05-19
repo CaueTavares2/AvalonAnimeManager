@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
@@ -13,10 +13,9 @@ import { AchievementNotification } from './components/shared/AchievementNotifica
 import { ChangelogModal } from './components/shared/ChangelogModal';
 import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
+import Home from './pages/Home';
+import AnimeDetails from './pages/AnimeDetails';
 import MangaReader from './pages/MangaReader';
-
-const Home = lazy(() => import('./pages/Home'));
-const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
 const MyList = lazy(() => import('./pages/MyList'));
 const Community = lazy(() => import('./pages/Community'));
 const Rankings = lazy(() => import('./pages/Rankings'));

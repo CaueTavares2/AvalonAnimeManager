@@ -97,39 +97,8 @@ export default function AnimeDetails() {
   }, [id]);
 
   if (loading) return (
-    <div className="min-h-screen pt-32 pb-12 px-4">
-      <div className="max-w-6xl mx-auto space-y-12 animate-pulse">
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
-          {/* Cover Skeleton */}
-          <div className="w-full md:w-72 shrink-0 space-y-6">
-            <div className="aspect-[2/3] bg-white/5 rounded-3xl border border-white/5 relative overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
-            </div>
-            <div className="h-12 bg-white/5 rounded-xl border border-white/5" />
-            <div className="h-40 bg-white/5 rounded-xl border border-white/5" />
-          </div>
-
-          {/* Info Skeleton */}
-          <div className="flex-1 space-y-8">
-            <div className="space-y-4">
-              <div className="h-12 w-3/4 bg-white/5 rounded-2xl" />
-              <div className="flex gap-2">
-                {[1, 2, 3].map(i => <div key={i} className="h-6 w-20 bg-white/5 rounded-full" />)}
-              </div>
-            </div>
-            <div className="h-32 w-full bg-white/5 rounded-2xl" />
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-white/5 rounded-2xl border border-white/5" />)}
-            </div>
-            <div className="space-y-4">
-               <div className="h-8 w-48 bg-white/5 rounded-xl" />
-               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                 {[1, 2, 3, 4].map(i => <div key={i} className="aspect-square bg-white/5 rounded-xl border border-white/5" />)}
-               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
     </div>
   );
   if (error || !anime) return <div className="pt-32 text-center text-gray-500">{error || "Obra não encontrada"}</div>;
