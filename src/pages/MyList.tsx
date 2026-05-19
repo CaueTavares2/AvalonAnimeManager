@@ -26,7 +26,7 @@ export default function MyList() {
     setIsSyncing(true);
     try {
       await rankingService.syncListPoints(user.uid, list);
-      alert("Pontos de Otaku sincronizados com sucesso!");
+      console.log("Pontos de Otaku sincronizados com sucesso!");
     } catch (error) {
       console.error("Sync error:", error);
     } finally {

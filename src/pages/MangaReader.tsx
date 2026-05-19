@@ -57,7 +57,7 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
       )}
 
       <motion.img 
-        src={status !== 'error' ? `${url}${retryCount > 0 ? `&retry=${retryCount}` : ''}` : undefined}
+        src={status !== 'error' ? `${url}${retryCount > 0 ? (url.includes('?') ? '&' : '?') + `retry=${retryCount}` : ''}` : undefined}
         alt={`Pagina ${index + 1}`} 
         className={cn(
           "w-full h-auto block transition-opacity duration-700",

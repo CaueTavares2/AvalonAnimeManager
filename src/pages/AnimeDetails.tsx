@@ -79,9 +79,8 @@ export default function AnimeDetails() {
 
         // Fetch characters
         try {
-          const charResp = await fetch(`https://api.jikan.moe/v4/${finalType.toLowerCase()}/${id}/characters`);
-          const charData = await charResp.json();
-          const mainCharacters = charData.data?.filter((c: MediaCharacter) => c.role === 'Main') || [];
+          const charData = await jikanService.getCharacters(Number(id), finalType.toLowerCase() as 'anime' | 'manga');
+          const mainCharacters = charData?.filter((c: MediaCharacter) => c.role === 'Main') || [];
           setCharacters(mainCharacters.slice(0, 12));
         } catch (e) {
           console.error("Failed to fetch characters:", e);
