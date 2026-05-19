@@ -17,6 +17,7 @@ import MangaReader from './pages/MangaReader';
 
 const Home = lazy(() => import('./pages/Home'));
 const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
+const AnimePlayer = lazy(() => import('./pages/AnimePlayer'));
 const MyList = lazy(() => import('./pages/MyList'));
 const Community = lazy(() => import('./pages/Community'));
 const Rankings = lazy(() => import('./pages/Rankings'));
@@ -81,6 +82,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/:type/:id" element={<AnimeDetails />} />
+            <Route path="/anime/:id/watch" element={<AnimePlayer />} />
             <Route path="/manga/:id/read" element={<MangaReader />} />
             <Route path="/list" element={<MyList />} />
             <Route path="/community" element={<Community />} />

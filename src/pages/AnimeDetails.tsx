@@ -5,6 +5,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { jikanService } from '../services/jikanService';
+import { aniListService } from '../services/aniListService';
 import { cn } from '../lib/utils';
 import type { Media, AnimeStatus } from '../types';
 import { SPECIAL_ANIMES } from '../constants/specialAnimes';
@@ -22,6 +23,17 @@ interface MediaCharacter {
   role: string;
 }
 
+interface Relation {
+  relationType: string;
+  node: {
+    idMal: number;
+    id: number;
+    title: { romaji: string; english: string };
+    type: string;
+    coverImage: { large: string };
+  };
+}
+
 export default function AnimeDetails() {
   const { type, id } = useParams();
   const navigate = useNavigate();
@@ -29,6 +41,7 @@ export default function AnimeDetails() {
   const { addCharacter, removeCharacter, isFavorite } = useFavorites();
   const [anime, setAnime] = useState<Media | null>(null);
   const [characters, setCharacters] = useState<MediaCharacter[]>([]);
+  const [relations, setRelations] = useState<Relation[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [addStatus, setAddStatus] = useState<AnimeStatus>('PLANNING');
@@ -86,6 +99,14 @@ export default function AnimeDetails() {
         } catch (e) {
           console.error("Failed to fetch characters:", e);
         }
+
+        // Fetch relations
+        try {
+          const rels = await aniListService.getRelationsByMalId(Number(id), finalType);
+          setRelations(rels);
+        } catch (e) {
+          console.error("Failed to fetch relations:", e);
+        }
       } catch (error) {
         console.error("Failed to fetch media details:", error);
         setError("Não foi possível carregar as informações desta obra. Tente novamente mais tarde.");
@@ -127,7 +148,13 @@ export default function AnimeDetails() {
           </div>
         )}
         <button 
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            if (window.history.state && window.history.state.idx > 0) {
+              navigate(-1);
+            } else {
+              navigate('/', { replace: true });
+            }
+          }}
           className="flex items-center gap-2 text-gray-500 hover:text-brand transition-colors mb-8 group"
         >
           <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back
@@ -144,13 +171,21 @@ export default function AnimeDetails() {
               <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
             </motion.div>
 
-            {anime.type === 'MANGA' && (
+            {anime.type === 'MANGA' ? (
               <button 
                 onClick={() => navigate(`/manga/${anime.id}/read`)}
                 className="w-full bg-brand text-white font-black uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20 active:scale-95"
               >
                 <BookOpen className="w-5 h-5" />
                 Ler Mangá
+              </button>
+            ) : (
+              <button 
+                onClick={() => navigate(`/anime/${anime.id}/watch`)}
+                className="w-full bg-brand text-white font-black uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20 active:scale-95"
+              >
+                <Play className="w-5 h-5 fill-current" />
+                Assistir
               </button>
             )}
 
@@ -296,6 +331,34 @@ export default function AnimeDetails() {
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Year</span>
               </div>
             </div>
+
+            {relations.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Relações</h3>
+                <div className="flex overflow-x-auto gap-4 pb-4 snap-x select-none custom-scrollbar pb-2">
+                  {relations.filter(rel => rel.node.idMal).map((rel, index) => (
+                    <Link
+                      key={`${rel.node.idMal}-${index}`}
+                      to={`/${rel.node.type.toLowerCase()}/${rel.node.idMal}`}
+                      className="shrink-0 w-[110px] md:w-[140px] rounded-lg overflow-hidden border border-[var(--color-border)] group relative snap-start shadow-md hover:shadow-lg transition-all hover:-translate-y-1 bg-black"
+                    >
+                      <div className="aspect-[2/3] relative">
+                        <img 
+                          src={rel.node.coverImage.large} 
+                          alt={rel.node.title.romaji || rel.node.title.english} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-center backdrop-blur-sm z-10">
+                          <p className="text-[10px] font-bold text-[var(--color-text-bright)] capitalize tracking-wider truncate">
+                            {rel.relationType.replace(/_/g, ' ').toLowerCase()}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Personagens Principais</h3>
