@@ -114,5 +114,11 @@ service cloud.firestore {
       allow create: if isSignedIn();
       allow update, delete: if isStaff();
     }
+
+    match /feedback/{feedbackId} {
+      allow read, list: if isStaff() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
   }
 }

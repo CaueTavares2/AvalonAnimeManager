@@ -1,11 +1,12 @@
-import { Search, User, MoreHorizontal, Settings as SettingsIcon, LogIn, PieChart, Users, MessageSquare } from 'lucide-react';
+import { Search, User, MoreHorizontal, Settings as SettingsIcon, LogIn, PieChart, Users, MessageSquare, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { jikanService, JikanAnime } from '../../services/jikanService';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocial } from '../../context/SocialContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -14,8 +15,11 @@ export default function Navbar() {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<JikanAnime[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [failedSearches, setFailedSearches] = useState(0);
 
@@ -25,30 +29,21 @@ export default function Navbar() {
         setIsSearching(true);
         try {
           const data = await jikanService.search(search, mediaType);
-          
-          // Improved sorting by similarity/relevance
           const sorted = [...data].sort((a, b) => {
             const query = search.toLowerCase();
             const titleA = a.title.toLowerCase();
             const titleB = b.title.toLowerCase();
-            
             const startA = titleA.startsWith(query);
             const startB = titleB.startsWith(query);
-            
             if (startA && !startB) return -1;
             if (!startA && startB) return 1;
-            
             const includesA = titleA.includes(query);
             const includesB = titleB.includes(query);
-            
             if (includesA && !includesB) return -1;
             if (!includesA && includesB) return 1;
-            
-            return titleA.length - titleB.length; // Priority to shorter titles if both match
+            return titleA.length - titleB.length;
           });
-
           setResults(sorted);
-          
           if (data.length === 0) {
             const newFailed = failedSearches + 1;
             setFailedSearches(newFailed);
@@ -65,8 +60,7 @@ export default function Navbar() {
         setResults([]);
         setIsSearching(false);
       }
-    }, 300); // Debounce to 300ms
-
+    }, 300);
     return () => clearTimeout(timer);
   }, [search, mediaType, user, failedSearches]);
 
@@ -74,6 +68,9 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setIsSearching(false);
+      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -87,7 +84,6 @@ export default function Navbar() {
   };
 
   const [logoClicks, setLogoClicks] = useState(0);
-
   const handleLogoClick = async (e: React.MouseEvent) => {
     if (user) {
       const newClicks = logoClicks + 1;
@@ -100,6 +96,15 @@ export default function Navbar() {
     }
   };
 
+  const menuItems = [
+    { label: 'Ranking', to: '/ranking', icon: Trophy },
+    { label: 'Loja', to: '/shop', icon: ShoppingBag },
+    { label: 'Social', to: '/social', icon: Radio, badge: requests.length > 0 },
+    { label: 'AniChat', to: '/chat', icon: MessageCircle },
+    { label: 'Analytics', to: '/analytics', icon: BarChart3 },
+    { label: 'Feedback', to: '/feedback', icon: AlertCircle },
+  ];
+
   return (
     <nav className="sticky top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
@@ -110,20 +115,76 @@ export default function Navbar() {
             <div className="text-brand font-black text-xl tracking-tighter uppercase italic group-hover:scale-110 transition-transform duration-300 ml-1">Avalon</div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest">
-            <Link to="/" className="text-gray-400 hover:text-brand transition-colors">{t('nav.browse')}</Link>
-            <Link to="/list" className="text-gray-400 hover:text-brand transition-colors">{t('nav.list')}</Link>
-            <Link to="/ranking" className="text-gray-400 hover:text-brand transition-colors">Ranking</Link>
-            <Link to="/shop" className="text-gray-400 hover:text-brand transition-colors">Loja</Link>
-            <Link to="/social" className="text-gray-400 hover:text-brand transition-colors flex items-center gap-1.5">
-              Social
-              {requests.length > 0 && (
-                <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
-              )}
+          <div className="hidden lg:flex items-center gap-4 text-[10px] font-black uppercase tracking-widest">
+            <Link 
+              to="/" 
+              className={cn("px-3 py-1.5 rounded-lg transition-colors", location.pathname === '/' ? "text-brand bg-brand/5" : "text-gray-400 hover:text-brand")}
+            >
+              {t('nav.browse')}
             </Link>
-            <Link to="/chat" className="text-gray-400 hover:text-brand transition-colors">AniChat</Link>
-            <Link to="/analytics" className="text-gray-400 hover:text-brand transition-colors">Analytics</Link>
-            <Link to="/settings" className="text-gray-400 hover:text-brand transition-colors hover:scale-105 active:scale-95 transition-transform"><SettingsIcon className="w-4 h-4" /></Link>
+            <Link 
+              to="/list" 
+              className={cn("px-3 py-1.5 rounded-lg transition-colors", location.pathname === '/list' ? "text-brand bg-brand/5" : "text-gray-400 hover:text-brand")}
+            >
+              {t('nav.list')}
+            </Link>
+
+            <div className="relative" ref={menuRef}>
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors uppercase tracking-widest text-[10px] font-black",
+                  isMenuOpen ? "text-brand bg-brand/5" : "text-gray-400 hover:text-brand"
+                )}
+              >
+                Comunidade
+                <ChevronDown size={12} className={cn("transition-transform duration-300", isMenuOpen && "rotate-180")} />
+                {requests.length > 0 && <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse ml-0.5" />}
+              </button>
+
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full left-0 mt-2 w-48 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-2 z-[110] backdrop-blur-xl"
+                  >
+                    {menuItems.map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setIsMenuOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group ring-inset",
+                          location.pathname === item.to 
+                            ? "bg-brand/10 text-brand" 
+                            : "text-gray-400 hover:bg-[var(--color-bg)] hover:text-[var(--color-text-bright)]"
+                        )}
+                      >
+                        <item.icon size={16} className={cn("transition-transform group-hover:scale-110", location.pathname === item.to ? "text-brand" : "text-gray-500")} />
+                        <span className="font-black text-[9px] uppercase tracking-wider">{item.label}</span>
+                        {item.badge && (
+                          <span className="ml-auto w-1.5 h-1.5 bg-brand rounded-full animate-pulse" />
+                        )}
+                      </Link>
+                    ))}
+                    <div className="border-t border-[var(--color-border)] mt-2 pt-2">
+                       <Link
+                        to="/settings"
+                        onClick={() => setIsMenuOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-gray-400 hover:bg-[var(--color-bg)] hover:text-[var(--color-text-bright)]"
+                        )}
+                      >
+                        <SettingsIcon size={16} className="text-gray-500" />
+                        <span className="font-black text-[9px] uppercase tracking-wider">Ajustes</span>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -170,9 +231,6 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user ? (
               <>
-                <Link to="/analytics" className="p-2 hover:bg-[var(--color-bg)] rounded-md transition-colors relative group">
-                  <PieChart className="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:text-brand" />
-                </Link>
                 <Link to="/profile" className="p-2 hover:bg-[var(--color-bg)] rounded-md transition-colors relative group overflow-hidden">
                   {user.photoURL ? (
                     <img src={user.photoURL} className="w-6 h-6 rounded-full" alt="Profile" />
@@ -182,7 +240,7 @@ export default function Navbar() {
                 </Link>
                 <button 
                   onClick={() => logout()}
-                  className="hidden md:block p-2 hover:bg-[var(--color-bg)] rounded-md transition-colors text-xs font-black uppercase tracking-widest text-gray-400 hover:text-red-500"
+                  className="hidden md:block p-2 hover:bg-[var(--color-bg)] rounded-xl transition-colors text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500"
                 >
                   Sair
                 </button>

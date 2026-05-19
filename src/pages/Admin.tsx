@@ -5,12 +5,14 @@ import {
   collection, getDocs, deleteDoc, doc, query, where, writeBatch, setDoc, 
   serverTimestamp, onSnapshot, orderBy, limit, updateDoc, addDoc, getCountFromServer
 } from 'firebase/firestore';
-import { Shield, Trash2, AlertTriangle, CheckCircle, Loader2, Users, Activity, Megaphone, UserX, UserMinus, MessageSquareWarning, RefreshCw, List} from 'lucide-react';
+import { Shield, Trash2, AlertTriangle, CheckCircle, Loader2, Users, Activity, Megaphone, UserX, UserMinus, MessageSquareWarning, RefreshCw, List, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import AdminFeedback from '../components/admin/AdminFeedback';
 
 export default function Admin() {
   const { isAdmin, user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'FEEDBACK'>('DASHBOARD');
   const [status, setStatus] = useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [log, setLog] = useState<{msg: string, time: Date}[]>([]);
   
@@ -272,12 +274,30 @@ export default function Admin() {
           </h1>
           <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] mt-1 ml-11">Acesso Nível 5 Concedido</p>
         </div>
-        <button onClick={fetchStats} className="p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-[var(--color-text-bright)]">
-          <RefreshCw size={16} className={cn(loadingStats && "animate-spin text-brand")} />
-        </button>
+        <div className="flex gap-4">
+          <button 
+            onClick={() => setActiveTab('DASHBOARD')}
+            className={cn("px-6 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors", activeTab === 'DASHBOARD' ? "bg-brand text-white" : "bg-[var(--color-bg)] text-gray-500 hover:text-[var(--color-text-bright)]")}
+          >
+            Dashboard
+          </button>
+          <button 
+            onClick={() => setActiveTab('FEEDBACK')}
+            className={cn("px-6 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors", activeTab === 'FEEDBACK' ? "bg-brand text-white" : "bg-[var(--color-bg)] text-gray-500 hover:text-[var(--color-text-bright)]")}
+          >
+            Feedback
+          </button>
+          <button onClick={fetchStats} className="p-3 bg-[var(--color-bg)] hover:bg-[var(--color-border)] rounded-full transition-colors text-[var(--color-text-bright)]">
+            <RefreshCw size={16} className={cn(loadingStats && "animate-spin text-brand")} />
+          </button>
+        </div>
       </div>
 
-      {/* DASHBOARD STATS */}
+      {activeTab === 'FEEDBACK' ? (
+        <AdminFeedback />
+      ) : (
+        <>
+          {/* DASHBOARD STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[var(--color-card)] border border-white/5 rounded-2xl p-6 flex flex-col items-center text-center">
           <Users size={24} className="text-blue-500 mb-2" />
@@ -514,6 +534,8 @@ export default function Admin() {
 
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

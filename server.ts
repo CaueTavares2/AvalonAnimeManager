@@ -181,6 +181,89 @@ async function startServer() {
     }
   });
 
+  // Body parser for JSON
+  app.use(express.json());
+
+  // GitHub Feedback Endpoint
+  app.post('/api/feedback/github', async (req, res) => {
+    const { title, description, user, type } = req.body;
+    
+    const token = process.env.GITHUB_FEEDBACK_TOKEN;
+    const owner = process.env.GITHUB_REPO_OWNER;
+    const repo = process.env.GITHUB_REPO_NAME;
+
+    if (!token || !owner || !repo) {
+      console.warn('[Feedback] GitHub integration not fully configured.');
+      return res.status(503).json({ error: 'GitHub integration not configured' });
+    }
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Avalon-Feedback-App'
+        },
+        body: JSON.stringify({
+          title: `[${type}] ${title}`,
+          body: `**User:** ${user.name} (${user.email})\n**Type:** ${type}\n\n**Description:**\n${description}\n\n--- \n*Sent via Avalon Feedback App*`,
+          labels: [type.toLowerCase(), 'feedback']
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+
+      const data = await response.json();
+      res.json({ success: true, url: data.html_url, number: data.number });
+    } catch (error: any) {
+      console.error('[Feedback] GitHub Error:', error);
+      res.status(500).json({ error: 'Failed to create GitHub issue' });
+    }
+  });
+
+  // GitHub Feedback Endpoint update
+  app.patch('/api/feedback/github/:number', async (req, res) => {
+    const { number } = req.params;
+    const { state } = req.body; // e.g., 'closed'
+    
+    const token = process.env.GITHUB_FEEDBACK_TOKEN;
+    const owner = process.env.GITHUB_REPO_OWNER;
+    const repo = process.env.GITHUB_REPO_NAME;
+
+    if (!token || !owner || !repo) {
+      return res.status(503).json({ error: 'GitHub integration not configured' });
+    }
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${number}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Avalon-Feedback-App'
+        },
+        body: JSON.stringify({ state })
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+
+      const data = await response.json();
+      res.json({ success: true, state: data.state });
+    } catch (error: any) {
+      console.error('[Feedback] GitHub Patch Error:', error);
+      res.status(500).json({ error: 'Failed to update GitHub issue' });
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
