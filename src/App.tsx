@@ -147,7 +147,7 @@ export default function App() {
             <AnimeListProvider>
               <FavoritesProvider>
                 <ProfileProvider>
-                  <BrowserRouter>
+                  <BrowserRouter basename="/AvalonAnimeManager/">
                     <AppRoutes />
                   </BrowserRouter>
                 </ProfileProvider>
