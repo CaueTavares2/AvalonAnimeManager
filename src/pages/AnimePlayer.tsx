@@ -140,17 +140,17 @@ export default function AnimePlayer() {
       </div>
 
       {/* Episodes List Container */}
-      <div className="w-full max-w-5xl p-4 mt-4 bg-[var(--color-bg)] h-full">
+      <div className="w-full max-w-5xl p-4 mt-2 bg-[var(--color-bg)] flex-1 mb-8">
         <div className="flex items-center gap-2 mb-4 text-[var(--color-text-bright)]">
-          <LayoutGrid className="w-5 h-5 text-brand" />
-          <h2 className="text-lg font-black uppercase tracking-widest">Episódios</h2>
+          <LayoutGrid className="w-4 h-4 text-brand" />
+          <h2 className="text-[11px] font-black uppercase tracking-widest">Episódios</h2>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
           {episodes.map((ep) => (
             <button
               key={ep.id}
               onClick={() => setCurrentEpisode(ep)}
-              className={`p-3 rounded-lg border text-center font-bold text-sm transition-all focus:outline-none ${
+              className={`py-1.5 px-2 rounded border text-center font-bold text-xs transition-all focus:outline-none ${
                 currentEpisode?.id === ep.id 
                   ? 'border-brand bg-brand/10 text-brand' 
                   : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:border-brand/40'

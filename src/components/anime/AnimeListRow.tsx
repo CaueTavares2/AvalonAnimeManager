@@ -21,20 +21,20 @@ const AnimeListRow = memo(({
 }: AnimeListRowProps) => {
   return (
     <tr className="group hover:bg-[var(--color-card)]/30 transition-colors border-b border-[var(--color-border)] last:border-0">
-      <td className="px-4 py-6">
+      <td className="px-4 py-3">
         <Link to={`/${anime.type.toLowerCase()}/${anime.id}`}>
-          <img src={anime.image} className="w-12 h-16 object-cover rounded shadow-lg border border-black/10" alt={anime.title} />
+          <img src={anime.image} className="w-10 h-14 object-cover rounded shadow-lg border border-black/10" alt={anime.title} />
         </Link>
       </td>
-      <td className="px-4 py-6">
-        <Link to={`/${anime.type.toLowerCase()}/${anime.id}`} className="font-bold text-[var(--color-text-bright)] hover:text-brand transition-colors block truncate max-w-md text-base tracking-tight mb-1">
+      <td className="px-4 py-3">
+        <Link to={`/${anime.type.toLowerCase()}/${anime.id}`} className="font-bold text-[var(--color-text-bright)] hover:text-brand transition-colors block truncate max-w-md text-sm tracking-tight mb-1">
           {anime.title}
         </Link>
-        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-70">
+        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest opacity-70">
           {anime.type} • {anime.updatedAt ? new Date(anime.updatedAt).toLocaleDateString('pt-BR') : 'RECENTEMENTE'}
         </span>
       </td>
-      <td className="px-4 py-6 text-center">
+      <td className="px-4 py-3 text-center">
         <div className="relative inline-block group/score">
           <span className="font-black text-brand text-base italic cursor-pointer flex items-center justify-center gap-1">
             {anime.score > 0 ? anime.score : '--'}<span className="text-[10px] text-gray-400 not-italic">/10</span>
@@ -58,12 +58,12 @@ const AnimeListRow = memo(({
           </div>
         </div>
       </td>
-      <td className="px-4 py-6 text-center">
+      <td className="px-4 py-3 text-center">
         <select 
           value={anime.status}
           onChange={(e) => onStatusChange(anime.id, e.target.value as AnimeStatus)}
           className={cn(
-            "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest focus:outline-none cursor-pointer transition-all hover:scale-105 shadow-sm",
+            "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest focus:outline-none cursor-pointer transition-all hover:scale-105 shadow-sm",
             anime.status === 'COMPLETED' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
             (anime.status === 'WATCHING' || anime.status === 'READING') ? "bg-blue-500/10 text-blue-500 border border-blue-500/20" :
             "bg-gray-500/10 text-gray-400 border border-gray-500/20"
@@ -75,7 +75,7 @@ const AnimeListRow = memo(({
           <option value="DROPPED">Dropped</option>
         </select>
       </td>
-      <td className="px-4 py-6 text-center">
+      <td className="px-4 py-3 text-center">
         <div className="flex flex-col items-center justify-center gap-1 group/progress">
           <div className="flex items-center gap-3">
             <button 
@@ -104,13 +104,13 @@ const AnimeListRow = memo(({
           </div>
         </div>
       </td>
-      <td className="px-4 py-6 text-right">
+      <td className="px-4 py-3 text-right">
         <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
           <button 
             onClick={() => removeAnime(anime.id)}
-            className="p-2 text-gray-400 hover:text-red-500 bg-[var(--color-bg)] rounded-lg transition-colors"
+            className="p-1.5 text-gray-400 hover:text-red-500 bg-[var(--color-bg)] rounded-md transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </td>

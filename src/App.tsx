@@ -103,11 +103,9 @@ function AppRoutes() {
 
       <footer className="max-w-7xl mx-auto px-4 md:px-12 py-12 border-t border-[var(--color-border)] mt-12 mb-16 lg:mb-0">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-brand rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-sm rotate-45" />
-            </div>
-            <span className="text-lg font-black text-[var(--color-text-bright)] tracking-tight italic uppercase">Avalon</span>
+          <div className="flex items-center gap-2 overflow-hidden rounded-full border border-[var(--color-border)]">
+            <img src="/logo-light.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-full block dark:hidden" />
+            <img src="/logo-dark.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-full hidden dark:block" />
           </div>
           <div className="flex gap-8 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
             <span className="opacity-50">© 2026 AVALON SAGA</span>

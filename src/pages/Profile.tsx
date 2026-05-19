@@ -320,7 +320,7 @@ export default function Profile() {
               <div className="flex gap-2">
                   {profile.badges && profile.badges.length > 0 ? (
                       profile.badges.map((badge, i) => (
-                          <div key={i} className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center border border-zinc-700">
+                          <div key={i} className="w-12 h-12 bg-[var(--color-bg)] rounded-lg flex items-center justify-center border border-[var(--color-border)]/50">
                               <Trophy className="text-brand w-6 h-6" />
                           </div>
                       ))
@@ -352,7 +352,7 @@ export default function Profile() {
                 if (shouldHide) {
                   return (
                     <div key={ach.id} className="flex flex-col items-center gap-2 group relative text-center grayscale opacity-20">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 border-zinc-700 bg-zinc-800 text-zinc-600">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 border-[var(--color-border)]/50 bg-[var(--color-bg)] text-zinc-600">
                         <Ghost size={24} />
                       </div>
                       <p className="text-[8px] font-black uppercase tracking-tighter text-zinc-600 mt-1">[???]</p>
@@ -410,11 +410,11 @@ export default function Profile() {
                 return (
                   <div key={ach.id} className={cn(
                     "flex gap-5 p-5 rounded-3xl border-2 transition-all relative group",
-                    unlocked ? "bg-white/5 border-brand/20 shadow-lg shadow-brand/5" : "bg-zinc-900/50 border-zinc-800 grayscale cursor-not-allowed"
+                    unlocked ? "bg-white/5 border-brand/20 shadow-lg shadow-brand/5" : "bg-[var(--color-card)] border-[var(--color-border)] grayscale cursor-not-allowed"
                   )}>
                     <div className={cn(
                       "w-16 h-16 rounded-[20px] flex items-center justify-center border-2 shrink-0 transition-transform group-hover:rotate-6",
-                      isSecret ? "bg-zinc-800 border-zinc-700 text-zinc-600" :
+                      isSecret ? "bg-[var(--color-bg)] border-[var(--color-border)]/50 text-zinc-600" :
                       ach.rarity === 'COMUM' ? "bg-emerald-500/10 border-emerald-500 text-emerald-500" :
                       ach.rarity === 'RARO' ? "bg-blue-500/10 border-blue-500 text-blue-500" :
                       ach.rarity === 'EPICO' ? "bg-purple-500/10 border-purple-500 text-purple-500" :
@@ -452,7 +452,7 @@ export default function Profile() {
               })}
             </div>
             
-            <div className="p-8 bg-zinc-900/50 border-t border-[var(--color-border)] flex items-center justify-between">
+            <div className="p-8 bg-[var(--color-card)] border-t border-[var(--color-border)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Medal className="text-zinc-500" size={20} />
                 <span className="text-xs font-black uppercase tracking-widest text-zinc-400">

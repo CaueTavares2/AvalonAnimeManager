@@ -101,11 +101,13 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
+    <nav className="sticky top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer group">
-            <div className="text-brand font-black text-2xl tracking-tighter uppercase italic group-hover:scale-110 transition-transform duration-300">Avalon</div>
+            <img src="/logo-light.jpeg" alt="Avalon" className="h-10 w-10 object-cover rounded-full border-2 border-[var(--color-border)] group-hover:scale-110 transition-transform duration-300 block dark:hidden shadow-sm" />
+            <img src="/logo-dark.jpeg" alt="Avalon" className="h-10 w-10 object-cover rounded-full border-2 border-[var(--color-border)] group-hover:scale-110 transition-transform duration-300 hidden dark:block shadow-md" />
+            <div className="text-brand font-black text-xl tracking-tighter uppercase italic group-hover:scale-110 transition-transform duration-300 ml-1">Avalon</div>
           </Link>
 
           <div className="hidden lg:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest">
@@ -134,21 +136,21 @@ export default function Navbar() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onFocus={() => search.length > 1 && setIsSearching(true)}
-              className="bg-[var(--color-bg)]/80 rounded-2xl py-2.5 pl-10 pr-4 text-xs w-48 focus:w-80 transition-all duration-500 focus:outline-none focus:ring-4 focus:ring-brand/10 border border-white/5 focus:border-brand shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] backdrop-blur-xl hover:border-white/20 placeholder:text-gray-600 font-medium"
+              className="bg-[var(--color-bg)]/80 rounded-2xl py-2.5 pl-10 pr-4 text-[var(--color-text-bright)] text-xs w-48 focus:w-80 transition-all duration-500 focus:outline-none focus:ring-4 focus:ring-brand/10 border border-[var(--color-border)] focus:border-brand shadow-inner backdrop-blur-xl hover:border-gray-500/20 placeholder:text-gray-500 font-medium"
             />
 
             {/* Search Results Dropdown */}
             {isSearching && results.length > 0 && (
-              <div className="absolute top-14 left-0 right-0 bg-[var(--color-card)]/90 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-white/10 overflow-hidden text-[var(--color-text)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="absolute top-14 left-0 right-0 bg-[var(--color-card)]/90 rounded-[24px] shadow-xl border border-[var(--color-border)] overflow-hidden text-[var(--color-text)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-4 duration-300">
                 <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                   {results.map(anime => (
                     <div 
                       key={anime.mal_id}
                       onClick={() => handleSelect(anime.mal_id)}
-                      className="flex items-center gap-4 p-4 hover:bg-brand/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors group/item"
+                      className="flex items-center gap-4 p-4 hover:bg-brand/10 cursor-pointer border-b border-[var(--color-border)] last:border-0 transition-colors group/item"
                     >
                       <div className="relative flex-shrink-0">
-                        <img src={anime.images.webp.image_url} className="w-10 h-14 object-cover rounded-lg shadow-lg border border-white/10 group-hover/item:scale-105 transition-transform" />
+                        <img src={anime.images.webp.image_url} className="w-10 h-14 object-cover rounded-lg shadow-sm border border-[var(--color-border)] group-hover/item:scale-105 transition-transform" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-black line-clamp-1 group-hover/item:text-brand transition-colors uppercase tracking-tight">{anime.title}</p>

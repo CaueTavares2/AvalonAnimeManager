@@ -163,6 +163,11 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
       const path = `users/${user.uid}/list/${id}`;
       try {
         const existingItem = list.find(a => a.id === id);
+        
+        if (data.status === 'COMPLETED' && existingItem && existingItem.totalProgress) {
+          data.progress = existingItem.totalProgress;
+        }
+
         const docRef = doc(db, 'users', user.uid, 'list', id.toString());
         await updateDoc(docRef, { 
           ...data,
@@ -244,7 +249,13 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       setList(prev => {
-        const updated = prev.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a);
+        const existingItem = prev.find(a => a.id === id);
+        const newData = { ...data };
+        if (newData.status === 'COMPLETED' && existingItem && existingItem.totalProgress) {
+          newData.progress = existingItem.totalProgress;
+        }
+
+        const updated = prev.map(a => a.id === id ? { ...a, ...newData, updatedAt: new Date().toISOString() } : a);
         localStorage.setItem('avalon_anime_list', JSON.stringify(updated));
         return updated;
       });

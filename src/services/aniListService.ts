@@ -133,5 +133,42 @@ export const aniListService = {
       console.error("AniList Fetch Relations Error:", error);
       return [];
     }
+  },
+
+  getStatsByMalId: async (idMal: number, type: 'ANIME' | 'MANGA') => {
+    const query = `
+      query ($idMal: Int, $type: MediaType) {
+        Media (idMal: $idMal, type: $type) {
+          stats {
+            statusDistribution {
+              status
+              amount
+            }
+            scoreDistribution {
+              score
+              amount
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = { idMal, type };
+
+    try {
+      const response = await fetch(ANILIST_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ query, variables })
+      });
+      const data = await response.json();
+      return data.data?.Media?.stats || null;
+    } catch (error) {
+      console.error("AniList Fetch Stats Error:", error);
+      return null;
+    }
   }
 };

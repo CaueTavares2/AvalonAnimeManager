@@ -34,8 +34,8 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
   return (
     <div className={cn(
       "relative w-full overflow-hidden transition-all duration-500",
-      status === 'loading' ? "bg-zinc-900 aspect-[3/4] animate-pulse rounded-2xl" : "",
-      !isLongStrip ? "shadow-2xl rounded-2xl bg-zinc-900 border border-white/5" : ""
+      status === 'loading' ? "bg-[var(--color-card)] aspect-[3/4] animate-pulse rounded-2xl" : "",
+      !isLongStrip ? "shadow-2xl rounded-2xl bg-[var(--color-card)] border border-white/5" : ""
     )}>
       {status === 'loading' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
@@ -49,7 +49,7 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Erro ao carregar página {index + 1}</p>
           <button 
             onClick={handleRetry}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-[var(--color-text-bright)] text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
           >
             Tentar Novamente
           </button>
@@ -70,7 +70,7 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
         animate={status === 'loaded' ? { opacity: 1, y: 0 } : {}}
       />
       
-      <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md border border-white/5 text-[10px] font-mono text-white/40 pointer-events-none">
+      <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md border border-white/5 text-[10px] font-mono text-[var(--color-text-bright)]/40 pointer-events-none">
         P.{index + 1}
       </div>
     </div>
@@ -369,7 +369,7 @@ export default function MangaReader() {
               onClick={() => setShowSettings(!showSettings)}
               className={cn(
                 "p-2 rounded-lg transition-colors",
-                showSettings ? "bg-brand text-white" : "bg-white/5 text-gray-400 hover:text-white"
+                showSettings ? "bg-brand text-white" : "bg-white/5 text-gray-400 hover:text-[var(--color-text-bright)]"
               )}
             >
               <Settings size={20} />
@@ -384,7 +384,7 @@ export default function MangaReader() {
                    setIsFullScreen(true);
                 }
               }}
-              className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-colors"
+              className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-[var(--color-text-bright)] transition-colors"
             >
               {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
             </button>
@@ -477,10 +477,10 @@ export default function MangaReader() {
           <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <BookOpen className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">{error}</h2>
+          <h2 className="text-2xl font-black text-[var(--color-text-bright)] uppercase italic tracking-tight mb-2">{error}</h2>
           <button 
             onClick={() => window.location.reload()}
-            className="px-8 py-4 bg-red-500 text-white font-black uppercase tracking-widest text-sm rounded-2xl hover:bg-white hover:text-black transition-all flex items-center gap-3 mx-auto"
+            className="px-8 py-4 bg-red-500 text-[var(--color-text-bright)] font-black uppercase tracking-widest text-sm rounded-2xl hover:bg-white hover:text-black transition-all flex items-center gap-3 mx-auto"
           >
             <RotateCcw size={18} />
             Tentar Novamente
@@ -520,7 +520,7 @@ export default function MangaReader() {
               <p className="text-gray-400">Nenhum capítulo disponível para este mangá.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
               {chapters.map((cap, index) => {
                 const isRead = getIsRead(cap);
                 const isLastRead = id && localStorage.getItem(`manga_last_read_${id}`) === cap.id;
@@ -530,31 +530,31 @@ export default function MangaReader() {
                     key={cap.id}
                     onClick={() => loadChapter(cap, index)}
                     className={cn(
-                      "transition-all p-4 rounded-2xl flex flex-col items-center justify-center gap-2 group border relative overflow-hidden",
+                      "transition-all py-3 px-2 rounded-xl flex flex-col items-center justify-center gap-1.5 group border relative overflow-hidden text-center",
                       isLastRead 
-                        ? "bg-brand border-brand text-white shadow-lg shadow-brand/20 scale-[1.02]" 
+                        ? "bg-brand border-brand text-[var(--color-text-bright)] shadow-lg shadow-brand/20 scale-[1.02]" 
                         : isRead
                           ? "bg-brand/10 border-brand/30 text-brand hover:border-brand hover:bg-brand/20"
                           : "bg-black/20 hover:bg-brand hover:text-black border-[var(--color-border)] text-gray-400"
                     )}
                   >
                     {isRead ? (
-                      <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-                        <CheckCircle2 className="w-4 h-4 text-brand bg-black/80 rounded-full" />
+                      <div className="absolute top-1.5 right-1.5 flex flex-col gap-1 items-end">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-brand bg-black/80 rounded-full" />
                         <button 
                           onClick={(e) => handleMarkAsUnread(e, cap)}
-                          className="opacity-0 group-hover:opacity-100 transition-all p-2 bg-black/60 rounded-xl hover:bg-red-500 hover:text-white backdrop-blur-sm border border-white/10"
+                          className="opacity-0 group-hover:opacity-100 transition-all p-1.5 bg-black/60 rounded-lg hover:bg- hover:text-white backdrop-blur-sm border border-white/10"
                         >
                           <RotateCcw className="w-3 h-3" />
                         </button>
                       </div>
                     ) : (
-                      <BookOpen className={cn("w-6 h-6 transition-colors", isLastRead ? "text-white" : "text-gray-500 group-hover:text-black")} />
+                      <BookOpen className={cn("w-5 h-5 transition-colors absolute opacity-10 blur-sm group-hover:opacity-20", isLastRead ? "text-[var(--color-text-bright)]" : "text-gray-500 group-hover:text-black")} />
                     )}
                     
-                    <span className="font-black text-sm">Capítulo {cap.attributes.chapter || '?'}</span>
+                    <span className="font-black text-sm z-10 relative">Cap {cap.attributes.chapter || '?'}</span>
                     
-                    <span className="text-[10px] uppercase tracking-widest font-black opacity-50">
+                    <span className="text-[9px] uppercase tracking-widest font-black opacity-50 z-10 relative line-clamp-1">
                       {cap.attributes.translatedLanguage?.toUpperCase()}
                     </span>
                   </button>
@@ -575,7 +575,7 @@ export default function MangaReader() {
               </button>
               <div className="flex flex-col">
                 <span className="text-[10px] text-brand font-black uppercase tracking-[0.2em]">MangaDex (PT-BR)</span>
-                <h2 className="font-black text-white uppercase text-sm">Capítulo {selectedChapter.attributes.chapter}</h2>
+                <h2 className="font-black text-[var(--color-text-bright)] uppercase text-sm">Capítulo {selectedChapter.attributes.chapter}</h2>
               </div>
               <select 
                 value={currentChapterIndex}
@@ -583,7 +583,7 @@ export default function MangaReader() {
                   const idx = Number(e.target.value);
                   if(!isNaN(idx)) loadChapter(chapters[idx], idx);
                 }}
-                className="bg-black text-white border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs font-black uppercase outline-none"
+                className="bg-black text-[var(--color-text-bright)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs font-black uppercase outline-none"
               >
                 {chapters.map((cap, idx) => (
                   <option key={cap.id} value={idx}>
@@ -597,7 +597,7 @@ export default function MangaReader() {
               <button 
                 onClick={goToPrevChapter}
                 disabled={currentChapterIndex <= 0}
-                className="p-2 md:px-4 bg-zinc-800 text-white rounded-xl font-black uppercase text-xs disabled:opacity-50"
+                className="p-2 md:px-4 bg-[var(--color-bg)] text-[var(--color-text-bright)] rounded-xl font-black uppercase text-xs disabled:opacity-50"
               >
                 Anterior
               </button>
@@ -623,7 +623,7 @@ export default function MangaReader() {
                   <div className="w-20 h-20 bg-brand/20 flex items-center justify-center rounded-full text-brand">
                     <BookOpen size={40} />
                   </div>
-                  <h3 className="text-2xl font-black text-white uppercase italic">Capítulo Oficial</h3>
+                  <h3 className="text-2xl font-black text-[var(--color-text-bright)] uppercase italic">Capítulo Oficial</h3>
                   <a 
                     href={pages[0].replace('external:', '')}
                     target="_blank"
@@ -667,7 +667,7 @@ export default function MangaReader() {
                   <button 
                     onClick={goToPrevChapter}
                     disabled={currentChapterIndex <= 0}
-                    className="flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm bg-zinc-800 text-white disabled:opacity-50"
+                    className="flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm bg-[var(--color-bg)] text-[var(--color-text-bright)] disabled:opacity-50"
                   >
                     Anterior
                   </button>

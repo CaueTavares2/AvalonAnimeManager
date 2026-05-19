@@ -46,7 +46,7 @@ export const AchievementNotification: React.FC = () => {
     switch (rarity) {
       case 'COMUM':
         return {
-          bg: 'bg-zinc-800/90',
+          bg: 'bg-[var(--color-bg)]',
           border: 'border-zinc-500/50',
           text: 'text-zinc-300',
           icon: <ShieldCheck className="w-8 h-8 text-zinc-400" />,

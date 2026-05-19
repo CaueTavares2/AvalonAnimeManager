@@ -42,7 +42,7 @@ export const UpdateNotification: React.FC = () => {
         exit={{ opacity: 0, y: 50, scale: 0.9 }}
         className="fixed bottom-6 right-6 z-[100] max-w-sm w-full"
       >
-        <div className="bg-zinc-900/90 backdrop-blur-xl border border-brand/30 rounded-2xl p-4 shadow-2xl shadow-brand/20">
+        <div className="bg-[var(--color-card)] backdrop-blur-xl border border-brand/30 rounded-2xl p-4 shadow-2xl shadow-brand/20">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center shrink-0 border border-brand/50">
               <RefreshCw className="w-5 h-5 text-brand animate-spin-slow" />
@@ -50,18 +50,18 @@ export const UpdateNotification: React.FC = () => {
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <h4 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <h4 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
                   <ArrowUpCircle size={14} className="text-brand" /> Nova Atualização
                 </h4>
                 <button 
                   onClick={() => setIsVisible(false)}
-                  className="text-zinc-500 hover:text-white transition-colors"
+                  className="text-gray-500 hover:text-[var(--color-text-bright)] transition-colors"
                 >
                   <X size={16} />
                 </button>
               </div>
               
-              <p className="text-[10px] text-zinc-400 font-bold uppercase italic line-clamp-2 leading-relaxed mb-3">
+              <p className="text-[10px] text-gray-500 font-bold uppercase italic line-clamp-2 leading-relaxed mb-3">
                 "{update.message}"
               </p>
               
@@ -76,7 +76,7 @@ export const UpdateNotification: React.FC = () => {
                   href={`https://github.com/${updateService.REPO_OWNER}/${updateService.REPO_NAME}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-zinc-800 hover:bg-zinc-700 text-white p-2 rounded-lg transition-colors border border-zinc-700"
+                  className="bg-[var(--color-bg)] hover:bg-[var(--color-bg)] text-[var(--color-text-bright)] p-2 rounded-lg transition-colors border border-[var(--color-border)]/50"
                 >
                   <Github size={14} />
                 </a>
@@ -84,8 +84,8 @@ export const UpdateNotification: React.FC = () => {
             </div>
           </div>
           
-          <div className="mt-3 pt-3 border-t border-zinc-800">
-            <p className="text-[8px] text-zinc-600 font-black uppercase tracking-[0.2em] text-center italic">
+          <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
+            <p className="text-[8px] text-gray-500 font-black uppercase tracking-[0.2em] text-center italic">
               Verificando repositório automaticamente...
             </p>
           </div>

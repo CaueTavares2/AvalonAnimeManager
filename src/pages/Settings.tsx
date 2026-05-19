@@ -11,6 +11,7 @@ export default function Settings() {
   const { darkMode, setDarkMode, colorTheme, setColorTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const { batchAddAnimes } = useAnimeList();
+  const { user } = useAuth();
   
   const [activeTab, setActiveTab] = useState('general');
   
@@ -151,10 +152,10 @@ export default function Settings() {
                     </div>
                     <button 
                       onClick={async () => {
-                        if (localSettings.darkMode && useAuth().user) {
+                        if (localSettings.darkMode && user) {
                           const { rankingService } = await import('../services/rankingService');
                           // @ts-ignore
-                          await rankingService.grantAchievement(useAuth().user.uid, 'NIGHT_MODE_RELIGION');
+                          await rankingService.grantAchievement(user.uid, 'NIGHT_MODE_RELIGION');
                         }
                         setLocalSettings(s => ({ ...s, darkMode: !s.darkMode }));
                       }}

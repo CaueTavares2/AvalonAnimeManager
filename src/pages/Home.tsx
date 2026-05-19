@@ -158,15 +158,15 @@ export default function Home() {
     <div className="space-y-12">
       
       {/* Attendance Tracker */}
-      <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 flex items-center justify-between">
+      <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] flex items-center justify-between shadow-sm">
          <div className="flex items-center gap-4">
              <div className="bg-brand/10 p-3 rounded-full"><Zap className="text-brand" /></div>
              <div>
-                <p className="text-xs text-zinc-500 font-bold uppercase">Streak Atual</p>
-                <p className="text-xl font-black text-white">{profile.streak} dias</p>
+                <p className="text-xs text-gray-500 font-bold uppercase">Streak Atual</p>
+                <p className="text-xl font-black text-[var(--color-text-bright)]">{profile.streak} dias</p>
              </div>
          </div>
-         <button onClick={registerAttendance} disabled={profile.lastAttendance === new Date().toISOString().split('T')[0]} className={cn("px-6 py-2 rounded-xl font-black text-xs uppercase flex items-center gap-2", profile.lastAttendance === new Date().toISOString().split('T')[0] ? "bg-zinc-800 text-zinc-500" : "bg-brand text-white")}>
+         <button onClick={registerAttendance} disabled={profile.lastAttendance === new Date().toISOString().split('T')[0]} className={cn("px-6 py-2 rounded-xl font-black text-xs uppercase flex items-center gap-2", profile.lastAttendance === new Date().toISOString().split('T')[0] ? "bg-gray-200 dark:bg-[var(--color-bg)] text-gray-500 dark:text-zinc-500" : "bg-brand text-white")}>
              <CheckCircle size={14}/> {profile.lastAttendance === new Date().toISOString().split('T')[0] ? "Registrado" : "Registrar Presença"}
          </button>
       </div>

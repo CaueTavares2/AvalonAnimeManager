@@ -194,12 +194,12 @@ export default function MyList() {
             <table className="w-full text-sm text-left">
               <thead className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-black border-b border-[var(--color-border)]">
                 <tr>
-                  <th className="px-4 py-6 w-24">COVER</th>
-                  <th className="px-4 py-6">TITLE</th>
-                  <th className="px-4 py-6 text-center">SCORE</th>
-                  <th className="px-4 py-6 text-center">STATUS</th>
-                  <th className="px-4 py-6 text-center">PROGRESS</th>
-                  <th className="px-4 py-6 text-right">ACTIONS</th>
+                  <th className="px-4 py-4 w-20">COVER</th>
+                  <th className="px-4 py-4">TITLE</th>
+                  <th className="px-4 py-4 text-center">SCORE</th>
+                  <th className="px-4 py-4 text-center">STATUS</th>
+                  <th className="px-4 py-4 text-center">PROGRESS</th>
+                  <th className="px-4 py-4 text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]">

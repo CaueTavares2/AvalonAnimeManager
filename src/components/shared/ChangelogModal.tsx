@@ -42,9 +42,9 @@ export const ChangelogModal: React.FC = () => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 border border-brand/30 rounded-3xl p-8 max-w-lg w-full shadow-2xl shadow-brand/20 relative"
+          className="bg-[var(--color-card)] border border-brand/30 rounded-3xl p-8 max-w-lg w-full shadow-2xl shadow-brand/20 relative"
         >
-          <button onClick={close} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors">
+          <button onClick={close} className="absolute top-6 right-6 text-gray-500 hover:text-[var(--color-text-bright)] transition-colors">
             <X size={24} />
           </button>
           
@@ -53,8 +53,8 @@ export const ChangelogModal: React.FC = () => {
               <Sparkles className="text-brand" size={24} />
             </div>
             <div>
-                <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">O que há de novo?</h2>
-                <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest italic">Versão {LATEST_CHANGES.version}</p>
+                <h2 className="text-xl font-black text-[var(--color-text-bright)] uppercase italic tracking-tighter">O que há de novo?</h2>
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest italic">Versão {LATEST_CHANGES.version}</p>
             </div>
           </div>
 
@@ -62,7 +62,7 @@ export const ChangelogModal: React.FC = () => {
             {LATEST_CHANGES.items.map((item, index) => (
               <li key={index} className="flex items-start gap-3">
                 <Zap className="text-brand shrink-0 mt-1" size={14} />
-                <span className="text-sm text-zinc-300 font-medium">{item}</span>
+                <span className="text-sm text-gray-500 font-medium">{item}</span>
               </li>
             ))}
           </ul>

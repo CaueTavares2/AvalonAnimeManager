@@ -42,6 +42,7 @@ export default function AnimeDetails() {
   const [anime, setAnime] = useState<Media | null>(null);
   const [characters, setCharacters] = useState<MediaCharacter[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [addStatus, setAddStatus] = useState<AnimeStatus>('PLANNING');
@@ -107,6 +108,14 @@ export default function AnimeDetails() {
         } catch (e) {
           console.error("Failed to fetch relations:", e);
         }
+
+        // Fetch stats
+        try {
+          const statsData = await aniListService.getStatsByMalId(Number(id), finalType);
+          setStats(statsData);
+        } catch (e) {
+          console.error("Failed to fetch stats:", e);
+        }
       } catch (error) {
         console.error("Failed to fetch media details:", error);
         setError("Não foi possível carregar as informações desta obra. Tente novamente mais tarde.");
@@ -162,11 +171,11 @@ export default function AnimeDetails() {
 
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           {/* Cover Column */}
-          <div className="w-full md:w-72 shrink-0 space-y-6">
+          <div className="w-full md:w-64 shrink-0 space-y-4">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="aspect-[2/3] rounded-lg overflow-hidden shadow-2xl border-4 border-white/50"
+              className="aspect-[2/3] rounded-lg overflow-hidden shadow-xl border-2 border-[var(--color-border)]"
             >
               <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
             </motion.div>
@@ -174,26 +183,26 @@ export default function AnimeDetails() {
             {anime.type === 'MANGA' ? (
               <button 
                 onClick={() => navigate(`/manga/${anime.id}/read`)}
-                className="w-full bg-brand text-white font-black uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20 active:scale-95"
+                className="w-full bg-brand text-white font-black uppercase tracking-widest py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-md shadow-brand/20 active:scale-95 text-xs"
               >
-                <BookOpen className="w-5 h-5" />
+                <BookOpen className="w-4 h-4" />
                 Ler Mangá
               </button>
             ) : (
               <button 
                 onClick={() => navigate(`/anime/${anime.id}/watch`)}
-                className="w-full bg-brand text-white font-black uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20 active:scale-95"
+                className="w-full bg-brand text-white font-black uppercase tracking-widest py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-brand-dark transition-all transform hover:scale-[1.02] shadow-md shadow-brand/20 active:scale-95 text-xs"
               >
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-4 h-4 fill-current" />
                 Assistir
               </button>
             )}
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {inList ? (
-                <div className="space-y-4">
-                  <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Status na Lista</p>
+                <div className="space-y-2">
+                  <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] space-y-2">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Status na Lista</p>
                     <select 
                       value={inList.status}
                       onChange={(e) => {
@@ -204,7 +213,7 @@ export default function AnimeDetails() {
                         }
                         updateAnime(inList.id, updates);
                       }}
-                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-brand text-center py-2 rounded-md font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-brand text-center py-1.5 rounded font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
                     >
                       {anime.type === 'ANIME' ? <option value="WATCHING">Watching</option> : <option value="READING">Reading</option>}
                       <option value="COMPLETED">Completed</option>
@@ -214,16 +223,16 @@ export default function AnimeDetails() {
                   </div>
                   
                   <div className={cn(
-                    "bg-[var(--color-card)] p-4 rounded-xl border space-y-3 transition-all duration-500",
-                    inList.status === 'COMPLETED' && !inList.score ? "border-brand shadow-[0_0_15px_rgba(255,107,0,0.2)] animate-pulse" : "border-[var(--color-border)]"
+                    "bg-[var(--color-card)] p-3 rounded-lg border space-y-2 transition-all duration-500",
+                    inList.status === 'COMPLETED' && !inList.score ? "border-brand shadow-[0_0_10px_rgba(255,107,0,0.15)] animate-pulse" : "border-[var(--color-border)]"
                   )}>
                     <p className={cn(
-                        "text-[10px] font-black uppercase tracking-[0.2em] text-center",
+                        "text-[9px] font-black uppercase tracking-[0.2em] text-center",
                         inList.status === 'COMPLETED' && !inList.score ? "text-brand" : "text-gray-400"
                     )}>
                         Sua Nota {inList.status === 'COMPLETED' && !inList.score && "(Obrigatório)"}
                     </p>
-                    <div className="flex justify-center gap-1.5">
+                    <div className="flex justify-center gap-1 scale-90 origin-center">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
                         <button
                           key={star}
@@ -233,25 +242,26 @@ export default function AnimeDetails() {
                           className="transition-transform hover:scale-125"
                         >
                           <Star 
+                            strokeWidth={3}
                             className={cn(
-                              "w-4 h-4 transition-colors",
+                              "w-3 h-3 transition-colors",
                               (hoveredStar || inList.score) >= star ? "fill-brand text-brand" : "text-gray-300 dark:text-gray-700"
                             )} 
                           />
                         </button>
                       ))}
                     </div>
-                    <p className="text-xl font-black text-brand italic text-center">
+                    <p className="text-sm font-black text-brand italic text-center">
                       {inList.score || '?'}<span className="text-[10px] text-gray-400 not-italic ml-1">/ 10</span>
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <select 
                     value={addStatus}
                     onChange={(e) => setAddStatus(e.target.value as AnimeStatus)}
-                    className="w-full bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text-bright)] text-center py-2 rounded-xl font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text-bright)] text-center py-1.5 rounded-lg font-black text-[10px] uppercase tracking-widest outline-none focus:ring-1 focus:ring-brand"
                   >
                     {anime.type === 'ANIME' ? <option value="WATCHING">Watching</option> : <option value="READING">Reading</option>}
                     <option value="COMPLETED">Completed</option>
@@ -260,87 +270,145 @@ export default function AnimeDetails() {
                   </select>
                   <button 
                     onClick={handleAdd}
-                    className="w-full bg-brand hover:bg-brand-dark text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-brand/20"
+                    className="w-full bg-brand hover:bg-brand-dark text-white py-2.5 rounded-lg font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all transform hover:scale-[1.02] shadow-md shadow-brand/20"
                   >
-                    <Plus className="w-4 h-4" /> Adicionar à Lista
+                    <Plus className="w-4 h-4 text-[12px]" /> Adicionar à Lista
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="bg-[var(--color-card)] p-4 rounded-lg shadow-sm border border-[var(--color-border)] space-y-4">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400 font-bold uppercase tracking-wider">Format</span>
+            <div className="bg-[var(--color-card)] p-3 rounded-lg shadow-sm border border-[var(--color-border)] space-y-2">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-gray-500 font-bold uppercase tracking-wider">Format</span>
                 <span className="text-[var(--color-text)] font-bold">{anime.format}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400 font-bold uppercase tracking-wider">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-gray-500 font-bold uppercase tracking-wider">
                   {anime.type === 'ANIME' ? 'Episodes' : 'Chapters'}
                 </span>
                 <span className="text-[var(--color-text)] font-bold">
                   {anime.type === 'ANIME' ? anime.episodes : anime.chapters || 'Unknown'}
                 </span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400 font-bold uppercase tracking-wider">Status</span>
+              <div className="flex justify-between text-[11px]">
+                <span className="text-gray-500 font-bold uppercase tracking-wider">Status</span>
                 <span className="text-[var(--color-text)] font-bold">Finished Airing</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400 font-bold uppercase tracking-wider">Season</span>
+              <div className="flex justify-between text-[11px]">
+                <span className="text-gray-500 font-bold uppercase tracking-wider">Season</span>
                 <span className="text-[var(--color-text)] font-bold">{anime.season} {anime.year}</span>
               </div>
             </div>
           </div>
 
           {/* Info Column */}
-          <div className="flex-1 space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-4xl font-black text-[var(--color-text-bright)] leading-tight">{anime.title}</h1>
-              <div className="flex flex-wrap gap-2">
+          <div className="flex-1 space-y-6 overflow-hidden">
+            <div className="space-y-3">
+              <h1 className="text-3xl font-black text-[var(--color-text-bright)] leading-tight">{anime.title}</h1>
+              <div className="flex flex-wrap gap-1.5">
                 {anime.genres.map(genre => (
-                  <span key={genre} className="px-3 py-1 bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-bold rounded-full">
+                  <span key={genre} className="px-2 py-0.5 bg-[var(--color-card)] border border-[var(--color-border)] text-gray-300 text-[10px] font-bold rounded-lg uppercase tracking-wider">
                     {genre}
                   </span>
                 ))}
               </div>
             </div>
 
-            <p className="text-[var(--color-text)] leading-relaxed text-sm max-w-4xl bg-[var(--color-card)]/30 backdrop-blur-sm p-6 rounded-xl border border-[var(--color-border)]">
+            <p className="text-gray-400 leading-relaxed text-sm max-w-4xl">
               {anime.synopsis || "No synopsis available for this title."}
             </p>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                <span className="text-lg font-black text-[var(--color-text-bright)]">{Math.round(anime.score)}%</span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Score</span>
+            <div className="grid grid-cols-4 gap-2 sm:gap-4">
+              <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
+                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                <span className="text-base font-black text-[var(--color-text-bright)]">{Math.round(anime.score)}%</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Score</span>
               </div>
-              <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <Play className="w-5 h-5 text-brand" />
-                <span className="text-lg font-black text-[var(--color-text-bright)]">#{anime.rank || '--'}</span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Rank</span>
+              <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
+                <Play className="w-4 h-4 text-brand" />
+                <span className="text-base font-black text-[var(--color-text-bright)]">#{anime.rank || '--'}</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Rank</span>
               </div>
-              <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <BookOpen className="w-5 h-5 text-emerald-500" />
-                <span className="text-lg font-black text-[var(--color-text-bright)]">{anime.members ? (anime.members / 1000).toFixed(1) + 'k' : '--'}</span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Members</span>
+              <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
+                <BookOpen className="w-4 h-4 text-emerald-500" />
+                <span className="text-base font-black text-[var(--color-text-bright)]">{anime.members ? (anime.members / 1000).toFixed(1) + 'k' : '--'}</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Members</span>
               </div>
-              <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <Calendar className="w-5 h-5 text-orange-400" />
-                <span className="text-lg font-black text-[var(--color-text-bright)]">{anime.year}</span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Year</span>
+              <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
+                <Calendar className="w-4 h-4 text-orange-400" />
+                <span className="text-base font-black text-[var(--color-text-bright)]">{anime.year}</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Year</span>
               </div>
             </div>
 
+            {stats && stats.statusDistribution && stats.scoreDistribution && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Status Distribution</h3>
+                  <div className="bg-[#151a24] p-3 rounded-lg border border-[var(--color-border)] shadow-sm flex flex-col justify-between h-24">
+                    <div className="flex gap-1.5">
+                      {stats.statusDistribution.filter((s: any) => s.status !== 'DROPPED').slice(0, 4).map((s: any) => {
+                        const colors: any = { COMPLETED: "#68d639", PLANNING: "#02a9ff", CURRENT: "#9256f3", PAUSED: "#f779a4" };
+                        return (
+                          <div key={s.status} className="flex-1 flex flex-col items-center">
+                            <div className="w-full text-center rounded text-white text-[9px] py-1 px-1 font-bold truncate" style={{ backgroundColor: colors[s.status] || '#555' }}>
+                              {s.status.charAt(0) + s.status.slice(1).toLowerCase()}
+                            </div>
+                            <div className="text-[9px] text-center mt-1.5 text-gray-500 whitespace-nowrap">
+                              <span style={{ color: colors[s.status] }} className="font-bold">{s.amount > 999 ? (s.amount/1000).toFixed(1)+'k' : s.amount}</span> <span className="hidden sm:inline">Users</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="flex w-full h-1.5 rounded-full overflow-hidden opacity-90">
+                      {stats.statusDistribution.filter((s: any) => s.status !== 'DROPPED').map((s: any) => {
+                        const colors: any = { COMPLETED: "#68d639", PLANNING: "#02a9ff", CURRENT: "#9256f3", PAUSED: "#f779a4" };
+                        const total = stats.statusDistribution.filter((s: any) => s.status !== 'DROPPED').reduce((acc: number, curr: any) => acc + curr.amount, 0);
+                        return (
+                          <div key={s.status} style={{ width: `${(s.amount / total) * 100}%`, backgroundColor: colors[s.status] || '#555' }} />
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Score Distribution</h3>
+                  <div className="bg-[#151a24] p-3 rounded-lg border border-[var(--color-border)] shadow-sm h-24 flex items-end justify-between gap-1 overflow-hidden py-3 px-4">
+                    {(() => {
+                      const maxScore = Math.max(...stats.scoreDistribution.map((s: any) => s.amount));
+                      return stats.scoreDistribution.map((s: any) => {
+                        const percentage = s.amount / maxScore;
+                        const score = s.score;
+                        let color = '#e85d75'; // default red
+                        if (score >= 90) color = '#68d639';
+                        else if (score >= 70) color = '#c3e14a';
+                        else if (score >= 50) color = '#f7d046';
+                        else if (score >= 30) color = '#f79346';
+
+                        return (
+                          <div key={s.score} className="flex-1 flex justify-center group relative h-full items-end tooltip-wrap">
+                            <div className="w-full max-w-[8px] rounded-full transition-all hover:brightness-125" style={{ height: `${percentage * 100}%`, minHeight: '4px', backgroundColor: color }} />
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {relations.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Relações</h3>
-                <div className="flex overflow-x-auto gap-4 pb-4 snap-x select-none custom-scrollbar pb-2">
+                <div className="flex overflow-x-auto gap-3 pb-4 snap-x select-none custom-scrollbar pb-2">
                   {relations.filter(rel => rel.node.idMal).map((rel, index) => (
                     <Link
                       key={`${rel.node.idMal}-${index}`}
                       to={`/${rel.node.type.toLowerCase()}/${rel.node.idMal}`}
-                      className="shrink-0 w-[110px] md:w-[140px] rounded-lg overflow-hidden border border-[var(--color-border)] group relative snap-start shadow-md hover:shadow-lg transition-all hover:-translate-y-1 bg-black"
+                      className="shrink-0 w-[90px] md:w-[110px] rounded-lg overflow-hidden border border-[var(--color-border)] group relative snap-start shadow-md hover:shadow-lg transition-all hover:-translate-y-1 bg-black"
                     >
                       <div className="aspect-[2/3] relative">
                         <img 
@@ -348,8 +416,8 @@ export default function AnimeDetails() {
                           alt={rel.node.title.romaji || rel.node.title.english} 
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
                         />
-                        <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-center backdrop-blur-sm z-10">
-                          <p className="text-[10px] font-bold text-[var(--color-text-bright)] capitalize tracking-wider truncate">
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 text-center z-10 pt-6">
+                          <p className="text-[9px] font-bold text-gray-200 capitalize tracking-wider truncate">
                             {rel.relationType.replace(/_/g, ' ').toLowerCase()}
                           </p>
                         </div>
@@ -360,12 +428,12 @@ export default function AnimeDetails() {
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Personagens Principais</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {characters.map((char) => (
-                  <div key={char.character.mal_id} translate="no" className="bg-[var(--color-card)]/50 rounded-xl overflow-hidden border border-[var(--color-border)] group relative">
-                    <div className="aspect-square relative">
+                  <div key={char.character.mal_id} translate="no" className="bg-[var(--color-card)]/50 rounded-lg overflow-hidden border border-[var(--color-border)] group flex items-center pr-3 gap-3 h-16">
+                    <div className="w-12 h-full relative shrink-0">
                       <img src={char.character.images.webp.image_url} alt={char.character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <button 
                         onClick={() => {
@@ -382,26 +450,26 @@ export default function AnimeDetails() {
                           }
                         }}
                         className={cn(
-                          "absolute top-2 right-2 p-2 rounded-full backdrop-blur-md transition-all scale-0 group-hover:scale-100",
-                          isFavorite(char.character.mal_id) ? "bg-brand text-white scale-100" : "bg-black/20 text-white hover:bg-brand/80"
+                          "absolute top-1 left-1 p-1 rounded-full backdrop-blur-md transition-all scale-100",
+                          isFavorite(char.character.mal_id) ? "bg-brand text-white" : "bg-black/50 text-white hover:bg-brand/80 opacity-0 group-hover:opacity-100"
                         )}
                       >
                         <Heart className={cn("w-3 h-3", isFavorite(char.character.mal_id) && "fill-current")} />
                       </button>
                     </div>
-                    <div className="p-3">
-                      <p className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-tight line-clamp-1">{char.character.name}</p>
-                      <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{char.role}</p>
+                    <div className="flex-1 py-1 min-w-0">
+                      <p className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-tight truncate pb-0.5">{char.character.name}</p>
+                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest truncate">{char.role}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Mais Informações</h3>
-              <div className="bg-[var(--color-card)]/50 p-6 rounded-xl border-2 border-dashed border-[var(--color-border)]">
-                <p className="text-gray-500 italic text-center text-sm">Review detalhado em breve na próxima atualização da saga Avalon.</p>
+            <div className="space-y-3 pt-6 border-t border-[var(--color-border)]">
+              <h3 className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-widest pl-1">Mais Informações</h3>
+              <div className="bg-[var(--color-card)]/30 p-4 rounded-xl border border-dashed border-[var(--color-border)]">
+                <p className="text-gray-500 italic text-center text-xs">Review detalhado em breve na próxima atualização da saga Avalon.</p>
               </div>
             </div>
           </div>
