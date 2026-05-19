@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Play, LayoutGrid } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ChevronLeft, Play, LayoutGrid, Settings, AlertCircle, Share2, Maximize2, X, List, Search as SearchIcon, Terminal as TerminalIcon } from 'lucide-react';
 import ReactPlayer from 'react-player';
-import { useExtensions, AnimeExtension, Episode, StreamSource } from '../services/extensionService';
+import { useExtensions, AnimeExtension, Episode, StreamSource, AVAILABLE_EXTENSIONS } from '../services/extensionService';
 import { jikanService } from '../services/jikanService';
+import { cn } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
+import GoAnimeTerminal from '../components/anime/GoAnimeTerminal';
 
 export default function AnimePlayer() {
   const { id } = useParams();
@@ -16,28 +19,62 @@ export default function AnimePlayer() {
   const [stream, setStream] = useState<StreamSource | null>(null);
   
   const [loading, setLoading] = useState(true);
+  const [loadingStream, setLoadingStream] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSourceSelector, setShowSourceSelector] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [episodeSearch, setEpisodeSearch] = useState('');
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
+  const installedExts = getInstalledExtensions();
+  const Player = ReactPlayer as any;
+
+  const episodesListRef = useRef<HTMLDivElement>(null);
+
+  // Filtered episodes
+  const filteredEpisodes = useMemo(() => {
+    if (!episodeSearch.trim()) return episodes;
+    const q = episodeSearch.toLowerCase();
+    return episodes.filter(ep => 
+      ep.number.toString().includes(q) || 
+      (ep.title && ep.title.toLowerCase().includes(q))
+    );
+  }, [episodes, episodeSearch]);
+
+  // Scroll to active episode
+  useEffect(() => {
+    if (currentEpisode && episodesListRef.current) {
+      const activeBtn = episodesListRef.current.querySelector(`[data-active="true"]`);
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentEpisode]);
 
   // Initialize extension and episodes
   useEffect(() => {
     const init = async () => {
       if (!id) return;
+      setLoading(true);
+      setError(null);
+      setIsReady(false);
+      
       try {
-        const exts = getInstalledExtensions();
-        if (exts.length === 0) {
-          setError("Nenhuma fonte (extensão) instalada. Por favor, adicione uma fonte nas configurações.");
-          setLoading(false);
+        if (installedExts.length === 0) {
+          setError("Nenhuma fonte ativa. Vá em Ajustes > Fontes para ativar uma.");
           return;
         }
         
-        // Use the first installed extension for now
-        const selectedExt = exts[0];
+        const selectedExt = extension || installedExts[0];
         setExtension(selectedExt);
 
         const eps = await selectedExt.getEpisodes(id);
-        setEpisodes(eps);
-        if (eps.length > 0) {
-          setCurrentEpisode(eps[0]);
+        const sortedEps = [...eps].sort((a, b) => a.number - b.number);
+        setEpisodes(sortedEps);
+        
+        if (sortedEps.length > 0 && !currentEpisode) {
+          setCurrentEpisode(sortedEps[0]);
         }
       } catch (e: any) {
         setError("Erro ao carregar episódios da fonte selecionada.");
@@ -47,120 +84,338 @@ export default function AnimePlayer() {
       }
     };
     init();
-  }, [id]);
+  }, [id, extension]);
 
   // Load stream when episode changes
   useEffect(() => {
     const loadStream = async () => {
       if (!extension || !currentEpisode) return;
+      
+      // Cleanup previous state immediately
+      setLoadingStream(true);
+      setIsReady(false);
+      setStream(null);
+      setError(null);
+
       try {
         const streams = await extension.getStreams(currentEpisode.id);
-        if (streams.length > 0) {
+        if (streams && streams.length > 0) {
           setStream(streams[0]);
         } else {
-          setStream(null);
-          // Show error or something
+          setError("Nenhum sinal encontrado para este episódio.");
         }
       } catch (e) {
         console.error(e);
+        setError("Erro na conexão com o servidor de vídeo.");
+      } finally {
+        setLoadingStream(false);
       }
     };
     loadStream();
   }, [currentEpisode, extension]);
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black">
+      <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em] animate-pulse">Sintonizando frequências...</p>
     </div>
   );
 
   if (error) return (
-    <div className="pt-24 px-4 text-center max-w-lg mx-auto">
-      <div className="bg-[var(--color-card)] p-6 rounded-xl border border-red-500/20">
-        <h2 className="text-xl font-bold text-red-500 mb-2">Ops!</h2>
-        <p className="text-[var(--color-text)] mb-6">{error}</p>
-        <button onClick={() => {
-          if (window.history.state && window.history.state.idx > 0) {
-            navigate(-1);
-          } else {
-            navigate('/', { replace: true });
-          }
-        }} className="bg-brand text-white px-6 py-2 rounded-lg font-bold">Voltar</button>
+    <div className="min-h-screen pt-24 px-4 flex items-center justify-center bg-[var(--color-bg)]">
+      <div className="bg-[var(--color-card)] p-8 rounded-3xl border border-[var(--color-border)] shadow-2xl max-w-md w-full text-center space-y-6">
+        <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto">
+          <AlertCircle size={32} />
+        </div>
+        <div>
+          <h2 className="text-xl font-black text-[var(--color-text-bright)] uppercase italic mb-2">Sinal Interrompido</h2>
+          <p className="text-sm text-gray-400 font-medium">{error}</p>
+        </div>
+        <div className="flex gap-3">
+           <button onClick={() => navigate('/settings')} className="flex-1 bg-[var(--color-bg)] text-gray-400 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest border border-[var(--color-border)] hover:text-brand transition-colors">Configurar</button>
+           <button onClick={() => navigate(-1)} className="flex-1 bg-brand text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand/20">Voltar</button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen pt-16 flex flex-col items-center bg-black">
-      {/* Top Bar */}
-      <div className="w-full max-w-6xl flex justify-between items-center p-4">
-        <button 
-          onClick={() => {
-            if (window.history.state && window.history.state.idx > 0) {
-              navigate(-1);
-            } else {
-              navigate('/', { replace: true });
-            }
-          }}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6" /> Voltar
-        </button>
-        <div className="text-center">
-          <p className="text-brand font-black text-sm tracking-widest uppercase truncate max-w-[200px] md:max-w-md">
-             {extension?.name}
-          </p>
-          <p className="text-white text-xs font-bold">
-            Epi. {currentEpisode?.number} - {currentEpisode?.title || 'Sem título'}
-          </p>
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-bright)] selection:bg-brand selection:text-white pb-20">
+      {/* Dynamic Header */}
+      <div className="fixed top-0 left-0 right-0 h-16 px-4 md:px-8 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent z-50 backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-all group z-50 relative"
+          >
+            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+              <ChevronLeft size={20} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Voltar</span>
+          </button>
+
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity z-50">
+            <img src="/logo-light.jpeg" alt="Avalon" className="h-6 w-6 md:h-8 md:w-8 object-cover rounded-lg shadow-md block dark:hidden" />
+            <img src="/logo-dark.jpeg" alt="Avalon" className="h-6 w-6 md:h-8 md:w-8 object-cover rounded-lg shadow-md hidden dark:block" />
+            <div className="text-brand font-black text-xs md:text-lg tracking-tighter uppercase italic hidden xs:block">Avalon</div>
+          </Link>
         </div>
-        <div className="w-20" /> {/* Balancer */}
+
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowSourceSelector(!showSourceSelector)}
+            className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all text-gray-400 hover:text-brand"
+            title="Mudar Fonte"
+          >
+            <Settings size={20} />
+          </button>
+        </div>
       </div>
 
-      {/* Video Player Container */}
-      <div className="w-full max-w-5xl aspect-video bg-gray-900 shadow-2xl relative">
-        {stream ? (
-          stream.type === 'iframe' ? (
-             <iframe src={stream.url} className="w-full h-full border-0 absolute inset-0" allowFullScreen />
-          ) : (
-            <ReactPlayer 
-              url={stream.url}
-              controls
-              width="100%"
-              height="100%"
-              playing
-              config={{ file: { forceHLS: stream.type === 'hls' } }}
-            />
-          )
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+      <div className="pt-20 px-4 md:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+        
+        {/* Main Player Area */}
+        <div className="flex-1 space-y-6">
+          <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 group">
+            {/* Loading Overlay */}
+            {(loadingStream || !isReady) && stream && (
+               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md z-20">
+                  <div className="w-10 h-10 border-2 border-brand border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-brand">Sincronizando...</p>
+               </div>
+            )}
+
+            {stream && stream.type === 'iframe' ? (
+              <iframe src={stream.url} className="w-full h-full border-0 absolute inset-0" allowFullScreen />
+            ) : (
+                <div className={cn("w-full h-full transition-opacity duration-500", !stream || !isReady ? "opacity-0" : "opacity-100")}>
+                {stream && (
+                  <Player 
+                    url={stream.url as string}
+                    controls={true}
+                    width="100%"
+                    height="100%"
+                    playing={isReady && !loadingStream}
+                    onReady={() => setIsReady(true)}
+                    onBuffer={() => setLoadingStream(true)}
+                    onBufferEnd={() => setLoadingStream(false)}
+                    onError={() => {
+                      setIsReady(false);
+                      setError("O sinal deste episódio foi perdido ou bloqueado.");
+                    }}
+                    config={{ 
+                      file: { 
+                        forceHLS: stream.type === 'hls',
+                        hlsOptions: {
+                          enableWorker: true,
+                          lowLatencyMode: true,
+                          backBufferLength: 60
+                        },
+                        attributes: {
+                          controlsList: 'nodownload',
+                          disablePictureInPicture: true
+                        }
+                      } 
+                    } as any}
+                  />
+                )}
+              </div>
+            )}
+
+            {!stream && !loadingStream && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                <AlertCircle size={48} className="text-gray-700 mb-4" />
+                <p className="text-gray-500 font-bold max-w-xs uppercase text-[10px] tracking-widest">Nenhum sinal encontrado nesta fonte para este episódio.</p>
+                <button 
+                  onClick={() => setShowSourceSelector(true)}
+                  className="mt-6 px-6 py-2 bg-white/5 hover:bg-white/10 text-brand text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                >
+                  Tentar outra fonte
+                </button>
+              </div>
+            )}
+            
+            {/* Quick Controls overlay? */}
           </div>
-        )}
+
+          <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:block">
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Qualidade Atual</p>
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                   <span className="text-xs font-bold">{stream?.quality || 'Auto'}</span>
+                </div>
+              </div>
+              <div className="w-px h-8 bg-[var(--color-border)] hidden sm:block" />
+              <div>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Status do Sinal</p>
+                <span className="text-xs font-bold text-emerald-500">ESTÁVEL</span>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+               <button className="p-3 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-brand transition-colors"><Share2 size={18} /></button>
+               <button className="p-3 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-brand transition-colors"><Maximize2 size={18} /></button>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar: Episodes & Sources */}
+        <div className="w-full lg:w-96 space-y-6">
+          
+          {/* Source Selector (Mobile fixed / Desktop card) */}
+          <AnimatePresence>
+            {showSourceSelector && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-[var(--color-card)] p-6 rounded-3xl border border-brand/20 shadow-2xl space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-brand">Fontes Disponíveis</h3>
+                  <button onClick={() => setShowSourceSelector(false)} className="text-gray-500 hover:text-white transition-colors"><X size={16} /></button>
+                </div>
+                <div className="space-y-2">
+                  {installedExts.map((ext) => (
+                    <button 
+                      key={ext.id}
+                      onClick={() => {
+                        setExtension(ext);
+                        setShowSourceSelector(false);
+                      }}
+                      className={cn(
+                        "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
+                        extension?.id === ext.id 
+                          ? "bg-brand/10 border-brand/30 text-brand" 
+                          : "bg-[var(--color-bg)] border-transparent text-gray-400 hover:border-gray-700"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{ext.icon}</span>
+                        <span className="text-xs font-bold uppercase">{ext.name}</span>
+                      </div>
+                      {extension?.id === ext.id && <Play size={12} className="fill-current" />}
+                    </button>
+                  ))}
+                </div>
+                <Link to="/settings" className="block text-center text-[9px] font-black uppercase tracking-widest text-gray-600 hover:text-brand transition-colors mt-2">Gerenciar Extensões</Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Episodes List */}
+          <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-border)] overflow-hidden flex flex-col h-[500px] lg:h-[600px] shadow-xl">
+            <div className="p-5 border-b border-[var(--color-border)] space-y-4 bg-white/[0.01]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <LayoutGrid size={16} className="text-brand" />
+                  <h3 className="text-[10px] font-black uppercase tracking-widest leading-none">Episódios</h3>
+                </div>
+                <div className="flex bg-[var(--color-bg)] p-1 rounded-lg border border-[var(--color-border)]">
+                  <button 
+                    onClick={() => setViewMode('grid')}
+                    className={cn("p-1.5 rounded-md transition-all", viewMode === 'grid' ? "bg-brand text-white shadow-sm" : "text-gray-500 hover:text-brand")}
+                  >
+                    <LayoutGrid size={14} />
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-brand text-white shadow-sm" : "text-gray-500 hover:text-brand")}
+                  >
+                    <List size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <SearchIcon size={12} className={cn("absolute left-3 top-1/2 -translate-y-1/2 transition-colors", episodeSearch ? "text-brand" : "text-gray-500")} />
+                <input 
+                  type="text"
+                  placeholder="Pesquisar episódio..."
+                  value={episodeSearch}
+                  onChange={(e) => setEpisodeSearch(e.target.value)}
+                  className="w-full h-8 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg pl-9 pr-3 text-[10px] font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand transition-all placeholder:text-gray-600"
+                />
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[var(--color-bg)]/30" ref={episodesListRef}>
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 gap-2">
+                  {filteredEpisodes.map((ep) => (
+                    <button
+                      key={ep.id}
+                      data-active={currentEpisode?.id === ep.id}
+                      onClick={() => setCurrentEpisode(ep)}
+                      className={cn(
+                        "aspect-square flex flex-col items-center justify-center rounded-xl font-black transition-all relative group overflow-hidden border",
+                        currentEpisode?.id === ep.id 
+                          ? "bg-brand border-brand text-white shadow-lg shadow-brand/20 scale-[1.02]" 
+                          : "bg-[var(--color-card)] border-[var(--color-border)] text-gray-500 hover:border-brand/50 hover:text-brand"
+                      )}
+                    >
+                      <span className="text-sm">{ep.number}</span>
+                      {currentEpisode?.id === ep.id && (
+                         <motion.div 
+                          layoutId="activeEp"
+                          className="absolute inset-0 bg-brand/10 pointer-events-none"
+                         />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {filteredEpisodes.map((ep) => (
+                    <button
+                      key={ep.id}
+                      data-active={currentEpisode?.id === ep.id}
+                      onClick={() => setCurrentEpisode(ep)}
+                      className={cn(
+                        currentEpisode?.id === ep.id 
+                          ? "bg-brand border-brand text-white shadow-md" 
+                          : "bg-[var(--color-card)] border-[var(--color-border)] text-gray-400 hover:border-brand/40 hover:text-brand"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0",
+                        currentEpisode?.id === ep.id ? "bg-white/20" : "bg-[var(--color-bg)]"
+                      )}>
+                        {ep.number}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-black truncate uppercase tracking-tight italic">
+                          {ep.title || `Episódio ${ep.number}`}
+                        </p>
+                      </div>
+                      {currentEpisode?.id === ep.id && <Play size={12} className="fill-current mr-1" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {filteredEpisodes.length === 0 && (
+                <div className="h-full flex flex-col items-center justify-center text-center opacity-50 py-10">
+                   <AlertCircle size={24} className="mb-2" />
+                   <p className="text-[9px] font-black uppercase tracking-widest">Nenhum episódio encontrado</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-3 border-t border-[var(--color-border)] bg-white/[0.01]">
+               <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest text-center">
+                 Mostrando {filteredEpisodes.length} de {episodes.length} episódios
+               </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Episodes List Container */}
-      <div className="w-full max-w-5xl p-4 mt-2 bg-[var(--color-bg)] flex-1 mb-8">
-        <div className="flex items-center gap-2 mb-4 text-[var(--color-text-bright)]">
-          <LayoutGrid className="w-4 h-4 text-brand" />
-          <h2 className="text-[11px] font-black uppercase tracking-widest">Episódios</h2>
-        </div>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
-          {episodes.map((ep) => (
-            <button
-              key={ep.id}
-              onClick={() => setCurrentEpisode(ep)}
-              className={`py-1.5 px-2 rounded border text-center font-bold text-xs transition-all focus:outline-none ${
-                currentEpisode?.id === ep.id 
-                  ? 'border-brand bg-brand/10 text-brand' 
-                  : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:border-brand/40'
-              }`}
-            >
-              {ep.number}
-            </button>
-          ))}
-        </div>
-      </div>
+      <AnimatePresence>
+        {terminalOpen && <GoAnimeTerminal onClose={() => setTerminalOpen(false)} />}
+      </AnimatePresence>
     </div>
   );
 }

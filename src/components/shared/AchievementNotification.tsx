@@ -54,7 +54,7 @@ export const AchievementNotification: React.FC = () => {
             initial: { opacity: 0, y: 50 },
             animate: { opacity: 1, y: 0 },
             exit: { opacity: 0, y: 50, scale: 0.9 },
-            transition: { type: 'spring', bounce: 0.4, duration: 0.6 }
+            transition: { type: 'spring', bounce: 0.4, duration: 0.6 } as any
           },
           label: 'COMUM'
         };
@@ -68,7 +68,7 @@ export const AchievementNotification: React.FC = () => {
             initial: { opacity: 0, x: -50, scale: 0.8 },
             animate: { opacity: 1, x: 0, scale: 1 },
             exit: { opacity: 0, x: 50, scale: 0.8 },
-            transition: { type: 'spring', bounce: 0.5, duration: 0.6 }
+            transition: { type: 'spring', bounce: 0.5, duration: 0.6 } as any
           },
           label: 'RARO'
         };
@@ -82,7 +82,7 @@ export const AchievementNotification: React.FC = () => {
             initial: { opacity: 0, scale: 0.5, rotate: -15 },
             animate: { opacity: 1, scale: 1, rotate: 0 },
             exit: { opacity: 0, scale: 0.5, rotate: 15 },
-            transition: { type: 'spring', stiffness: 200, damping: 15 }
+            transition: { type: 'spring', stiffness: 200, damping: 15 } as any
           },
           label: 'ÉPICO'
         };
@@ -97,7 +97,7 @@ export const AchievementNotification: React.FC = () => {
             initial: { opacity: 0, y: -50, scale: 1.2 },
             animate: { opacity: 1, y: 0, scale: 1 },
             exit: { opacity: 0, scale: 0, y: 50 },
-            transition: { type: 'spring', bounce: 0.6, duration: 0.8 }
+            transition: { type: 'spring', bounce: 0.6, duration: 0.8 } as any
           },
           label: 'LENDÁRIO'
         };

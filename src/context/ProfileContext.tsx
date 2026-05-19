@@ -17,11 +17,13 @@ interface ProfileData {
   numericId?: number;
   photoURL?: string;
   bannerURL?: string;
+  customId?: string;
   inventory?: any[];
   badges?: string[];
   streak: number;
   lastAttendance: string | null;
   hasSeenWelcome?: boolean;
+  createdAt?: any;
 }
 
 interface ProfileContextType {

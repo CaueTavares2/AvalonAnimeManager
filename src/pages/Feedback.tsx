@@ -112,7 +112,7 @@ export default function Feedback() {
       
       setTimeout(() => setSuccess(false), 5000);
     } catch (err: any) {
-      const { title, message } = handleFirestoreError(err, OperationType.WRITE);
+      const { title, message } = handleFirestoreError(err, OperationType.WRITE, 'feedback');
       alert(`${title}\n${message}`);
     } finally {
       setSubmitting(false);

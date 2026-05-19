@@ -1,4 +1,4 @@
-import { Cog, Shield, Bell, Palette, Globe, Save, Check, DownloadCloud, Loader2 } from 'lucide-react';
+import { Cog, Shield, Bell, Palette, Globe, Save, Check, DownloadCloud, Loader2, Radio } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
 import { useTheme, ColorTheme } from '../context/ThemeContext';
@@ -6,12 +6,14 @@ import { importService } from '../services/importService';
 import { useAnimeList } from '../hooks/useAnimeList';
 import { useLanguage, Language } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useExtensions, AVAILABLE_EXTENSIONS } from '../services/extensionService';
 
 export default function Settings() {
   const { darkMode, setDarkMode, colorTheme, setColorTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const { batchAddAnimes } = useAnimeList();
   const { user } = useAuth();
+  const { installed, install, uninstall } = useExtensions();
   
   const [activeTab, setActiveTab] = useState('general');
   
@@ -20,32 +22,47 @@ export default function Settings() {
     darkMode,
     colorTheme,
     language,
-    titleLanguage: 'Romaji',
+    titleLanguage: localStorage.getItem('titleLanguage') || 'Romaji',
   });
 
   const [hasChanges, setHasChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   useEffect(() => {
+    setLocalSettings(s => ({
+      ...s,
+      darkMode,
+      colorTheme,
+      language
+    }));
+  }, [darkMode, colorTheme, language]);
+
+  useEffect(() => {
+    const currentTitleLang = localStorage.getItem('titleLanguage') || 'Romaji';
     const changed = 
       localSettings.darkMode !== darkMode ||
       localSettings.colorTheme !== colorTheme ||
       localSettings.language !== language ||
-      localSettings.titleLanguage !== 'Romaji'; // Simplified for now as it's not in context
+      localSettings.titleLanguage !== currentTitleLang;
     setHasChanges(changed);
   }, [localSettings, darkMode, colorTheme, language]);
 
   const handleSave = () => {
     setSaveStatus('saving');
     
-    // Apply global context changes
-    setDarkMode(localSettings.darkMode);
-    setColorTheme(localSettings.colorTheme);
-    setLanguage(localSettings.language);
-
+    // Persist and apply changes
     setTimeout(() => {
+      // Global context updates
+      setDarkMode(localSettings.darkMode);
+      setColorTheme(localSettings.colorTheme);
+      setLanguage(localSettings.language);
+      
+      // Local storage updates
+      localStorage.setItem('titleLanguage', localSettings.titleLanguage);
+
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
+      setHasChanges(false);
     }, 600);
   };
 
@@ -80,6 +97,7 @@ export default function Settings() {
     { id: 'general', icon: Cog, label: 'Geral' },
     { id: 'appearance', icon: Palette, label: 'Aparência' },
     { id: 'migration', icon: DownloadCloud, label: 'Migração' },
+    { id: 'extensions', icon: Radio, label: 'Fontes' },
     { id: 'language', icon: Globe, label: 'Idioma' },
   ];
 
@@ -202,6 +220,52 @@ export default function Settings() {
                       </button>
                     ))}
                   </div>
+                </div>
+              </div>
+            ) : activeTab === 'extensions' ? (
+              <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
+                    <Radio className="w-4 h-4 text-brand" /> Fontes de Anime
+                  </h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Ative extensões para agregar links e assistir animes</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {AVAILABLE_EXTENSIONS.map((ext) => {
+                    const isInstalled = installed.includes(ext.id);
+                    return (
+                      <div key={ext.id} className="p-5 bg-[var(--color-bg)] rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-[var(--color-card)] rounded-xl flex items-center justify-center text-2xl shadow-sm">
+                            {ext.icon}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
+                              <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => isInstalled ? uninstall(ext.id) : install(ext.id)}
+                          className={cn(
+                            "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                            isInstalled 
+                              ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white" 
+                              : "bg-brand text-white hover:scale-105 shadow-lg shadow-brand/20"
+                          )}
+                        >
+                          {isInstalled ? 'Desativar' : 'Ativar'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-4 bg-brand/5 border border-dashed border-brand/20 rounded-2xl">
+                   <p className="text-[9px] text-brand font-black uppercase tracking-[0.2em] text-center">Novas fontes em breve (Aggregator Engine)</p>
                 </div>
               </div>
             ) : activeTab === 'language' ? (

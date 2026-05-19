@@ -171,7 +171,7 @@ export default function Social() {
                             <Link to={`/profile/${friend.uid}`} className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-tight italic hover:text-brand transition-colors flex items-center gap-1.5">
                               {friend.username} 
                               {['caue.nanda.tavares@gmail.com'].includes((friend as any).email) && (
-                                <ShieldCheck className="w-3 h-3 text-brand fill-brand/20" title="Conselho Staff" />
+                                <ShieldCheck className="w-3 h-3 text-brand fill-brand/20" />
                               )}
                               <span className="text-brand not-italic ml-1 opacity-60">#{friend.numericId || '??'}</span>
                             </Link>

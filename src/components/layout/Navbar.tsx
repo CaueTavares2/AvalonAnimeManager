@@ -1,4 +1,4 @@
-import { Search, User, MoreHorizontal, Settings as SettingsIcon, LogIn, PieChart, Users, MessageSquare, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle } from 'lucide-react';
+import { Search, User, Settings as SettingsIcon, LogIn, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle, Menu, X, Play, LayoutGrid } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -21,38 +21,13 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [failedSearches, setFailedSearches] = useState(0);
-
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (search.trim().length > 2) {
         setIsSearching(true);
         try {
           const data = await jikanService.search(search, mediaType);
-          const sorted = [...data].sort((a, b) => {
-            const query = search.toLowerCase();
-            const titleA = a.title.toLowerCase();
-            const titleB = b.title.toLowerCase();
-            const startA = titleA.startsWith(query);
-            const startB = titleB.startsWith(query);
-            if (startA && !startB) return -1;
-            if (!startA && startB) return 1;
-            const includesA = titleA.includes(query);
-            const includesB = titleB.includes(query);
-            if (includesA && !includesB) return -1;
-            if (!includesA && includesB) return 1;
-            return titleA.length - titleB.length;
-          });
-          setResults(sorted);
-          if (data.length === 0) {
-            const newFailed = failedSearches + 1;
-            setFailedSearches(newFailed);
-            if (newFailed >= 5 && user) {
-              const { rankingService } = await import('../../services/rankingService');
-              await rankingService.grantAchievement(user.uid, 'SEARCH_ONE_PIECE');
-              setFailedSearches(0);
-            }
-          }
+          setResults(data.slice(0, 8));
         } catch (error) {
           console.error("Search failed:", error);
         }
@@ -62,7 +37,7 @@ export default function Navbar() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, mediaType, user, failedSearches]);
+  }, [search, mediaType]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -83,178 +58,159 @@ export default function Navbar() {
     navigate(`/${mediaType}/${id}`);
   };
 
-  const [logoClicks, setLogoClicks] = useState(0);
-  const handleLogoClick = async (e: React.MouseEvent) => {
-    if (user) {
-      const newClicks = logoClicks + 1;
-      setLogoClicks(newClicks);
-      if (newClicks === 10) {
-        const { rankingService } = await import('../../services/rankingService');
-        await rankingService.grantAchievement(user.uid, 'GENJUTSU');
-        setLogoClicks(0);
-      }
-    }
-  };
-
   const menuItems = [
+    { label: t('nav.browse') || 'Explorar', to: '/', icon: Play },
+    { label: t('nav.list') || 'Minha Lista', to: '/list', icon: LayoutGrid },
     { label: 'Ranking', to: '/ranking', icon: Trophy },
     { label: 'Loja', to: '/shop', icon: ShoppingBag },
-    { label: 'Social', to: '/social', icon: Radio, badge: requests.length > 0 },
+    { label: 'Social', to: '/social', icon: Radio, badge: (requests?.length || 0) > 0 },
     { label: 'AniChat', to: '/chat', icon: MessageCircle },
     { label: 'Analytics', to: '/analytics', icon: BarChart3 },
     { label: 'Feedback', to: '/feedback', icon: AlertCircle },
   ];
 
   return (
-    <nav className="sticky top-0 left-0 right-0 h-16 bg-[var(--color-card)]/95 backdrop-blur-md text-[var(--color-text-bright)] z-[100] flex items-center px-4 md:px-8 shadow-lg border-b border-[var(--color-border)] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer group">
-            <img src="/logo-light.jpeg" alt="Avalon" className="h-10 w-10 object-cover rounded-full border-2 border-[var(--color-border)] group-hover:scale-110 transition-transform duration-300 block dark:hidden shadow-sm" />
-            <img src="/logo-dark.jpeg" alt="Avalon" className="h-10 w-10 object-cover rounded-full border-2 border-[var(--color-border)] group-hover:scale-110 transition-transform duration-300 hidden dark:block shadow-md" />
-            <div className="text-brand font-black text-xl tracking-tighter uppercase italic group-hover:scale-110 transition-transform duration-300 ml-1">Avalon</div>
+    <nav className="fixed top-0 left-0 right-0 h-14 bg-[var(--color-card)]/80 backdrop-blur-xl text-[var(--color-text-bright)] z-[100] flex items-center px-4 shadow-sm border-b border-[var(--color-border)]/50">
+      <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+        
+        {/* Logo & Menu Section */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <img src="/logo-light.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
+            <img src="/logo-dark.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
+            <div className="text-brand font-black text-lg tracking-tighter uppercase italic hidden sm:block">Avalon</div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-4 text-[10px] font-black uppercase tracking-widest">
-            <Link 
-              to="/" 
-              className={cn("px-3 py-1.5 rounded-lg transition-colors", location.pathname === '/' ? "text-brand bg-brand/5" : "text-gray-400 hover:text-brand")}
+          <div className="relative" ref={menuRef}>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all uppercase tracking-[0.1em] text-[9px] font-black",
+                isMenuOpen ? "text-brand bg-brand/10" : "text-gray-500 hover:text-[var(--color-text-bright)] hover:bg-[var(--color-bg)]"
+              )}
             >
-              {t('nav.browse')}
-            </Link>
-            <Link 
-              to="/list" 
-              className={cn("px-3 py-1.5 rounded-lg transition-colors", location.pathname === '/list' ? "text-brand bg-brand/5" : "text-gray-400 hover:text-brand")}
-            >
-              {t('nav.list')}
-            </Link>
+              {isMenuOpen ? <X size={14} /> : <Menu size={14} />}
+              <span className="hidden md:inline">Menu</span>
+              <ChevronDown size={10} className={cn("transition-transform duration-300", isMenuOpen && "rotate-180")} />
+              {(requests?.length || 0) > 0 && <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse ml-0.5" />}
+            </button>
 
-            <div className="relative" ref={menuRef}>
-              <button 
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors uppercase tracking-widest text-[10px] font-black",
-                  isMenuOpen ? "text-brand bg-brand/5" : "text-gray-400 hover:text-brand"
-                )}
-              >
-                Comunidade
-                <ChevronDown size={12} className={cn("transition-transform duration-300", isMenuOpen && "rotate-180")} />
-                {requests.length > 0 && <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse ml-0.5" />}
-              </button>
-
-              <AnimatePresence>
-                {isMenuOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-full left-0 mt-2 w-48 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-2 z-[110] backdrop-blur-xl"
-                  >
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full left-0 mt-3 w-56 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-2 z-[110] backdrop-blur-xl"
+                >
+                  <div className="grid grid-cols-1 gap-1">
                     {menuItems.map((item) => (
                       <Link
                         key={item.to}
                         to={item.to}
                         onClick={() => setIsMenuOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group ring-inset",
+                          "flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 group relative",
                           location.pathname === item.to 
-                            ? "bg-brand/10 text-brand" 
-                            : "text-gray-400 hover:bg-[var(--color-bg)] hover:text-[var(--color-text-bright)]"
+                            ? "bg-brand text-white" 
+                            : "text-gray-400 hover:bg-[var(--color-bg)] hover:text-brand"
                         )}
                       >
-                        <item.icon size={16} className={cn("transition-transform group-hover:scale-110", location.pathname === item.to ? "text-brand" : "text-gray-500")} />
+                        <item.icon size={16} className={cn("transition-transform group-hover:scale-110", location.pathname === item.to ? "text-white" : "text-gray-500 group-hover:text-brand")} />
                         <span className="font-black text-[9px] uppercase tracking-wider">{item.label}</span>
-                        {item.badge && (
+                        {item.badge && location.pathname !== item.to && (
                           <span className="ml-auto w-1.5 h-1.5 bg-brand rounded-full animate-pulse" />
                         )}
                       </Link>
                     ))}
-                    <div className="border-t border-[var(--color-border)] mt-2 pt-2">
-                       <Link
-                        to="/settings"
-                        onClick={() => setIsMenuOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-gray-400 hover:bg-[var(--color-bg)] hover:text-[var(--color-text-bright)]"
-                        )}
-                      >
-                        <SettingsIcon size={16} className="text-gray-500" />
-                        <span className="font-black text-[9px] uppercase tracking-wider">Ajustes</span>
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  </div>
+                  <div className="border-t border-[var(--color-border)] mt-2 pt-2">
+                     <Link
+                      to="/settings"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 text-gray-400 hover:bg-[var(--color-bg)] hover:text-brand"
+                    >
+                      <SettingsIcon size={16} className="text-gray-500" />
+                      <span className="font-black text-[9px] uppercase tracking-wider">Ajustes</span>
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6">
-          <div className="relative hidden md:block group" ref={searchRef}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-brand transition-colors z-10" />
+        {/* Search Section */}
+        <div className="flex-1 max-w-md relative" ref={searchRef}>
+          <div className="relative group">
+            <Search className={cn("absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-colors", isSearching ? "text-brand" : "text-gray-500")} />
             <input 
-              type="text" 
-              placeholder="Pesquisar..." 
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onFocus={() => search.length > 1 && setIsSearching(true)}
-              className="bg-[var(--color-bg)]/80 rounded-2xl py-2.5 pl-10 pr-4 text-[var(--color-text-bright)] text-xs w-48 focus:w-80 transition-all duration-500 focus:outline-none focus:ring-4 focus:ring-brand/10 border border-[var(--color-border)] focus:border-brand shadow-inner backdrop-blur-xl hover:border-gray-500/20 placeholder:text-gray-500 font-medium"
+              onFocus={() => setIsSearching(true)}
+              placeholder="Pesquisar..."
+              className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[11px] font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
             />
-
-            {/* Search Results Dropdown */}
-            {isSearching && results.length > 0 && (
-              <div className="absolute top-14 left-0 right-0 bg-[var(--color-card)]/90 rounded-[24px] shadow-xl border border-[var(--color-border)] overflow-hidden text-[var(--color-text)] backdrop-blur-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-                <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-                  {results.map(anime => (
-                    <div 
-                      key={anime.mal_id}
-                      onClick={() => handleSelect(anime.mal_id)}
-                      className="flex items-center gap-4 p-4 hover:bg-brand/10 cursor-pointer border-b border-[var(--color-border)] last:border-0 transition-colors group/item"
-                    >
-                      <div className="relative flex-shrink-0">
-                        <img src={anime.images.webp.image_url} className="w-10 h-14 object-cover rounded-lg shadow-sm border border-[var(--color-border)] group-hover/item:scale-105 transition-transform" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-black line-clamp-1 group-hover/item:text-brand transition-colors uppercase tracking-tight">{anime.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest">{anime.type}</span>
-                          <span className="w-1 h-1 bg-gray-700 rounded-full" />
-                          <span className="text-[9px] text-brand font-black uppercase tracking-widest">{anime.status}</span>
+            
+            <AnimatePresence>
+              {isSearching && results.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 right-0 mt-3 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden z-[120] backdrop-blur-xl"
+                >
+                  <div className="p-2 space-y-1">
+                    {results.map((item) => (
+                      <button 
+                        key={item.mal_id}
+                        onClick={() => handleSelect(item.mal_id)}
+                        className="w-full flex items-center gap-3 p-2 hover:bg-brand/5 rounded-xl transition-all group text-left"
+                      >
+                        <img src={item.images.webp.image_url} className="w-8 h-12 rounded-lg object-cover shadow-sm" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] font-black text-[var(--color-text-bright)] leading-tight truncate uppercase tracking-tight">{item.title}</div>
+                          <div className="text-[8px] text-gray-500 font-bold uppercase mt-0.5">{item.type} • {item.year || item.status}</div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {user ? (
-              <>
-                <Link to="/profile" className="p-2 hover:bg-[var(--color-bg)] rounded-md transition-colors relative group overflow-hidden">
+        </div>
+
+        {/* User Section */}
+        <div className="flex items-center gap-2">
+          {user ? (
+            <div className="flex items-center gap-1 bg-[var(--color-bg)]/50 p-1 rounded-xl border border-[var(--color-border)]/50">
+               <Link to="/profile" className="p-1 hover:bg-brand/10 rounded-lg transition-colors group">
                   {user.photoURL ? (
-                    <img src={user.photoURL} className="w-6 h-6 rounded-full" alt="Profile" />
+                    <img src={user.photoURL} className="w-7 h-7 rounded-md object-cover shadow-sm" alt="Profile" />
                   ) : (
-                    <User className="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:text-brand" />
+                    <div className="w-7 h-7 bg-brand/20 text-brand rounded-md flex items-center justify-center font-black text-[10px] uppercase">
+                      {user.displayName?.[0] || 'U'}
+                    </div>
                   )}
                 </Link>
+                <div className="w-px h-4 bg-[var(--color-border)] mx-1" />
                 <button 
                   onClick={() => logout()}
-                  className="hidden md:block p-2 hover:bg-[var(--color-bg)] rounded-xl transition-colors text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500"
+                  className="px-2 py-1 hover:text-red-500 transition-colors text-[9px] font-black uppercase tracking-widest text-gray-500"
                 >
                   Sair
                 </button>
-              </>
-            ) : (
-              <Link 
-                to="/login" 
-                className="flex items-center gap-2 px-4 py-2 bg-brand/10 text-brand border border-brand/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand hover:text-white transition-all shadow-sm"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Entrar</span>
-              </Link>
-            )}
-          </div>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              className="px-4 py-1.5 bg-brand text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand/20"
+            >
+              Entrar
+            </Link>
+          )}
         </div>
       </div>
     </nav>

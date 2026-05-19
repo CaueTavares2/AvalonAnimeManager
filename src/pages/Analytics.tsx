@@ -147,7 +147,7 @@ export default function Analytics() {
                   type="category" 
                   axisLine={false} 
                   tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 900, fill: '#888', textTransform: 'uppercase' }}
+                  tick={{ fontSize: 10, fontWeight: 900, fill: '#888' }}
                   width={100}
                 />
                 <Tooltip 
