@@ -7,7 +7,6 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: './',
     plugins: [react(), tailwindcss(), VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
@@ -16,7 +15,7 @@ export default defineConfig(({mode}) => {
         short_name: 'Avalon',
         description: 'Onde as Lendas Ganham Vida',
         theme_color: '#000000',
-        start_url: './',
+        start_url: '/',
         display: 'standalone',
         background_color: '#000000',
         icons: [
