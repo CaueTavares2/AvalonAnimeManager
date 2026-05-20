@@ -1,6 +1,6 @@
 {
   "name": "Avalon",
-  "description": "A refined anime tracking platform featuring personal lists, advanced search, and a cinematic interface inspired by legend.",
+  "description": "Avalon is a high-fidelity anime tracking saga featuring RPG mechanics, gamified progression, and a professional-grade streaming integration with intelligent server failover.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

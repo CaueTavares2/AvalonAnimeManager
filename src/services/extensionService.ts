@@ -23,7 +23,7 @@ export interface AnimeExtension {
   icon: string;
   description: string;
   search: (query: string) => Promise<{ id: string; title: string; image: string }[]>;
-  getEpisodes: (animeId: string) => Promise<Episode[]>;
+  getEpisodes: (animeId: string, totalCount?: number) => Promise<Episode[]>;
   getStreams: (episodeId: string) => Promise<StreamSource[]>;
 }
 

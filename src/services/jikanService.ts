@@ -4,10 +4,23 @@ const JIKAN_API_BASE = import.meta.env.VITE_JIKAN_API_URL || 'https://api.jikan.
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+const PERSISTENT_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 function getCachedData(url: string) {
   try {
+    // 1. Try Persistent Cache (localStorage) for details/static content
+    if (url.includes('/full') || url.includes('/top')) {
+      const pCached = localStorage.getItem(`jikan_p_cache_${url}`);
+      if (pCached) {
+        const { data, timestamp } = JSON.parse(pCached);
+        if (Date.now() - timestamp < PERSISTENT_CACHE_DURATION) {
+          return data;
+        }
+      }
+    }
+
+    // 2. Try Session Cache
     const cached = sessionStorage.getItem(`jikan_cache_${url}`);
     if (cached) {
       const { data, timestamp } = JSON.parse(cached);
@@ -23,6 +36,15 @@ function getCachedData(url: string) {
 
 function setCachedData(url: string, data: any) {
   try {
+    // 1. Set Persistent Cache (localStorage) for details/static content
+    if (url.includes('/full') || url.includes('/top')) {
+      localStorage.setItem(`jikan_p_cache_${url}`, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+    }
+
+    // 2. Set Session Cache
     sessionStorage.setItem(`jikan_cache_${url}`, JSON.stringify({
       data,
       timestamp: Date.now()

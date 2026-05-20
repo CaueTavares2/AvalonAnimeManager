@@ -80,12 +80,16 @@ export default function AnimePlayer() {
 
         let finalId = id;
         let title = '';
+        let totalEpisodesCount = 0;
+        let releaseYear = 0;
 
-        // Fetch anime title for mapping accuracy if ID is numeric
+        // Fetch anime title and metadata for mapping accuracy if ID is numeric
         if (!id.includes(':') && !isNaN(Number(id))) {
           try {
             const data = await jikanService.getDetails(Number(id));
             title = data.title;
+            totalEpisodesCount = data.episodes || 0;
+            releaseYear = data.year || 0;
             setAnimeTitle(title);
           } catch (e) {
             console.warn('Failed to fetch anime title for mapping fallback', e);
@@ -93,17 +97,14 @@ export default function AnimePlayer() {
         }
 
         // AUTOMATIC MAPPING FOR BETTERFLIX
-        // If extension is betterflix and id is purely numeric (MAL)
         if (selectedExt.id === 'betterflix' && !id.includes(':') && !isNaN(Number(id))) {
-          console.log(`Betterflix detected with MAL ID:${id}, attempting mapping for "${title}"...`);
-          const mapping = await mappingService.getTMDBId(Number(id), title);
+          const mapping = await mappingService.getTMDBId(Number(id), title, releaseYear);
           if (mapping && mapping.tmdb_id) {
             finalId = `${mapping.type}:${mapping.tmdb_id}`;
-            console.log(`Mapped MAL:${id} to TMDB:${finalId}`);
           }
         }
 
-        const eps = await selectedExt.getEpisodes(finalId);
+        const eps = await selectedExt.getEpisodes(finalId, totalEpisodesCount);
         const sortedEps = [...eps].sort((a, b) => a.number - b.number);
         setEpisodes(sortedEps);
         
@@ -151,21 +152,22 @@ export default function AnimePlayer() {
   // Load stream timeout watchdog to prevent infinite "Sincronizando..." loop
   // It automatically attempts to recover to secondary streaming servers before raising error!
   useEffect(() => {
-    if (stream && !isReady) {
+    if (stream && !isReady && !loadingStream) {
       const timer = setTimeout(() => {
         if (!isReady) {
           if (streamIndex + 1 < streams.length) {
             console.warn(`Watchdog timeout hit for stream index ${streamIndex}. Auto-recovering to next server...`);
+            // Add a small delay between failovers to avoid rapid cycling
             setStreamIndex(prev => prev + 1);
           } else {
             console.warn('Watchdog timeout: All streams exhausted.');
-            setStreamError("Tempo limite esgotado. Todos os servidores de vídeo estão lentos ou instáveis. Tente recarregar ou trocar de fonte.");
+            setStreamError("Tempo limite esgotado. Todos os servidores de vídeo estão lentos ou instáveis no momento.");
           }
         }
-      }, 15000); // 15 seconds failover watch window
+      }, 12000); // 12 seconds failover watch window (faster but safer)
       return () => clearTimeout(timer);
     }
-  }, [stream, isReady, streamIndex, streams]);
+  }, [stream, isReady, streamIndex, streams, loadingStream]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black">
@@ -273,6 +275,12 @@ export default function AnimePlayer() {
                     onReady={() => setIsReady(true)}
                     onStart={() => setIsReady(true)}
                     onPlay={() => setIsReady(true)}
+                    onEnded={() => {
+                      const currentIndex = episodes.findIndex(e => e.id === currentEpisode?.id);
+                      if (currentIndex !== -1 && currentIndex + 1 < episodes.length) {
+                        setCurrentEpisode(episodes[currentIndex + 1]);
+                      }
+                    }}
                     onError={() => {
                       if (streamIndex + 1 < streams.length) {
                         console.warn(`Playback failed for stream index ${streamIndex}. Auto-recovering to next server...`);
@@ -378,6 +386,18 @@ export default function AnimePlayer() {
             </div>
             
             <div className="flex gap-2">
+               <button 
+                onClick={() => {
+                  const currentIndex = episodes.findIndex(e => e.id === currentEpisode?.id);
+                  if (currentIndex !== -1 && currentIndex + 1 < episodes.length) {
+                    setCurrentEpisode(episodes[currentIndex + 1]);
+                  }
+                }}
+                disabled={!currentEpisode || episodes.findIndex(e => e.id === currentEpisode?.id) === episodes.length - 1}
+                className="px-4 py-2 bg-brand/10 border border-brand/20 rounded-xl text-brand font-black text-[9px] uppercase tracking-widest hover:bg-brand hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
+               >
+                Próximo Ep
+               </button>
                <button className="p-3 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-brand transition-colors"><Share2 size={18} /></button>
                <button className="p-3 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-brand transition-colors"><Maximize2 size={18} /></button>
             </div>

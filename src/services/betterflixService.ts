@@ -47,17 +47,16 @@ export const betterflixExtension: AnimeExtension = {
     }
   },
 
-  getEpisodes: async (id: string) => {
+  getEpisodes: async (id: string, totalCount?: number) => {
     const [type, tmdbId] = id.split(':');
     
     if (type === 'movie') {
       return [{ id: `${id}:1`, number: 1, title: 'Filme Completo' }];
     }
 
-    // Try to get info from mapping first if it's an anime
-    // For now, return a generous list since the player handles the episode selection too.
-    // If we return 100, the user can at least navigate.
-    return Array.from({ length: 50 }, (_, i) => ({
+    // Optimization: Use provided totalCount for accurate paging, or default to 100 for long series
+    const count = totalCount || 100;
+    return Array.from({ length: count }, (_, i) => ({
       id: `${id}:${i + 1}`,
       number: i + 1,
       title: `Episódio ${i + 1}`

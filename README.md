@@ -1,15 +1,25 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.6.6)
+# 🌌 Avalon - Anime Tracking Saga (v4.1.0 - Precision Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
 
 ---
 
-## 🚀 O que há de Novo na Versão v3.6.6 (Protocol Unlock & Stability)
+## 🚀 O que há de Novo na Versão v4.1.0 (The Precision Era)
 
-- **🔓 Global Signal Bypass**: Remoção das restrições de Sandbox nas transmissões, garantindo que provedores externos (Betterflix, VidLink, Vidsrc) carreguem sem interrupções ou detecções de bloqueio.
-- **🔄 Core Player Sync**: Sincronização definitiva dos servidores Betterflix (S1, S2, S3) com o endpoint `/api/player`. Agora o sistema valida a integridade do link em tempo real para evitar telas de erro.
-- **🎧 Full Interactive Hub**: Substituição da fonte interativa para o modo `/watch`, restaurando o acesso total ao seletor nativo de áudio (Dublado/Legendado) e servidores secundários do Betterflix.
-- **🛠️ Failover Watchdog**: Melhoria no motor de failover automático para priorizar servidores de alta velocidade (Tier-1) antes de recorrer a instâncias globais.
+- **🎯 Legendary Mapping Dictionary**: Mapeamento manual verificado para as maiores franquias (Naruto, Bleach, Dragon Ball, One Piece, HxH), garantindo 100% de precisão e latência zero.
+- **📐 Year Triangulation**: Novo motor de busca híbrida que cruza o ano de lançamento do MyAnimeList com o catálogo TMDB, eliminando confusões com remakes, musicais ou documentários.
+- **🇯🇵 Cultural Origin Filtering**: Refinamento nos filtros de busca para priorizar conteúdos de animação com origem japonesa, garantindo que você sempre chegue ao anime correto.
+- **⚡ Instant-Load Engine v2**: Cache persistente otimizado que agora inclui dados de triangulação para navegação ainda mais fluida.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.0.0 (The Optimization Overhaul)
+
+- **⚡ Instant-Load Engine**: Implementação de cache persistente (24h) para detalhes de animes e mapeamentos TMDB, tornando a navegação entre títulos instantânea.
+- **🎬 Binge-Watch Core**: Adição de Auto-Play para o próximo episódio e botão de navegação rápida "Próximo Ep" diretamente nos controles do player.
+- **🎯 Dynamic Episode Paging**: Sincronização inteligente entre o MyAnimeList e as fontes externas, garantindo que a lista de episódios reflita exatamente a contagem real da obra.
+- **🛡️ Enhanced Failover Watchdog**: Redução do tempo de reação do failover automático (12s) com lógica de debounce para garantir a melhor experiência de streaming sem interrupções manuais.
+- **🔓 Global Signal Bypass v2**: Otimização dos cabeçalhos de Iframe para suporte total a provedores Premium, eliminando conflitos de Sandbox e geolocalização.
 
 ---
 
