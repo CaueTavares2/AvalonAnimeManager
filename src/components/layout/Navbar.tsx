@@ -1,4 +1,4 @@
-import { User, Settings as SettingsIcon, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle, Menu, X, Play, LayoutGrid } from 'lucide-react';
+import { User, Settings as SettingsIcon, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle, Menu, X, Play, LayoutGrid, Search } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -13,6 +13,7 @@ export default function Navbar() {
   const { t } = useLanguage();
   const { user, logout } = useAuth();
   const { requests } = useSocial();
+  const [search, setSearch] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -38,6 +39,8 @@ export default function Navbar() {
     { label: 'Analytics', to: '/analytics', icon: BarChart3 },
     { label: 'Feedback', to: '/feedback', icon: AlertCircle },
   ];
+
+  const isListView = location.pathname === '/list';
 
   return (
     <nav className="sticky top-0 left-0 right-0 h-14 bg-[var(--color-card)]/80 backdrop-blur-xl text-[var(--color-text-bright)] z-[100] flex items-center px-4 shadow-sm border-b border-[var(--color-border)]/50">
@@ -110,10 +113,31 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Nav Links Section - Visible on Desktop or small screens without search */}
-        <div className="flex-1 hidden md:flex items-center gap-1">
-          {/* Adicionando links rápidos aqui se necessário, ou deixando vazio para manter o visual limpo */}
-        </div>
+        {/* Search Section - Hidden on List View */}
+        {!isListView && (
+          <div className="flex-1 max-w-sm relative hidden sm:block">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 group-focus-within:text-brand transition-colors" />
+              <input 
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && search.trim()) {
+                    navigate(`/search?q=${encodeURIComponent(search.trim())}`);
+                    setSearch('');
+                  }
+                }}
+                placeholder="Pesquisar animes..."
+                className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Gap filler when search is hidden or on small screens */}
+        {isListView && <div className="flex-1 hidden sm:block" />}
+        {!isListView && <div className="flex-1 sm:hidden" />}
 
         {/* User Section */}
         <div className="flex items-center gap-2">
