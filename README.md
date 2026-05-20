@@ -1,17 +1,17 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.1)
+# 🌌 Avalon - Anime Tracking Saga (v3.1.2)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
 
 ---
 
-## 🚀 O que há de Novo na Versão v3.1.1 (Premium Ultra-Performance & Mobile)
+## 🚀 O que há de Novo na Versão v3.1.2 (Auto-Detecção & Perfis Otimizados PC vs. Mobile)
 
-Esta versão eleva a usabilidade do Avalon para dispositivos móveis, aplicativos instaláveis PWA e traz otimizações de renderização que reduzem latência e stuttering em celulares:
+Esta versão introduz a **Auto-Detecção Dinâmica de Plataformas**, aplicando perfis de renderização totalmente customizados de acordo com as características físicas e operacionais do usuário:
 
-- **⚡ Renderização Acelerada (Anti-Stuttering)**: Aplicamos aceleração gráfica tridimensional por hardware nos cartões de anime (usando `translate3d`), habilitamos renderização virtual (`content-visibility: auto`) em mídias dinâmicas e simplificamos filtros de desfoque pesados em navegadores mobile para evitar gargalos em aparelhos low-to-mid range.
-- **📱 Experiência PWA Ultra-confortável**: Otimização completa do menu inferior com detecção automática do estado ativo para destacar a aba corrente, suporte de espaçamento especial para notches/linhas físicas (`env(safe-area-inset-bottom)`) e bloqueio de zoom acidental ao editar campos de entrada (inputs) no celular.
-- **📅 Correção Completa do Explorar por Ano**: O painel de busca por anos foi expandido dinamicamente para acomodar o ano atual de **2026**. Corrigimos a clássica corrida de dados (race-conditions) decorrente de cliques consecutivos rápidos e implementamos travas exclusivas contra requisições duplicadas que causavam animes duplicados na listagem infinita.
-- **🔐 Estabilidade de Vídeo Reforçada**: Manutenção das novas diretrizes de segurança aplicadas após a indisponibilidade global coletiva de agregadores terceiros (Consumet).
+- **⚡ Fim dos Stutterings em Dispositivos de Entrada (Galaxy A13 e similares)**: Detecção automática que desativa transições Framer Motion pesadas e remove micro-animações de zoom na tela inicial para manter a resposta tátil e de rolagem leve e responsiva.
+- **🎨 Bypass de Elementos Hover**: Oclusão absoluta do rendering de sobreposições de hover de cards de obra em celulares touch. Isso economiza dezenas de nós no DOM virtual, reduz consumo de bateria, memória RAM e evita congelamentos no scroll.
+- **🛡️ Blindagem de Transições do Navegador**: Estilização inteligente em CSS que limita as transições visuais a parâmetros de cores puras, eliminando cálculos matemáticos de layout em tempo real nas telas de toque.
+- **📅 Correção do Explorar por Ano**: O painel de busca agora suporta o ano atual de **2026** e previne corrida de dados de forma estrita.
 
 ---
 
@@ -81,11 +81,16 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.1] - Ultra-Performance & Mobile Comfort (Atual)
-- **Minimização de Stutterings**: Injeção de renderização virtualizada em imagens e aceleração GPU (`translate3d`) nos cartões de obras.
-- **Suplementação PWA**: Adaptação física das notches (`env(safe-area-inset-bottom)`) e navegação inferior automatizada com realces brilhantes.
-- **Filtro de Anos Corrigido**: Corrida de dados dissipada por locks de rede em tempos de pesquisa intensiva de animes por ano (com ano base estendido até 2026).
-- **Controle Estrito de Zoom**: Correção de input zoom para evitar escalonamentos prejudiciais no teclado do iOS/Android (forçando fono-campo 16px).
+### [v3.1.2] - Auto-Detecção & Perfis Otimizados PC vs. Mobile (Atual)
+- **Auto-Detecção Direct-to-Core**: Sistema inteligente de leitura do UA / suporte a toque / tamanho físico que categoriza e injeta as regras de plataforma.
+- **Transições Suspensas no Celular**: Remoção cirúrgica de animações de montagem do Framer Motion e efeitos de zoom para salvar recursos de processadores como do Galaxy A13.
+- **Oclusão de Hover em Touch**: Cards de obras sem renderização de hover overlays em dispositivos de toque, evitando vazamento ou lentidão gráfica.
+- **Bypass de Scroll em CSS**: Limitação de transições de scroll unicamente para atributos simples de cores em mobile.
+
+### [v3.1.1] - Performance PWA e Console
+- **Minimização de Stutterings**: Injeção primária de renderização virtualizada em imagens e GPU `translate3d`.
+- **Navegação e Trava de Anos**: Resolução definitiva de race-conditions de requests e ano base de busca estendido até 2026.
+- **Prevenção de Zoom**: Redefinição de input touch sizes para evitar o zoom invasivo automático dos navegadores nativos móveis.
 
 ### [v3.0.0] - Era da Estabilidade e Segurança
 - **Remoção das Extensões Instáveis**: Remoção limpa de conexões diretas do Consumet devido ao encerramento mundial de seus serviços.

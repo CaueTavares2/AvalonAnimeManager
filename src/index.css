@@ -69,37 +69,58 @@
 
 body {
   background-color: var(--color-bg);
-  background-image: linear-gradient(rgba(237, 241, 245, 0.55), rgba(237, 241, 245, 0.55)), url('/image.png');
-  background-attachment: scroll; /* Native scroll on mobile for superior viewport performance */
-  background-size: cover;
-  background-position: center;
   @apply text-[var(--color-text)] font-sans transition-colors duration-300 antialiased relative;
   -webkit-overflow-scrolling: touch; /* Butter-smooth momentum scrolling on iOS */
 }
 
 @media (min-width: 768px) {
   body {
+    background-image: linear-gradient(rgba(237, 241, 245, 0.55), rgba(237, 241, 245, 0.55)), url('/image.png');
     background-attachment: fixed; /* Safely resort to fixed attachment only on desktop screens */
+    background-size: cover;
+    background-position: center;
+  }
+  .dark body {
+    background-image: linear-gradient(rgba(7, 13, 25, 0.94), rgba(7, 13, 25, 0.94)), url('/image.png');
   }
 }
 
 /* Mobile Performance Tuning - Prevents stuttering and repaints */
 @media (max-width: 768px) {
+  /* No backdrop blurs on mobile screens since budget GPUs struggle heavy with real-time filter computations */
+  *, *::before, *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
   /* Leverage browser-level rendering virtualization for cards and images */
   img {
     content-visibility: auto;
   }
   
+  /* Disable micro-transforms and hover scales on mobile touch sweeps to eliminate render thread lag */
+  .group:hover img, 
+  .group-hover\:scale-110, 
+  .group-hover\:scale-105,
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover,
+  .hover\:scale-\[1\.02\]:hover,
+  .hover\:scale-\[1\.01\]:hover,
+  .hover\:scale-125:hover,
+  .active\:scale-95:active {
+    transform: none !important;
+    scale: 1 !important;
+  }
+
+  /* Limit transitions ONLY to colors to stop budget layouts from calculating coordinates on mobile scroll */
+  *, *::before, *::after {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke !important;
+  }
+
   /* Hardware acceleration boost for cards and interactive wrappers */
   .group, .aspect-\[2\/3\] {
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
-  }
-
-  /* Simplify blur computations to save battery and rendering cycles on low/mid tier processors */
-  .backdrop-blur-md, .backdrop-blur-\[2px\] {
-    -webkit-backdrop-filter: blur(4px) !important;
-    backdrop-filter: blur(4px) !important;
   }
 
   /* Prevent automatic viewport zoom on mobile inputs, select dropdowns, and textareas */
@@ -108,8 +129,47 @@ body {
   }
 }
 
-.dark body {
-  background-image: linear-gradient(rgba(7, 13, 25, 0.94), rgba(7, 13, 25, 0.94)), url('/image.png');
+:root.is-mobile {
+  /* No backdrop blurs on mobile screens since budget GPUs struggle heavy with real-time filter computations */
+  *, *::before, *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Leverage browser-level rendering virtualization for cards and images */
+  img {
+    content-visibility: auto;
+  }
+  
+  /* Disable micro-transforms and hover scales on mobile touch sweeps to eliminate render thread lag */
+  .group:hover img, 
+  .group-hover\:scale-110, 
+  .group-hover\:scale-105,
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover,
+  .hover\:scale-\[1\.02\]:hover,
+  .hover\:scale-\[1\.01\]:hover,
+  .hover\:scale-125:hover,
+  .active\:scale-95:active {
+    transform: none !important;
+    scale: 1 !important;
+  }
+
+  /* Limit transitions ONLY to colors to stop budget layouts from calculating coordinates on mobile scroll */
+  *, *::before, *::after {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke !important;
+  }
+
+  /* Hardware acceleration boost for cards and interactive wrappers */
+  .group, .aspect-\[2\/3\] {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
+
+  /* Prevent automatic viewport zoom on mobile inputs, select dropdowns, and textareas */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Custom scrollbar to match Anilist style */

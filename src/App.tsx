@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { cn } from './lib/utils';
@@ -46,6 +46,33 @@ import { SocialProvider } from './context/SocialContext';
 function AppRoutes() {
   const { loading } = useAuth();
   const location = useLocation();
+
+  const [isMobile, setIsMobile] = useState(() => {
+    return typeof window !== 'undefined' && (
+      /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+      window.innerWidth < 1024
+    );
+  });
+
+  useEffect(() => {
+    const handleDeviceDetection = () => {
+      const isMob = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                    window.innerWidth < 1024;
+      setIsMobile(isMob);
+      const root = document.documentElement;
+      if (isMob) {
+        root.classList.add('is-mobile');
+        root.classList.remove('is-desktop');
+      } else {
+        root.classList.add('is-desktop');
+        root.classList.remove('is-mobile');
+      }
+    };
+
+    handleDeviceDetection();
+    window.addEventListener('resize', handleDeviceDetection);
+    return () => window.removeEventListener('resize', handleDeviceDetection);
+  }, []);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -90,15 +117,19 @@ function AppRoutes() {
         }>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-              <Route path="/" element={
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                >
+               <Route path="/" element={
+                isMobile ? (
                   <Home />
-                </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <Home />
+                  </motion.div>
+                )
               } />
               <Route path="/:type/:id" element={<AnimeDetails />} />
               <Route path="/anime/:id/watch" element={<AnimePlayer />} />

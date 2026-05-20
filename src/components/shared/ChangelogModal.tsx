@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.1.1',
+  version: '3.1.2',
   items: [
-    'A Saga Avalon v3.1.1 — Ultra-performance & Comfort Mobile',
-    'Minimização de Stutterings: Aceleração por hardware 3D em cards de animes e rolagem nativa suave no celular',
-    'Otimização PWA: Suporte integral a notches/safe areas e destaque ativo de abas no menu inferior',
-    'Navegação por Anos Retificada: Proteção definitiva contra concorrência de cliques e indexador 2026 configurado',
-    'Ajustes Anti-Zoom: Inputs e fono-campos protegidos contra ampliação repentina nas telas de toque'
+    'A Saga Avalon v3.1.2 — Auto-Detecção e Perfis Otimizados (PC vs. Mobile)',
+    'Ultra-Otimização (Dispositivos de Entrada): Detecção inteligente em tempo de execução para celulares como o Galaxy A13',
+    'Bypass de Transições Pesadas: Remoção cirúrgica do Framer Motion e efeitos de hover de cards no celular para garantir fluidez total de rolagem',
+    'Blindagem Gráfica: Suspensão automática de filtros pesados e limitação de gradientes/efeitos dinâmicos em telas de toque',
+    'Melhorias de Tela Integradas: Transições instantâneas que mantém o PWA o tempo todo "lisinho" e estável'
   ]
 };
 
