@@ -7,6 +7,7 @@ import { jikanService } from '../services/jikanService';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import GoAnimeTerminal from '../components/anime/GoAnimeTerminal';
+import AdSenseBanner from '../components/anime/AdSenseBanner';
 
 export default function AnimePlayer() {
   const { id } = useParams();
@@ -16,11 +17,15 @@ export default function AnimePlayer() {
   const [extension, setExtension] = useState<AnimeExtension | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
-  const [stream, setStream] = useState<StreamSource | null>(null);
+  
+  const [streams, setStreams] = useState<StreamSource[]>([]);
+  const [streamIndex, setStreamIndex] = useState(0);
+  const stream = streams[streamIndex] || null;
   
   const [loading, setLoading] = useState(true);
   const [loadingStream, setLoadingStream] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
   const [showSourceSelector, setShowSourceSelector] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [episodeSearch, setEpisodeSearch] = useState('');
@@ -86,7 +91,7 @@ export default function AnimePlayer() {
     init();
   }, [id, extension]);
 
-  // Load stream when episode changes
+  // Load stream when episode changes (stream loading errors are localized now)
   useEffect(() => {
     const loadStream = async () => {
       if (!extension || !currentEpisode) return;
@@ -94,25 +99,44 @@ export default function AnimePlayer() {
       // Cleanup previous state immediately
       setLoadingStream(true);
       setIsReady(false);
-      setStream(null);
-      setError(null);
+      setStreamError(null);
 
       try {
-        const streams = await extension.getStreams(currentEpisode.id);
-        if (streams && streams.length > 0) {
-          setStream(streams[0]);
+        const fetchedStreams = await extension.getStreams(currentEpisode.id);
+        if (fetchedStreams && fetchedStreams.length > 0) {
+          setStreams(fetchedStreams);
+          setStreamIndex(0);
         } else {
-          setError("Nenhum sinal encontrado para este episódio.");
+          setStreamError("Nenhum sinal encontrado nesta fonte para este episódio.");
         }
       } catch (e) {
         console.error(e);
-        setError("Erro na conexão com o servidor de vídeo.");
+        setStreamError("Erro na conexão com o servidor de vídeo desta fonte.");
       } finally {
         setLoadingStream(false);
       }
     };
     loadStream();
   }, [currentEpisode, extension]);
+
+  // Load stream timeout watchdog to prevent infinite "Sincronizando..." loop
+  // It automatically attempts to recover to secondary streaming servers before raising error!
+  useEffect(() => {
+    if (stream && !isReady) {
+      const timer = setTimeout(() => {
+        if (!isReady) {
+          if (streamIndex + 1 < streams.length) {
+            console.warn(`Watchdog timeout hit for stream index ${streamIndex}. Auto-recovering to next server...`);
+            setStreamIndex(prev => prev + 1);
+          } else {
+            console.warn('Watchdog timeout: All streams exhausted.');
+            setStreamError("Tempo limite esgotado. Todos os servidores de vídeo estão lentos ou instáveis. Tente recarregar ou trocar de fonte.");
+          }
+        }
+      }, 15000); // 15 seconds failover watch window
+      return () => clearTimeout(timer);
+    }
+  }, [stream, isReady, streamIndex, streams]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black">
@@ -177,11 +201,17 @@ export default function AnimePlayer() {
         {/* Main Player Area */}
         <div className="flex-1 space-y-6">
           <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 group">
-            {/* Loading Overlay */}
+            {/* Loading Overlay with click-to-bypass and autoplay support */}
             {(loadingStream || !isReady) && stream && (
-               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md z-20">
-                  <div className="w-10 h-10 border-2 border-brand border-t-transparent rounded-full animate-spin mb-4" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-brand">Sincronizando...</p>
+               <div 
+                 onClick={() => setIsReady(true)}
+                 className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md z-20 cursor-pointer select-none group/overlay"
+               >
+                  <div className="w-14 h-14 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mb-4 transition-all duration-300 group-hover/overlay:scale-110 group-hover/overlay:bg-brand/30">
+                    <Play size={24} className="text-brand fill-current ml-1 animate-pulse" />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1">Iniciar Transmissão</p>
+                  <p className="text-[8px] text-gray-500 uppercase tracking-widest">Clique se o vídeo não iniciar automaticamente</p>
                </div>
             )}
 
@@ -191,17 +221,24 @@ export default function AnimePlayer() {
                 <div className={cn("w-full h-full transition-opacity duration-500", !stream || !isReady ? "opacity-0" : "opacity-100")}>
                 {stream && (
                   <Player 
+                    key={stream.url}
                     url={stream.url as string}
                     controls={true}
                     width="100%"
                     height="100%"
-                    playing={isReady && !loadingStream}
+                    playing={isReady}
                     onReady={() => setIsReady(true)}
-                    onBuffer={() => setLoadingStream(true)}
-                    onBufferEnd={() => setLoadingStream(false)}
+                    onStart={() => setIsReady(true)}
+                    onPlay={() => setIsReady(true)}
                     onError={() => {
-                      setIsReady(false);
-                      setError("O sinal deste episódio foi perdido ou bloqueado.");
+                      if (streamIndex + 1 < streams.length) {
+                        console.warn(`Playback failed for stream index ${streamIndex}. Auto-recovering to next server...`);
+                        setStreamIndex(prev => prev + 1);
+                        setIsReady(false);
+                      } else {
+                        setIsReady(false);
+                        setStreamError("O sinal deste episódio foi perdido, bloqueado por CORS ou travado pelo seu navegador.");
+                      }
                     }}
                     config={{ 
                       file: { 
@@ -223,12 +260,14 @@ export default function AnimePlayer() {
             )}
 
             {!stream && !loadingStream && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-                <AlertCircle size={48} className="text-gray-700 mb-4" />
-                <p className="text-gray-500 font-bold max-w-xs uppercase text-[10px] tracking-widest">Nenhum sinal encontrado nesta fonte para este episódio.</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-black/40 backdrop-blur-sm z-30">
+                <AlertCircle size={48} className="text-red-500 mb-4 animate-pulse" />
+                <p className="text-gray-200 font-bold max-w-sm uppercase text-[10px] tracking-widest leading-relaxed">
+                  {streamError || "Nenhum sinal encontrado nesta fonte para este episódio."}
+                </p>
                 <button 
                   onClick={() => setShowSourceSelector(true)}
-                  className="mt-6 px-6 py-2 bg-white/5 hover:bg-white/10 text-brand text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                  className="mt-6 px-6 py-2.5 bg-brand hover:bg-brand/90 hover:scale-105 active:scale-95 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-brand/20 shrink-0"
                 >
                   Tentar outra fonte
                 </button>
@@ -237,6 +276,45 @@ export default function AnimePlayer() {
             
             {/* Quick Controls overlay? */}
           </div>
+
+          {/* Server Selector / Alternador de Servidor */}
+          {streams.length > 1 && (
+            <div className="bg-[var(--color-card)] p-5 rounded-3xl border border-[var(--color-border)] space-y-3 shadow-xl">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-brand flex items-center gap-2">
+                  <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
+                  Servidores de Streaming
+                </span>
+                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/10">
+                  Auto-Failover Ativo
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {streams.map((s, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setStreamIndex(idx);
+                      setIsReady(false);
+                      setStreamError(null);
+                    }}
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border",
+                      streamIndex === idx
+                        ? "bg-brand/10 border-brand/30 text-brand scale-[1.01]"
+                        : "bg-black/20 border-transparent text-gray-500 hover:border-white/10 hover:text-gray-300"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span>{idx === 0 ? "⚡" : idx === 1 ? "📺" : "🔗"}</span>
+                      <span className="truncate">{s.quality || `Servidor ${idx + 1}`}</span>
+                    </div>
+                    {streamIndex === idx && <div className="w-1.5 h-1.5 bg-brand rounded-full shrink-0" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -259,6 +337,9 @@ export default function AnimePlayer() {
                <button className="p-3 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-brand transition-colors"><Maximize2 size={18} /></button>
             </div>
           </div>
+
+          {/* Monetização Adsense */}
+          <AdSenseBanner slotId="8215930211" format="auto" />
         </div>
 
         {/* Sidebar: Episodes & Sources */}
