@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useDevice } from '../hooks/useDevice';
 import { motion, AnimatePresence } from 'motion/react';
@@ -74,7 +74,22 @@ const MangaReader = lazy(() => import('../pages/MangaReader'));
 export default function AppRoutes() {
   const { loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { isMobile } = useDevice();
+
+  useEffect(() => {
+    // Check if we are returning from AniList OAuth
+    if (location.hash && location.hash.includes('access_token=')) {
+      const hashParams = new URLSearchParams(location.hash.replace('#', '?'));
+      const token = hashParams.get('access_token');
+      if (token) {
+        localStorage.setItem('avalon_anilist_token', token);
+        // Clean up the URL
+        navigate('/settings', { replace: true });
+        // Optionally redirect to settings with a success state, but replacing the URL is enough
+      }
+    }
+  }, [location.hash, navigate]);
 
   if (loading) {
     return (

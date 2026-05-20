@@ -7,6 +7,7 @@ import { useAnimeList } from '../hooks/useAnimeList';
 import { useLanguage, Language } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useExtensions, AVAILABLE_EXTENSIONS } from '../services/extensionService';
+import { AnilistGuideModal } from '../components/shared/AnilistGuideModal';
 
 export default function Settings() {
   const { darkMode, setDarkMode, colorTheme, setColorTheme } = useTheme();
@@ -16,6 +17,7 @@ export default function Settings() {
   const { installed, install, uninstall } = useExtensions();
   
   const [activeTab, setActiveTab] = useState('general');
+  const [showAnilistGuide, setShowAnilistGuide] = useState(false);
   
   const [localSettings, setLocalSettings] = useState({
     darkMode,
@@ -400,16 +402,48 @@ export default function Settings() {
                         </button>
                       </div>
 
-                      <input 
-                        type="password" 
-                        placeholder="Token de Acesso AniList (Necessário para sincronização real de progresso)"
-                        value={anilistToken}
-                        onChange={(e) => setAnilistToken(e.target.value)}
-                        className="w-full bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
-                      />
-                      <p className="text-[9px] text-gray-500 font-medium">
-                        * Deixe em branco para simular sincronização virtual local se você não tiver um token Developer de usuário.
-                      </p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-3">
+                          <input 
+                            type="password" 
+                            placeholder="Token de Acesso AniList"
+                            value={anilistToken}
+                            onChange={(e) => setAnilistToken(e.target.value)}
+                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
+                          />
+                        </div>
+                        <div className="flex justify-between items-center px-1">
+                          <p className="text-[9px] text-gray-500 font-medium">
+                            * Cole seu token aqui se você já o possui, ou autorize o aplicativo para sincronização.
+                          </p>
+                          {import.meta.env.VITE_ANILIST_CLIENT_ID ? (
+                            <div className="text-right flex flex-col items-end gap-1">
+                              <a 
+                                href={`https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID}&response_type=token`}
+                                className="text-[10px] text-brand font-bold uppercase tracking-widest hover:underline whitespace-nowrap"
+                              >
+                                Obter Token de Acesso (Login AniList)
+                              </a>
+                              <button 
+                                onClick={() => setShowAnilistGuide(true)}
+                                className="text-[9px] text-gray-500 font-bold uppercase tracking-widest hover:text-white"
+                              >
+                                Erro ao pegar token? Veja como corrigir.
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="text-right">
+                              <button 
+                                onClick={() => setShowAnilistGuide(true)}
+                                className="text-[10px] text-brand font-bold uppercase tracking-widest hover:underline block"
+                              >
+                                Como configurar o modo Desenvolvedor
+                              </button>
+                              <p className="text-[9px] text-gray-500 font-bold">VITE_ANILIST_CLIENT_ID não configurado</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -544,6 +578,7 @@ export default function Settings() {
           </div>
         </div>
       </div>
+      <AnilistGuideModal isOpen={showAnilistGuide} onClose={() => setShowAnilistGuide(false)} />
     </div>
   );
 }
