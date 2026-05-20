@@ -32,12 +32,12 @@ export function AnilistGuideModal({ isOpen, onClose }: AnilistGuideModalProps) {
           {/* Header */}
           <div className="p-6 border-b border-[var(--color-border)] flex items-center justify-between sticky top-0 bg-[var(--color-bg)] z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand/20 flex items-center justify-center">
-                <Key className="w-5 h-5 text-brand" />
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-tighter">Guia de Sincronização AniList</h2>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Como configurar o Client ID</p>
+                <h2 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-tighter">Sincronização Ativa!</h2>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Tudo pronto para conectar seu perfil</p>
               </div>
             </div>
             <button
@@ -50,58 +50,69 @@ export function AnilistGuideModal({ isOpen, onClose }: AnilistGuideModalProps) {
 
           {/* Content */}
           <div className="p-6 overflow-y-auto space-y-8">
+            <div className="bg-green-500/5 border border-green-500/10 p-4 rounded-2xl">
+              <p className="text-sm text-green-500 font-bold mb-1">Parabéns! 🎉</p>
+              <p className="text-xs text-gray-400">Você já configurou o básico. Agora só falta garantir que o redirecionamento esteja perfeito para que o login funcione sem erros.</p>
+            </div>
             
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-[10px] font-black text-brand shrink-0 mt-0.5">1</div>
-                <div>
-                  <h3 className="text-sm font-bold text-[var(--color-text-bright)]">Criar um Cliente na AniList</h3>
-                  <p className="text-xs text-gray-400 mt-1">Acesse a aba de desenvolvedor na sua conta AniList e crie um novo Client.</p>
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 w-8 h-8 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-xs font-black text-brand">1</div>
+                <div className="space-y-3 flex-1">
+                  <div>
+                    <h3 className="text-sm font-bold text-[var(--color-text-bright)] uppercase tracking-tight">Onde configurar?</h3>
+                    <p className="text-xs text-gray-500 mt-1">Vá em Developer Settings na AniList e edite o seu Client ID (41911).</p>
+                  </div>
                   <a 
                     href="https://anilist.co/settings/developer" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg text-xs font-bold text-white hover:border-brand transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
                   >
-                    Abrir AniList Developer Settings <ExternalLink size={14} />
+                    Abrir Painel AniList <ExternalLink size={12} />
                   </a>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-[10px] font-black text-brand shrink-0 mt-0.5">2</div>
-                <div className="w-full">
-                  <h3 className="text-sm font-bold text-[var(--color-text-bright)]">Configurar a URL de Redirecionamento</h3>
-                  <p className="text-xs text-gray-400 mt-1 mb-3">É extremamente importante que o campo <strong>Redirect URL</strong> no site do AniList seja exatamente este abaixo. Se não for igual, a página do AniList dará erro ao tentar logar:</p>
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 w-8 h-8 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-xs font-black text-brand">2</div>
+                <div className="space-y-3 flex-1">
+                  <div>
+                    <h3 className="text-sm font-bold text-[var(--color-text-bright)] uppercase tracking-tight">A URL Mágica</h3>
+                    <p className="text-xs text-gray-500 mt-1">Copie o link abaixo e cole no campo <strong>Redirect URL</strong> do AniList. Sem isso, o login dará erro 404 ou página branca.</p>
+                  </div>
                   
-                  <div className="flex items-center gap-2 bg-black/50 border border-[var(--color-border)] rounded-xl p-3">
-                    <LinkIcon size={16} className="text-gray-500" />
-                    <code className="text-xs font-mono text-brand flex-1 break-all select-all">
-                      {currentUrl}
-                    </code>
+                  <div className="group relative">
+                    <div className="flex items-center gap-2 bg-black/50 border border-[var(--color-border)] rounded-xl p-3 pr-10">
+                      <LinkIcon size={14} className="text-brand shrink-0" />
+                      <code className="text-[10px] font-mono text-gray-300 break-all select-all flex-1">
+                        {currentUrl}
+                      </code>
+                    </div>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <CheckCircle2 size={14} className="text-green-500" />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-[10px] font-black text-brand shrink-0 mt-0.5">3</div>
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 w-8 h-8 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-xs font-black text-brand">3</div>
                 <div>
-                  <h3 className="text-sm font-bold text-[var(--color-text-bright)]">Salvar o Secret</h3>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Copie apenas o <strong>Client ID</strong> gerado (um número na lista dos seus apps) e coloque-o como <code className="text-[10px] bg-black/50 px-1 py-0.5 rounded">VITE_ANILIST_CLIENT_ID</code> nas Environment Variables de sua plataforma de hospedagem ou no Google AI studio (como Secret).
+                  <h3 className="text-sm font-bold text-[var(--color-text-bright)] uppercase tracking-tight">Login Final</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Após salvar no AniList, clique em <strong>"Obter Token de Acesso"</strong> nas configurações do Avalon e pronto! Seu progresso será sincronizado automaticamente.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-brand/10 border border-brand/20 p-4 rounded-2xl flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-brand shrink-0 mt-0.5" />
-              <div className="text-xs text-gray-300">
-                <strong className="text-white block font-bold mb-1">Por que a página do AniList dá erro?</strong>
-                Se ao clicar em "Obter Token de Acesso" a tela do AniList ficar branca ou apresentar erro, as chances são quase 100% de que a <strong>Redirect URL</strong> que você colocou lá no painel deles está diferente daquela apresentada no Passo 2 acima. Verifique os "https", as barras ("/") e o subdiretório.
-              </div>
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
+              <strong className="text-red-500 block text-xs font-bold mb-1 uppercase tracking-widest">Dica de Sobrevivência</strong>
+              <p className="text-[10px] text-gray-400 leading-relaxed">
+                Se a página do AniList disser "Invalid Client" ou não carregar, verifique se o Client ID está preenchido e se a <strong>Redirect URL</strong> é exatamente igual à do Passo 2 (inclusive o https e a barra final).
+              </p>
             </div>
-
           </div>
 
           {/* Footer */}

@@ -1,8 +1,7 @@
-import { Search, User, Settings as SettingsIcon, LogIn, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle, Menu, X, Play, LayoutGrid } from 'lucide-react';
+import { User, Settings as SettingsIcon, ChevronDown, Trophy, ShoppingBag, Radio, MessageCircle, BarChart3, AlertCircle, Menu, X, Play, LayoutGrid } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { jikanService, JikanAnime } from '../../services/jikanService';
 import logoLight from '../../assets/images/logo-light.jpeg';
 import logoDark from '../../assets/images/logo-dark.jpeg';
 import { useLanguage } from '../../context/LanguageContext';
@@ -12,40 +11,15 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function Navbar() {
   const { t } = useLanguage();
-  const { user, logout, mediaType } = useAuth();
+  const { user, logout } = useAuth();
   const { requests } = useSocial();
-  const [search, setSearch] = useState('');
-  const [results, setResults] = useState<JikanAnime[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (search.trim().length > 2) {
-        setIsSearching(true);
-        try {
-          const data = await jikanService.search(search, 'anime');
-          setResults(data.slice(0, 8));
-        } catch (error) {
-          console.error("Search failed:", error);
-        }
-      } else {
-        setResults([]);
-        setIsSearching(false);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setIsSearching(false);
-      }
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setIsMenuOpen(false);
       }
@@ -53,12 +27,6 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleSelect = (id: number) => {
-    setSearch('');
-    setIsSearching(false);
-    navigate(`/anime/${id}`);
-  };
 
   const menuItems = [
     { label: t('nav.browse') || 'Explorar', to: '/', icon: Play },
@@ -142,61 +110,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Search Section */}
-        <div className="flex-1 max-w-md relative" ref={searchRef}>
-          <div className="relative group">
-            <Search className={cn("absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-colors", isSearching ? "text-brand" : "text-gray-500")} />
-            <input 
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onFocus={() => setIsSearching(true)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && search.trim()) {
-                  setIsSearching(false);
-                  navigate(`/search?q=${encodeURIComponent(search.trim())}`);
-                }
-              }}
-              placeholder="Pesquisar..."
-              className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[11px] font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
-            />
-            
-            <AnimatePresence>
-              {isSearching && results.length > 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-3 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden z-[120] backdrop-blur-xl flex flex-col"
-                >
-                  <div className="p-2 space-y-1">
-                    {results.map((item) => (
-                      <button 
-                        key={item.mal_id}
-                        onClick={() => handleSelect(item.mal_id)}
-                        className="w-full flex items-center gap-3 p-2 hover:bg-brand/5 rounded-xl transition-all group text-left"
-                      >
-                        <img src={item.images.webp.image_url} className="w-8 h-12 rounded-lg object-cover shadow-sm" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[10px] font-black text-[var(--color-text-bright)] leading-tight truncate uppercase tracking-tight">{item.title}</div>
-                          <div className="text-[8px] text-gray-500 font-bold uppercase mt-0.5">{item.type} • {item.year || item.status}</div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setIsSearching(false);
-                      navigate(`/search?q=${encodeURIComponent(search.trim())}`);
-                    }}
-                    className="w-full p-3 bg-[var(--color-bg)] border-t border-[var(--color-border)] text-brand text-[10px] font-black uppercase tracking-widest hover:bg-brand hover:text-white transition-colors"
-                  >
-                    Ver todos os resultados
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* Nav Links Section - Visible on Desktop or small screens without search */}
+        <div className="flex-1 hidden md:flex items-center gap-1">
+          {/* Adicionando links rápidos aqui se necessário, ou deixando vazio para manter o visual limpo */}
         </div>
 
         {/* User Section */}
