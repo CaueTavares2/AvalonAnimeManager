@@ -110,6 +110,7 @@ export default function Settings() {
     { id: 'migration', icon: DownloadCloud, label: 'Migração' },
     { id: 'extensions', icon: Radio, label: 'Fontes' },
     { id: 'language', icon: Globe, label: 'Idioma' },
+    { id: 'diagnostics', icon: AlertTriangle, label: 'Testes' },
   ];
 
   const themes: { id: ColorTheme; label: string; color: string }[] = [
@@ -494,6 +495,29 @@ export default function Settings() {
                     <option>Inglês</option>
                     <option>Nativo</option>
                   </select>
+                </div>
+              </div>
+            ) : activeTab === 'diagnostics' ? (
+              <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-brand" /> Funcionalidades e Testes de Sistema
+                  </h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Execute verificações manuais de estado e detecção de erros.</p>
+                </div>
+                
+                <div className="p-6 bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] space-y-4">
+                  <button 
+                    onClick={async () => {
+                      const { runSelfDiagnostics } = await import('../utils/healthCheck');
+                      runSelfDiagnostics();
+                      alert("Diagnóstico executado! Abra o console do navegador (F12) para ver o relatório completo.");
+                    }}
+                    className="w-full bg-brand hover:bg-brand-dark text-white px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                  >
+                    Executar Verificação de Sistema (Console Log)
+                  </button>
+                  <p className="text-[9px] text-gray-500 font-bold text-center uppercase tracking-widest">Verifica API, Rotas e Assets estáticos</p>
                 </div>
               </div>
             ) : (
