@@ -19,11 +19,24 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
   const [showAnilistGuide, setShowAnilistGuide] = useState(false);
   
+  const initialAnilistUser = localStorage.getItem('avalon_anilist_user') || '';
+  const initialAnilistToken = localStorage.getItem('avalon_anilist_token') || '';
+  const initialAnilistClientId = localStorage.getItem('avalon_anilist_client_id') || '';
+  const initialMalUser = localStorage.getItem('avalon_mal_user') || '';
+  const initialMalToken = localStorage.getItem('avalon_mal_token') || '';
+  const initialAutoSyncTrackers = localStorage.getItem('avalon_auto_sync_trackers') === 'true';
+
   const [localSettings, setLocalSettings] = useState({
     darkMode,
     colorTheme,
     language,
     titleLanguage: localStorage.getItem('titleLanguage') || 'Romaji',
+    anilistUser: initialAnilistUser,
+    anilistToken: initialAnilistToken,
+    anilistClientId: initialAnilistClientId,
+    malUser: initialMalUser,
+    malToken: initialMalToken,
+    autoSyncTrackers: initialAutoSyncTrackers,
   });
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -44,9 +57,15 @@ export default function Settings() {
       localSettings.darkMode !== darkMode ||
       localSettings.colorTheme !== colorTheme ||
       localSettings.language !== language ||
-      localSettings.titleLanguage !== currentTitleLang;
+      localSettings.titleLanguage !== currentTitleLang ||
+      localSettings.anilistUser !== initialAnilistUser ||
+      localSettings.anilistToken !== initialAnilistToken ||
+      localSettings.anilistClientId !== initialAnilistClientId ||
+      localSettings.malUser !== initialMalUser ||
+      localSettings.malToken !== initialMalToken ||
+      localSettings.autoSyncTrackers !== initialAutoSyncTrackers;
     setHasChanges(changed);
-  }, [localSettings, darkMode, colorTheme, language]);
+  }, [localSettings, darkMode, colorTheme, language, initialAnilistUser, initialAnilistToken, initialAnilistClientId, initialMalUser, initialMalToken, initialAutoSyncTrackers]);
 
   const handleSave = () => {
     setSaveStatus('saving');
@@ -60,6 +79,12 @@ export default function Settings() {
       
       // Local storage updates
       localStorage.setItem('titleLanguage', localSettings.titleLanguage);
+      localStorage.setItem('avalon_anilist_user', localSettings.anilistUser);
+      localStorage.setItem('avalon_anilist_token', localSettings.anilistToken);
+      localStorage.setItem('avalon_anilist_client_id', localSettings.anilistClientId);
+      localStorage.setItem('avalon_mal_user', localSettings.malUser);
+      localStorage.setItem('avalon_mal_token', localSettings.malToken);
+      localStorage.setItem('avalon_auto_sync_trackers', localSettings.autoSyncTrackers ? 'true' : 'false');
 
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -67,34 +92,20 @@ export default function Settings() {
     }, 600);
   };
 
-  // Tracker Sync & Integration State
-  const [anilistUser, setAnilistUser] = useState(() => localStorage.getItem('avalon_anilist_user') || '');
-  const [anilistToken, setAnilistToken] = useState(() => localStorage.getItem('avalon_anilist_token') || '');
-  const [malUser, setMalUser] = useState(() => localStorage.getItem('avalon_mal_user') || '');
-  const [malToken, setMalToken] = useState(() => localStorage.getItem('avalon_mal_token') || '');
-  const [autoSyncTrackers, setAutoSyncTrackers] = useState(() => localStorage.getItem('avalon_auto_sync_trackers') === 'true');
-
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ success?: string; error?: string }>({});
 
-  useEffect(() => {
-    localStorage.setItem('avalon_anilist_user', anilistUser);
-    localStorage.setItem('avalon_anilist_token', anilistToken);
-    localStorage.setItem('avalon_mal_user', malUser);
-    localStorage.setItem('avalon_mal_token', malToken);
-    localStorage.setItem('avalon_auto_sync_trackers', autoSyncTrackers ? 'true' : 'false');
-  }, [anilistUser, anilistToken, malUser, malToken, autoSyncTrackers]);
-
   const handleImport = async (type: 'anilist' | 'mal') => {
-    const user = type === 'anilist' ? anilistUser : malUser;
-    if (!user) return;
+    // If the user tries to import, we should use the current typed value (localSettings)
+    const username = type === 'anilist' ? localSettings.anilistUser : localSettings.malUser;
+    if (!username) return;
 
     setIsImporting(true);
     setImportStatus({});
     try {
       const data = type === 'anilist' 
-        ? await importService.importFromAniList(user)
-        : await importService.importFromMAL(user);
+        ? await importService.importFromAniList(username)
+        : await importService.importFromMAL(username);
       
       batchAddAnimes(data);
       setImportStatus({ success: `${data.length} animes importados com sucesso!` });
@@ -354,8 +365,8 @@ export default function Settings() {
                     <input 
                       type="checkbox"
                       id="autoSyncTrackers"
-                      checked={autoSyncTrackers}
-                      onChange={(e) => setAutoSyncTrackers(e.target.checked)}
+                      checked={localSettings.autoSyncTrackers}
+                      onChange={(e) => setLocalSettings(s => ({ ...s, autoSyncTrackers: e.target.checked }))}
                       className="w-4 h-4 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand dark:focus:ring-brand dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 accent-brand cursor-pointer"
                     />
                     <label htmlFor="autoSyncTrackers" className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] cursor-pointer select-none">
@@ -377,9 +388,9 @@ export default function Settings() {
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">GraphQL API v2</p>
                         </div>
                       </div>
-                      {anilistUser && (
+                      {localSettings.anilistUser && (
                         <span className="bg-[#02a9ff]/10 text-[#02a9ff] border border-[#02a9ff]/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                          {anilistToken ? 'CONECTADO (MUTAÇÕES)' : 'PREVIEW ATIVO'}
+                          {localSettings.anilistToken ? 'CONECTADO (MUTAÇÕES)' : 'PREVIEW ATIVO'}
                         </span>
                       )}
                     </div>
@@ -389,13 +400,13 @@ export default function Settings() {
                         <input 
                           type="text" 
                           placeholder="Nome de usuário no AniList (@username)"
-                          value={anilistUser}
-                          onChange={(e) => setAnilistUser(e.target.value)}
+                          value={localSettings.anilistUser}
+                          onChange={(e) => setLocalSettings(s => ({ ...s, anilistUser: e.target.value }))}
                           className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
                         />
                         <button 
                           onClick={() => handleImport('anilist')}
-                          disabled={isImporting || !anilistUser}
+                          disabled={isImporting || !localSettings.anilistUser}
                           className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-lg shadow-brand/20"
                         >
                           {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.migration.import')}
@@ -403,23 +414,34 @@ export default function Settings() {
                       </div>
 
                       <div className="flex flex-col gap-2">
+                        {!import.meta.env.VITE_ANILIST_CLIENT_ID && (
+                          <div className="flex gap-3 mb-2">
+                            <input 
+                              type="text" 
+                              placeholder="Client ID (Pegue no AniList Developer Settings)"
+                              value={localSettings.anilistClientId}
+                              onChange={(e) => setLocalSettings(s => ({ ...s, anilistClientId: e.target.value }))}
+                              className="flex-1 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
+                            />
+                          </div>
+                        )}
                         <div className="flex gap-3">
                           <input 
                             type="password" 
                             placeholder="Token de Acesso AniList"
-                            value={anilistToken}
-                            onChange={(e) => setAnilistToken(e.target.value)}
+                            value={localSettings.anilistToken}
+                            onChange={(e) => setLocalSettings(s => ({ ...s, anilistToken: e.target.value }))}
                             className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
                           />
                         </div>
-                        <div className="flex justify-between items-center px-1">
+                        <div className="flex justify-between items-center px-1 mt-2">
                           <p className="text-[9px] text-gray-500 font-medium">
                             * Cole seu token aqui se você já o possui, ou autorize o aplicativo para sincronização.
                           </p>
-                          {import.meta.env.VITE_ANILIST_CLIENT_ID ? (
+                          {(import.meta.env.VITE_ANILIST_CLIENT_ID || localSettings.anilistClientId) ? (
                             <div className="text-right flex flex-col items-end gap-1">
                               <a 
-                                href={`https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID}&response_type=token`}
+                                href={`https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID || localSettings.anilistClientId}&response_type=token`}
                                 className="text-[10px] text-brand font-bold uppercase tracking-widest hover:underline whitespace-nowrap"
                               >
                                 Obter Token de Acesso (Login AniList)
@@ -439,7 +461,7 @@ export default function Settings() {
                               >
                                 Como configurar o modo Desenvolvedor
                               </button>
-                              <p className="text-[9px] text-gray-500 font-bold">VITE_ANILIST_CLIENT_ID não configurado</p>
+                              <p className="text-[9px] text-gray-500 font-bold">Client ID não configurado</p>
                             </div>
                           )}
                         </div>
@@ -459,9 +481,9 @@ export default function Settings() {
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Jikan REST API v4</p>
                         </div>
                       </div>
-                      {malUser && (
+                      {localSettings.malUser && (
                         <span className="bg-[#2e51a2]/10 text-[#2e51a2] border border-[#2e51a2]/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                          {malToken ? 'CONECTADO (HTTP CLIENT)' : 'PREVIEW ATIVO'}
+                          {localSettings.malToken ? 'CONECTADO (HTTP CLIENT)' : 'PREVIEW ATIVO'}
                         </span>
                       )}
                     </div>
@@ -471,13 +493,13 @@ export default function Settings() {
                         <input 
                           type="text" 
                           placeholder="Nome de usuário no MyAnimeList (@username)"
-                          value={malUser}
-                          onChange={(e) => setMalUser(e.target.value)}
+                          value={localSettings.malUser}
+                          onChange={(e) => setLocalSettings(s => ({ ...s, malUser: e.target.value }))}
                           className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
                         />
                         <button 
                           onClick={() => handleImport('mal')}
-                          disabled={isImporting || !malUser}
+                          disabled={isImporting || !localSettings.malUser}
                           className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-lg shadow-brand/20"
                         >
                           {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.migration.import')}
@@ -487,8 +509,8 @@ export default function Settings() {
                       <input 
                         type="password" 
                         placeholder="Token ou Senha de Acesso MyAnimeList (Necessário para sincronização real)"
-                        value={malToken}
-                        onChange={(e) => setMalToken(e.target.value)}
+                        value={localSettings.malToken}
+                        onChange={(e) => setLocalSettings(s => ({ ...s, malToken: e.target.value }))}
                         className="w-full bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
                       />
                       <p className="text-[9px] text-gray-500 font-medium">
