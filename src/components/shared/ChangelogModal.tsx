@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.2.0',
+  version: '3.3.0',
   items: [
-    'A Saga Avalon v3.2.0 — Asset Guardian & Absolute Pathing',
-    '🛡️ Blindagem de Ativos: Migração das logos para o motor de bundling do Vite. Agora elas são compiladas e gerenciadas pelo núcleo do app, eliminando falhas de pathing no GitHub Pages.',
-    '🔗 Roteamento Cinematográfico: Ajuste no basename do React Router para navegação fluida em subpastas sem erros de 404.',
-    '✨ Visual Clarity: Restauração completa da identidade visual em todas as telas (Navbar, Home, Footer e Player).'
+    '🛡️ Sistema Anti-Falha: Implementação de motor de recarregamento inteligente (lazyWithRetry) para evitar erros de cache ou módulos desatualizados.',
+    '✨ Qualidade Premium: Novo filtro global que prioriza séries de TV e Filmes, removendo clipes musicais e especiais aleatórios das listas principais.',
+    '🔍 Busca Interna: Adicionada barra de pesquisa na "Minha Lista" para encontrar rapidamente seus animes favoritados.',
+    '🎨 Visual Master: Cards de mídia redesenhados com badges "PREMIUM", efeitos de vidro (glassmorphism) e transições mais suaves.'
   ]
 };
 

@@ -1,6 +1,15 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.2.0)
+# 🌌 Avalon - Anime Tracking Saga (v3.3.0)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.3.0 (Stability & Quality Focus)
+
+- **🛡️ Resilience Layer**: Implementação do motor `lazyWithRetry` e ErrorBoundaries reforçados. Isso elimina o erro "Falha de Roteamento" causado por caches desatualizados ou chunks perdidos durante atualizações do servidor.
+- **✨ Qualidade sobre Quantidade**: Filtro global inteligente que prioriza animes de alta qualidade (Séries de TV e Filmes), removendo automaticamente clipes musicais, comerciais e especiais irrelevantes dos feeds e resultados de busca.
+- **🔍 MyList Search Engine**: Nova barra de busca instantânea integrada na aba "Minha Lista" para acesso veloz aos seus títulos favoritos.
+- **🎨 Visual Master Refresh**: Redesign completo dos cards de mídia. Agora com bordas arredondadas de 12px (estilo iOS/Netflix), badges "PREMIUM" para obras aclamadas, efeitos de vidro (glassmorphism) e transições cinematográficas de hover.
 
 ---
 

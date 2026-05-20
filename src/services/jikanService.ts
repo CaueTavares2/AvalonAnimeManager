@@ -80,23 +80,27 @@ export interface JikanAnime {
 export const jikanService = {
   getTrending: async (type: 'anime' | 'manga' = 'anime') => {
     const filter = type === 'anime' ? 'airing' : 'publishing';
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}&limit=6`);
+    const typeFilter = type === 'anime' ? '&type=tv' : ''; // Prioritize TV for trending animes
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
     return data.data;
   },
 
   getPopular: async (type: 'anime' | 'manga' = 'anime') => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=bypopularity&limit=12`);
+    const typeFilter = type === 'anime' ? '&type=tv' : '';
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=bypopularity${typeFilter}&limit=18`);
     return data.data;
   },
 
   getUpcoming: async (type: 'anime' | 'manga' = 'anime') => {
-    const filter = type === 'anime' ? 'upcoming' : 'upcoming'; // Both use upcoming
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}&limit=6`);
+    const filter = type === 'anime' ? 'upcoming' : 'upcoming';
+    const typeFilter = type === 'anime' ? '&type=tv' : '';
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
     return data.data;
   },
 
   getTopRated: async (type: 'anime' | 'manga' = 'anime') => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?limit=1`);
+    const typeFilter = type === 'anime' ? '&type=tv' : '';
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?limit=10${typeFilter}`);
     return data.data;
   },
 
@@ -106,14 +110,22 @@ export const jikanService = {
   },
 
   search: async (query: string, type: 'anime' | 'manga' = 'anime') => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&limit=10&order_by=popularity&sort=desc`);
+    // For search, we still allow more variety but prioritize popularity
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&limit=15&order_by=popularity&sort=desc&sfw=true`);
+    
+    // Client-side quality filter: exclude music and minor types if it's anime
+    if (type === 'anime') {
+      return data.data.filter((item: any) => 
+        ['tv', 'movie', 'ova', 'ona'].includes(item.type?.toLowerCase())
+      );
+    }
     return data.data;
   },
 
   getByYear: async (year: number, page: number = 1) => {
-    // Fetch larger limit, remove hardcoded type=tv so we can fetch all and filter, or we can use type=tv and let the client fetch movies separately if jikan doesn't support an OR. Let's just fetch all and filter in client
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=25&page=${page}`);
-    return data; // Return full response to get pagination info
+    // Only fetch TV and Movie to ensure "Quality over Quantity"
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=25&page=${page}&type=tv`);
+    return data; 
   },
   
   searchCharacters: async (query: string) => {
