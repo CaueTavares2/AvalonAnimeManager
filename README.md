@@ -1,6 +1,15 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.4.0)
+# 🌌 Avalon - Anime Tracking Saga (v3.5.0)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.5.0 (P2P Hybrid & Connectivity)
+
+- **🎬 Enhanced Torrentio Integration**: Suporte otimizado para o Torrentio. Quando o addon retorna um Torrent direto (infoHash) que o navegador não consegue tocar, o Avalon agora roteia automaticamente para o gateway **Webtor.io**, permitindo o streaming instantâneo em nuvem.
+- **🔗 Hybrid ID Mapping Engine**: Sistema aprimorado que vincula suas animes do MyAnimeList aos universos do **Kitsu** e **IMDb** simultaneamente, garantindo compatibilidade total com os catálogos do Stremio.
+- **⚙️ Config Connectivity Tester**: Nova ferramenta integrada nas configurações para testar a saúde de cada addon instalado, com indicadores visuais de status (Sucesso/Aviso).
+- **🛡️ Proxy Mastery**: Atualização do motor de proxy para aceitar headers dinâmicos, reduzindo erros 403 e garantindo anonimato nas requisições de stream.
 
 ---
 

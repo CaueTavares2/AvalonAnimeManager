@@ -5,35 +5,49 @@ import { AnimeExtension, Episode, StreamSource } from './extensionService';
 export const createStremioExtension = (manifestUrl: string, customName?: string): AnimeExtension => {
   const baseUrl = manifestUrl.replace('/manifest.json', '');
   
-  // Internal cache for IMDb IDs
-  const imdbCache = new Map<string, string>();
+  // Internal cache for IDs
+  const idCache = new Map<string, { imdb?: string, kitsu?: string }>();
 
-  const getImdbId = async (malId: string) => {
-    if (imdbCache.has(malId)) return imdbCache.get(malId);
+  const getMapping = async (malId: string) => {
+    if (idCache.has(malId)) return idCache.get(malId);
     
+    let mapping: { imdb?: string, kitsu?: string } = {};
+
     try {
+      // 1. Try Jikan for IMDb
       const external = await jikanService.getExternalIds(parseInt(malId));
       const imdb = external.find((ex: any) => ex.name.toLowerCase() === 'imdb');
       if (imdb) {
-        // Extract ID from URL like https://www.imdb.com/title/tt0110413/
         const match = imdb.url.match(/title\/(tt\d+)/);
-        if (match) {
-          imdbCache.set(malId, match[1]);
-          return match[1];
+        if (match) mapping.imdb = match[1];
+      }
+
+      // 2. Try MalSync for Kitsu (very reliable for anime)
+      const msResponse = await fetch(`https://api.malsync.moe/mal/anime/${malId}`);
+      if (msResponse.ok) {
+        const msData = await msResponse.json();
+        // Extract Kitsu ID
+        if (msData.Sites?.Kitsu) {
+          const firstKitsuKey = Object.keys(msData.Sites.Kitsu)[0];
+          if (firstKitsuKey) {
+            mapping.kitsu = msData.Sites.Kitsu[firstKitsuKey].identifier;
+          }
         }
       }
     } catch (e) {
-      console.error('Failed to map MAL to IMDb:', e);
+      console.error('Mapping failed for MAL ID:', malId, e);
     }
-    return null;
+    
+    idCache.set(malId, mapping);
+    return mapping;
   };
 
   return {
     id: `stremio-${btoa(manifestUrl).slice(0, 10)}`,
     name: customName || 'Stremio Addon',
-    version: '1.0.0',
+    version: '1.2.0',
     icon: '🎬',
-    description: 'Filmes e Séries via Torrentio/Stremio Proto',
+    description: 'Agora com Suporte Web (P2P + Direct)',
     
     search: async (query: string) => {
       const items = await jikanService.search(query);
@@ -58,7 +72,7 @@ export const createStremioExtension = (manifestUrl: string, customName?: string)
 
       const totalEpisodes = details.episodes || 1;
       return Array.from({ length: totalEpisodes }, (_, i) => ({
-        id: `${animeId}:series:${i + 1}`, // Encode prefix
+        id: `${animeId}:series:${i + 1}`,
         number: i + 1,
         title: `Episódio ${i + 1}`
       }));
@@ -66,32 +80,54 @@ export const createStremioExtension = (manifestUrl: string, customName?: string)
     
     getStreams: async (complexId: string) => {
       const [malId, type, epNum] = complexId.split(':');
-      const imdbId = await getImdbId(malId);
+      const mapping = await getMapping(malId);
       
-      if (!imdbId) return [];
+      const sources: StreamSource[] = [];
+      const idsToTry = [];
+      
+      if (mapping.imdb) idsToTry.push({ id: mapping.imdb, provider: 'imdb' });
+      if (mapping.kitsu) idsToTry.push({ id: `kitsu:${mapping.kitsu}`, provider: 'kitsu' });
 
-      try {
-        // Stremio streams endpoint: /stream/{type}/{id}.json
-        // For series: id is imdbId:season:episode (assuming season 1 for most anime)
-        const stremioId = type === 'movie' ? imdbId : `${imdbId}:1:${epNum}`;
-        const streamUrl = `${baseUrl}/stream/${type}/${stremioId}.json`;
-        
-        // Using a proxy might be needed for CORS
-        const response = await fetch(`/api/proxy?url=${encodeURIComponent(streamUrl)}`);
-        if (!response.ok) return [];
-        
-        const data = await response.json();
-        if (!data.streams) return [];
+      // Fallback: If both fail, try searching by title? (Stremio doesn't usually like this)
+      
+      for (const { id, provider } of idsToTry) {
+        try {
+          const stremioId = type === 'movie' || provider === 'kitsu' ? id : `${id}:1:${epNum}`;
+          // For Kitsu, it's usually kitsu:id:ep
+          const finalId = provider === 'kitsu' ? `${id}:${epNum}` : stremioId;
+          
+          const streamUrl = `${baseUrl}/stream/${type}/${finalId}.json`;
+          const response = await fetch(`/api/proxy?url=${encodeURIComponent(streamUrl)}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.streams) {
+              data.streams.forEach((s: any) => {
+                let videoUrl = s.url || s.link;
+                let videoType: 'mp4' | 'hls' | 'iframe' = videoUrl?.includes('.m3u8') ? 'hls' : 'mp4';
+                
+                if (!videoUrl && s.infoHash) {
+                  // WEBTOR FALLBACK: Convert infoHash to a web-streamable player
+                  videoUrl = `https://webtor.io/player?infohash=${s.infoHash}${s.fileIdx !== undefined ? `&file=${s.fileIdx}` : ''}`;
+                  videoType = 'iframe';
+                }
 
-        return data.streams.map((s: any) => ({
-          url: s.url || s.link, // Torrentio usually returns direct URL if configured with Debrid
-          type: s.url?.includes('.m3u8') ? 'hls' : 'mp4',
-          quality: s.title || s.name || 'Torrent Stream'
-        })).filter((s: any) => s.url);
-      } catch (e) {
-        console.error('Stremio stream fetch error:', e);
-        return [];
+                if (videoUrl) {
+                  sources.push({
+                    url: videoUrl,
+                    type: videoType,
+                    quality: `[${provider.toUpperCase()}] ${s.title || s.name || 'Stream'}`
+                  });
+                }
+              });
+            }
+          }
+        } catch (e) {
+          console.error(`Stream fetch failed for ${provider}:`, e);
+        }
       }
+
+      return sources;
     }
   };
 };

@@ -122,7 +122,7 @@ async function startServer() {
       const getHeaders = (simple = false) => {
         const base: any = {
           'Accept': '*/*',
-          'Referer': referer,
+          'Referer': targetUrl.includes('strem.fun') ? 'https://web.stremio.com/' : referer,
           'Connection': 'keep-alive',
         };
         if (rangeHeader) {
@@ -134,16 +134,15 @@ async function startServer() {
           ...base,
           'Accept': 'application/json, text/plain, */*',
           'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Origin': referer.replace(/\/$/, ''),
+          'Origin': targetUrl.includes('strem.fun') ? 'https://web.stremio.com' : referer.replace(/\/$/, ''),
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
           'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
           'sec-ch-ua-mobile': '?0',
           'sec-ch-ua-platform': '"Windows"',
-          'sec-fetch-dest': 'empty',
+          'sec-fetch-dest': targetUrl.includes('strem.fun') ? 'empty' : 'document',
           'sec-fetch-mode': 'cors',
           'sec-fetch-site': 'cross-site',
-          'Upgrade-Insecure-Requests': '1',
         };
       };
 

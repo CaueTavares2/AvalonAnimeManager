@@ -96,6 +96,24 @@ export default function Settings() {
 
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ success?: string; error?: string }>({});
+  const [testingStatus, setTestingStatus] = useState<Record<string, 'pending' | 'success' | 'error'>>({});
+
+  const testAllExtensions = async () => {
+    const all = [...AVAILABLE_EXTENSIONS, ...manifests.map(m => createStremioExtension(m))];
+    for (const ext of all) {
+      setTestingStatus(prev => ({ ...prev, [ext.id]: 'pending' }));
+      try {
+        const results = await ext.search('Naruto');
+        if (results && results.length > 0) {
+          setTestingStatus(prev => ({ ...prev, [ext.id]: 'success' }));
+        } else {
+          setTestingStatus(prev => ({ ...prev, [ext.id]: 'error' }));
+        }
+      } catch (e) {
+        setTestingStatus(prev => ({ ...prev, [ext.id]: 'error' }));
+      }
+    }
+  };
 
   const handleImport = async (type: 'anilist' | 'mal') => {
     // If the user tries to import, we should use the current typed value (localSettings)
@@ -255,7 +273,15 @@ export default function Settings() {
                   <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
                     <Radio className="w-4 h-4 text-brand" /> Fontes de Anime & Streams (P2P)
                   </h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo (Stremio Proto)</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo (Stremio Proto)</p>
+                    <button 
+                      onClick={testAllExtensions}
+                      className="text-[9px] font-black uppercase text-brand flex items-center gap-1.5 hover:underline"
+                    >
+                      <Shield className="w-3 h-3" /> Testar Todas Conexões
+                    </button>
+                  </div>
                 </div>
 
                 {/* Custom Manifest Input */}
@@ -306,6 +332,9 @@ export default function Settings() {
                               <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
                               <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
                               {manifestUrl && <span className="text-[8px] text-brand font-black uppercase tracking-widest bg-brand/5 px-2 py-0.5 rounded border border-brand/10">Custom</span>}
+                              {testingStatus[ext.id] === 'pending' && <Loader2 className="w-3 h-3 animate-spin text-brand" />}
+                              {testingStatus[ext.id] === 'success' && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />}
+                              {testingStatus[ext.id] === 'error' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50" />}
                             </div>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
                           </div>
