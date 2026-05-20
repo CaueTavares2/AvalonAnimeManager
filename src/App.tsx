@@ -14,6 +14,7 @@ import { AchievementNotification } from './components/shared/AchievementNotifica
 import { ChangelogModal } from './components/shared/ChangelogModal';
 import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
+import TrackerSyncToast from './components/shared/TrackerSyncToast';
 import MangaReader from './pages/MangaReader';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -107,6 +108,7 @@ function AppRoutes() {
       <ChangelogModal />
       <WelcomeModal />
       <MultipleDeviceWarning />
+      <TrackerSyncToast />
       
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-6 md:py-12 pb-28 md:pb-24 lg:pb-12">
         <Suspense fallback={

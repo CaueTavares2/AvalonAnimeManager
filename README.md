@@ -1,6 +1,23 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.2)
+# 🌌 Avalon - Anime Tracking Saga (v3.1.3)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.1.3 (Sincronização de Trackers & Otimização de Busca)
+
+Esta atualização traz importantes expansões de usabilidade, estabilização de imagem e novos canais automáticos de sincronização externa:
+
+- **⚡ Fix Global de Imagens**: Substituição total das credenciais e carregamento das logomarcas Light e Dark via geração de vetores estáticos de alta resolução, resolvendo o erro de carregamento nos navegadores.
+- **🔍 Busca Exclusiva de Vídeo (Anime/Filmes)**: Redirecionamento cirúrgico da barra de busca principal da Navbar para filtrar exclusivamente animes e filmes ("anime"), evitando a inclusão de mangás nos resultados globais do cabeçalho.
+- **🎲 Retorno do 'Me Surpreenda!' na Lista**: Integração de um botão inteligente na aba Lista que escolhe de forma aleatória a sua próxima obra. Atua priorizando a lista de "Planejando" (Planning), e caso não haja, faz o sorteio sobre o restante das suas produções ativas.
+- **🤖 Sincronização Invisível de Otaku Points (PO)**: O antigo botão de sincronização manual foi removido. Agora, o Avalon sincroniza as pontuações e conquistas do usuário em segundo plano de forma 100% automatizada e assíncrona, munido de uma proteção por debounce de 5 segundos para garantir eficiência extrema.
+- **🔄 Tracker Sync Sênior (AniList & MyAnimeList)**: Implementação de um middleware de comunicação que atualiza progresso, episódios marcados e status direto para o AniList e MyAnimeList em tempo real.
+- **😊 Tradutor de Nota Smiley (Regras da Comunidade)**: Tradução inteligente da nota numérica de 1-10 de Avalon para o formato de smileys do AniList:
+  - Notas **maior ou igual a 6** $\rightarrow$ Cara Feliz (`😊 SMILE`)
+  - Nota **igual a 5** $\rightarrow$ Cara Neutra (`😐 NEUTRAL`)
+  - Notas **menor ou igual a 4** $\rightarrow$ Cara Ruim (`😢 SAD`)
+- **📡 Toast HUD Holográfico**: Nova tela flutuante discreta montada no canto inferior direito que se acende com áudio visual e micro-transições para confirmar as atualizações de track sincronizadas no servidor.
 
 ---
 
@@ -81,7 +98,15 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.2] - Auto-Detecção & Perfis Otimizados PC vs. Mobile (Atual)
+### [v3.1.3] - Sincronização de Trackers & Otimização de Busca (Atual)
+- **Logos Corrigidas**: Regeneração estável para evitar 404 e erros nos logotipos da Navbar.
+- **Limitação de Busca**: Restrição da barra de navegação principal da Navbar apenas para animes e filmes.
+- **Auto PO Sync**: Substituição do botão manual por sincronização reativa de segundo plano em lotes com proteção por debounce de 5 segundos.
+- **Botão Me Surpreenda**: Retornado O Sorteador Inteligente na página de MyList, compatível com o filtro de mídia ativado.
+- **Tracker Gateway**: Comunicação em tempo real com AniList GraphQL e MyAnimeList REST, munido de tradução automática sob escala Smiley (Feliz, Neutro, Ruim) do AniList.
+- **Floating HUD Overlay**: Exibição da confirmação de transmissão em tempo real no canto inferior por HUD holográfico.
+
+### [v3.1.2] - Auto-Detecção & Perfis Otimizados PC vs. Mobile
 - **Auto-Detecção Direct-to-Core**: Sistema inteligente de leitura do UA / suporte a toque / tamanho físico que categoriza e injeta as regras de plataforma.
 - **Transições Suspensas no Celular**: Remoção cirúrgica de animações de montagem do Framer Motion e efeitos de zoom para salvar recursos de processadores como do Galaxy A13.
 - **Oclusão de Hover em Touch**: Cards de obras sem renderização de hover overlays em dispositivos de toque, evitando vazamento ou lentidão gráfica.

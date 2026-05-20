@@ -26,7 +26,7 @@ export default function Navbar() {
       if (search.trim().length > 2) {
         setIsSearching(true);
         try {
-          const data = await jikanService.search(search, mediaType);
+          const data = await jikanService.search(search, 'anime');
           setResults(data.slice(0, 8));
         } catch (error) {
           console.error("Search failed:", error);
@@ -37,7 +37,7 @@ export default function Navbar() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, mediaType]);
+  }, [search]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -55,7 +55,7 @@ export default function Navbar() {
   const handleSelect = (id: number) => {
     setSearch('');
     setIsSearching(false);
-    navigate(`/${mediaType}/${id}`);
+    navigate(`/anime/${id}`);
   };
 
   const menuItems = [

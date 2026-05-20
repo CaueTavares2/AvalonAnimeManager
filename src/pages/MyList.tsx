@@ -1,5 +1,5 @@
 import { useAnimeList, AnimeStatus, UserAnime } from '../hooks/useAnimeList';
-import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw } from 'lucide-react';
+import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -18,21 +18,23 @@ export default function MyList() {
   const { profile } = useProfile();
   const { t } = useLanguage();
   const [mediaType, setMediaType] = useState<'ANIME' | 'MANGA'>('ANIME');
-  const [isSyncing, setIsSyncing] = useState(false);
   const [filter, setFilter] = useState<AnimeStatus | 'ALL'>('ALL');
 
-  const handleSyncPoints = async () => {
-    if (!user) return;
-    setIsSyncing(true);
-    try {
-      await rankingService.syncListPoints(user.uid, list);
-      alert("Pontos de Otaku sincronizados com sucesso!");
-    } catch (error) {
-      console.error("Sync error:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
+  // Automatically sync Otaku Points (PO) on list changes with a 5s debounce for performance
+  useEffect(() => {
+    if (!user || list.length === 0) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        await rankingService.syncListPoints(user.uid, list);
+        console.log("Pontos de Otaku (PO) sincronizados automaticamente com sucesso!");
+      } catch (error) {
+        console.error("Auto PO sync error:", error);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [list, user]);
   const [completedAnime, setCompletedAnime] = useState<UserAnime | null>(null);
   const [suggestion, setSuggestion] = useState<UserAnime | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_CHUNK);
@@ -76,6 +78,12 @@ export default function MyList() {
       setCompletedAnime(anime);
     }
     updateAnime(id, { status: newStatus });
+
+    if (anime) {
+      import('../services/trackerService').then(({ trackerService }) => {
+        trackerService.syncToAllActive(id, newStatus, anime.progress, anime.score);
+      });
+    }
   }, [list, updateAnime]);
 
   const handleProgressUpdate = useCallback((id: number, increment: boolean) => {
@@ -95,12 +103,17 @@ export default function MyList() {
     }
 
     updateAnime(id, { progress: newProgress, status: newStatus });
+
+    import('../services/trackerService').then(({ trackerService }) => {
+      trackerService.syncToAllActive(id, newStatus, newProgress, anime.score);
+    });
   }, [list, updateAnime]);
 
   const handleSuggestion = () => {
-    const planningList = filteredList.filter(a => a.status === 'PLANNING');
-    if (planningList.length === 0) return;
-    const random = planningList[Math.floor(Math.random() * planningList.length)];
+    const planningList = list.filter(a => a.type === mediaType && a.status === 'PLANNING');
+    const targetList = planningList.length > 0 ? planningList : list.filter(a => a.type === mediaType);
+    if (targetList.length === 0) return;
+    const random = targetList[Math.floor(Math.random() * targetList.length)];
     setSuggestion(random);
   };
 
@@ -139,15 +152,11 @@ export default function MyList() {
 
           <div className="flex items-center gap-4">
             <button 
-              onClick={handleSyncPoints}
-              disabled={isSyncing}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 border border-brand/20 bg-brand/5 text-brand rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand hover:text-white transition-all disabled:opacity-50",
-                isSyncing && "animate-pulse"
-              )}
+              onClick={handleSuggestion}
+              disabled={filteredList.length === 0}
+              className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-yellow-500 hover:text-white transition-all shadow-lg shadow-yellow-500/5 group disabled:opacity-40 disabled:hover:bg-yellow-500/10 disabled:hover:text-yellow-500 disabled:shadow-none"
             >
-              <RefreshCw className={cn("w-3.5 h-3.5", isSyncing && "animate-spin")} />
-              {isSyncing ? "Sincronizando..." : "Sincronizar PO"}
+              <Sparkles className="w-3.5 h-3.5 text-yellow-500 group-hover:rotate-12 transition-transform shrink-0" /> Me Surpreenda!
             </button>
 
             <div className="flex bg-[var(--color-card)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
@@ -170,14 +179,6 @@ export default function MyList() {
               );
             })}
           </div>
-          {filter === 'PLANNING' && (
-            <button 
-              onClick={handleSuggestion}
-              className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-yellow-500 hover:text-white transition-all shadow-lg shadow-yellow-500/5 group"
-            >
-              <Star className="w-4 h-4 group-hover:rotate-12 transition-transform" /> Sugestão
-            </button>
-          )}
         </div>
       </div>
 

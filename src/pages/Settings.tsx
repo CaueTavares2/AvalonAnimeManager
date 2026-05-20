@@ -65,11 +65,23 @@ export default function Settings() {
     }, 600);
   };
 
-  // Import State
-  const [anilistUser, setAnilistUser] = useState('');
-  const [malUser, setMalUser] = useState('');
+  // Tracker Sync & Integration State
+  const [anilistUser, setAnilistUser] = useState(() => localStorage.getItem('avalon_anilist_user') || '');
+  const [anilistToken, setAnilistToken] = useState(() => localStorage.getItem('avalon_anilist_token') || '');
+  const [malUser, setMalUser] = useState(() => localStorage.getItem('avalon_mal_user') || '');
+  const [malToken, setMalToken] = useState(() => localStorage.getItem('avalon_mal_token') || '');
+  const [autoSyncTrackers, setAutoSyncTrackers] = useState(() => localStorage.getItem('avalon_auto_sync_trackers') === 'true');
+
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ success?: string; error?: string }>({});
+
+  useEffect(() => {
+    localStorage.setItem('avalon_anilist_user', anilistUser);
+    localStorage.setItem('avalon_anilist_token', anilistToken);
+    localStorage.setItem('avalon_mal_user', malUser);
+    localStorage.setItem('avalon_mal_token', malToken);
+    localStorage.setItem('avalon_auto_sync_trackers', autoSyncTrackers ? 'true' : 'false');
+  }, [anilistUser, anilistToken, malUser, malToken, autoSyncTrackers]);
 
   const handleImport = async (type: 'anilist' | 'mal') => {
     const user = type === 'anilist' ? anilistUser : malUser;
@@ -328,67 +340,125 @@ export default function Settings() {
               </div>
             ) : activeTab === 'migration' ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="space-y-2">
-                  <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest">{t('settings.migration.title')}</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('settings.migration.subtitle')}</p>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest">{t('settings.migration.title')}</h3>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('settings.migration.subtitle')}</p>
+                  </div>
+                  
+                  {/* Toggle para Auto-Sync */}
+                  <div className="flex items-center gap-3 bg-[var(--color-card)] border border-[var(--color-border)] px-4 py-3 rounded-2xl shadow-sm">
+                    <input 
+                      type="checkbox"
+                      id="autoSyncTrackers"
+                      checked={autoSyncTrackers}
+                      onChange={(e) => setAutoSyncTrackers(e.target.checked)}
+                      className="w-4 h-4 text-brand bg-gray-100 border-gray-300 rounded focus:ring-brand dark:focus:ring-brand dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 accent-brand cursor-pointer"
+                    />
+                    <label htmlFor="autoSyncTrackers" className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] cursor-pointer select-none">
+                      Sincronização Ativa (Auto-Sync)
+                    </label>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
-                  {/* AniList Import */}
+                  {/* AniList Integration */}
                   <div className="p-6 bg-[var(--color-bg)] rounded-3xl border-2 border-[var(--color-border)] space-y-5 group hover:border-brand/30 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#02a9ff]/20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                        <DownloadCloud className="w-6 h-6 text-[#02a9ff]" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#02a9ff]/20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                          <DownloadCloud className="w-6 h-6 text-[#02a9ff]" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{t('settings.migration.anilist')}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">GraphQL API v2</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{t('settings.migration.anilist')}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Connect via GraphQL</p>
-                      </div>
+                      {anilistUser && (
+                        <span className="bg-[#02a9ff]/10 text-[#02a9ff] border border-[#02a9ff]/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                          {anilistToken ? 'CONECTADO (MUTAÇÕES)' : 'PREVIEW ATIVO'}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex gap-3">
+
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="Nome de usuário no AniList (@username)"
+                          value={anilistUser}
+                          onChange={(e) => setAnilistUser(e.target.value)}
+                          className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
+                        />
+                        <button 
+                          onClick={() => handleImport('anilist')}
+                          disabled={isImporting || !anilistUser}
+                          className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-lg shadow-brand/20"
+                        >
+                          {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.migration.import')}
+                        </button>
+                      </div>
+
                       <input 
-                        type="text" 
-                        placeholder="@username"
-                        value={anilistUser}
-                        onChange={(e) => setAnilistUser(e.target.value)}
-                        className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
+                        type="password" 
+                        placeholder="Token de Acesso AniList (Necessário para sincronização real de progresso)"
+                        value={anilistToken}
+                        onChange={(e) => setAnilistToken(e.target.value)}
+                        className="w-full bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
                       />
-                      <button 
-                        onClick={() => handleImport('anilist')}
-                        disabled={isImporting}
-                        className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-lg shadow-brand/20"
-                      >
-                        {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.migration.import')}
-                      </button>
+                      <p className="text-[9px] text-gray-500 font-medium">
+                        * Deixe em branco para simular sincronização virtual local se você não tiver um token Developer de usuário.
+                      </p>
                     </div>
                   </div>
 
-                  {/* MAL Import */}
+                  {/* MAL Integration */}
                   <div className="p-6 bg-[var(--color-bg)] rounded-3xl border-2 border-[var(--color-border)] space-y-5 group hover:border-brand/30 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#2e51a2]/20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                        <DownloadCloud className="w-6 h-6 text-[#2e51a2]" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#2e51a2]/20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                          <DownloadCloud className="w-6 h-6 text-[#2e51a2]" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{t('settings.migration.mal')}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Jikan REST API v4</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{t('settings.migration.mal')}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Via Jikan API v4</p>
-                      </div>
+                      {malUser && (
+                        <span className="bg-[#2e51a2]/10 text-[#2e51a2] border border-[#2e51a2]/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                          {malToken ? 'CONECTADO (HTTP CLIENT)' : 'PREVIEW ATIVO'}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex gap-3">
+
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="Nome de usuário no MyAnimeList (@username)"
+                          value={malUser}
+                          onChange={(e) => setMalUser(e.target.value)}
+                          className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
+                        />
+                        <button 
+                          onClick={() => handleImport('mal')}
+                          disabled={isImporting || !malUser}
+                          className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-lg shadow-brand/20"
+                        >
+                          {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.migration.import')}
+                        </button>
+                      </div>
+
                       <input 
-                        type="text" 
-                        placeholder="@username"
-                        value={malUser}
-                        onChange={(e) => setMalUser(e.target.value)}
-                        className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
+                        type="password" 
+                        placeholder="Token ou Senha de Acesso MyAnimeList (Necessário para sincronização real)"
+                        value={malToken}
+                        onChange={(e) => setMalToken(e.target.value)}
+                        className="w-full bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-sm font-bold text-[var(--color-text-bright)] focus:outline-none focus:ring-2 focus:ring-brand shadow-inner"
                       />
-                      <button 
-                        onClick={() => handleImport('mal')}
-                        disabled={isImporting}
-                        className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shadow-lg shadow-brand/20"
-                      >
-                        {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.migration.import')}
-                      </button>
+                      <p className="text-[9px] text-gray-500 font-medium">
+                        * O MyAnimeList offline faz o mock automático de escrita simulada baseado no usuário conectado se deixado em branco.
+                      </p>
                     </div>
                   </div>
                 </div>
