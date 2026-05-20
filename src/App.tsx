@@ -6,6 +6,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
+import { cn } from './lib/utils';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
 import { UpdateNotification } from './components/shared/UpdateNotification';
 import { GlobalAnnouncement } from './components/shared/GlobalAnnouncement';
@@ -46,6 +47,11 @@ function AppRoutes() {
   const { loading } = useAuth();
   const location = useLocation();
 
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
@@ -75,7 +81,7 @@ function AppRoutes() {
       <WelcomeModal />
       <MultipleDeviceWarning />
       
-      <main className="max-w-7xl mx-auto px-4 md:px-12 py-6 md:py-12 pb-24 lg:pb-12">
+      <main className="max-w-7xl mx-auto px-4 md:px-12 py-6 md:py-12 pb-28 md:pb-24 lg:pb-12">
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center py-40 gap-4">
             <div className="w-12 h-12 border-t-2 border-brand rounded-full animate-spin" />
@@ -116,7 +122,7 @@ function AppRoutes() {
         </Suspense>
       </main>
 
-      <footer className="max-w-7xl mx-auto px-4 md:px-12 py-12 border-t border-[var(--color-border)] mt-12 mb-16 lg:mb-0">
+      <footer className="max-w-7xl mx-auto px-4 md:px-12 py-12 border-t border-[var(--color-border)] mt-12 mb-20 lg:mb-0">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 overflow-hidden rounded-full border border-[var(--color-border)]">
             <img src="/logo-light.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-full block dark:hidden" />
@@ -132,22 +138,22 @@ function AppRoutes() {
       </footer>
 
       {/* Mobile Nav */}
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-[var(--color-card)]/98 backdrop-blur-md border-t border-[var(--color-border)] lg:hidden flex items-center justify-around z-50">
-        <Link to="/" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-          <TrendingUp className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Home</span>
+      <div className="fixed bottom-0 left-0 right-0 h-[calc(4.2rem+env(safe-area-inset-bottom))] bg-[var(--color-card)]/98 backdrop-blur-md border-t border-[var(--color-border)] lg:hidden flex items-center justify-around z-50 pb-[env(safe-area-inset-bottom)] px-2">
+        <Link to="/" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
+          <TrendingUp className={cn("w-5 h-5 transition-all duration-200", isActive('/') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
+          <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Home</span>
         </Link>
-        <Link to="/list" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-          <Search className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Lista</span>
+        <Link to="/list" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
+          <Search className={cn("w-5 h-5 transition-all duration-200", isActive('/list') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
+          <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/list') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Lista</span>
         </Link>
-        <Link to="/shop" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-          <ShoppingBag className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Loja</span>
+        <Link to="/shop" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
+          <ShoppingBag className={cn("w-5 h-5 transition-all duration-200", isActive('/shop') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
+          <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/shop') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Loja</span>
         </Link>
-        <Link to="/profile" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group">
-          <User className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-          <span className="text-[9px] font-black uppercase tracking-tighter text-gray-400 group-hover:text-brand transition-colors">Perfil</span>
+        <Link to="/profile" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
+          <User className={cn("w-5 h-5 transition-all duration-200", isActive('/profile') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
+          <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/profile') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Perfil</span>
         </Link>
       </div>
     </div>

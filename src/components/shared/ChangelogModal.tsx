@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.0.0',
+  version: '3.1.0',
   items: [
-    'A Saga Avalon v3.0.0 — Nova Fase de Estabilidade Global',
-    'Remoção temporária das extensões e APIs instáveis do Consumet (que foram desativadas mundialmente)',
-    'Aviso oficial e painel explicativo na área de Fontes de Anime e Player',
-    'Desenvolvimento de uma nova infraestrutura interna de vídeo ultra-rápida e segura em andamento',
-    'Melhorias no sistema de conquistas, badges equipáveis e desempenho geral'
+    'A Saga Avalon v3.1.0 — Edição de Otimização PWA & Mobile',
+    'Melhorias extensas para Comfort Mobile (controle e atalhos táteis otimizados e suporte a notches/safe areas)',
+    'Controles de visualização de animes por ano corrigidos (correção definitiva para corrida de dados e requisições repetidas)',
+    'Otimização do menu inferior de navegação do PWA com detecção automática do estado ativo para cada aba',
+    'Ajustes nos limites de zoom em inputs para garantir digitação confortável em navegadores de celular'
   ]
 };
 
