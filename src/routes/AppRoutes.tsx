@@ -1,8 +1,54 @@
-import { lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useDevice } from '../hooks/useDevice';
 import { motion, AnimatePresence } from 'motion/react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-40 gap-4 text-center px-4">
+          <AlertTriangle className="w-12 h-12 text-red-500 mb-2" />
+          <h2 className="text-xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter">Falha de Roteamento</h2>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest max-w-sm mb-4">
+            Houve uma falha ao carregar este módulo. Isso geralmente ocorre devido a atualizações em andamento ou cache.
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-dark transition-colors"
+          >
+            <RefreshCw size={14} /> Recarregar Módulo
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const LoadingFallback = () => (
+  <div className="flex flex-col items-center justify-center py-40 gap-4">
+    <div className="w-12 h-12 border-t-2 border-brand rounded-full animate-spin" />
+    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Carregando Módulo...</p>
+  </div>
+);
+
+const SafeSuspense = ({ children }: { children: React.ReactNode }) => (
+  <ErrorBoundary>
+    <Suspense fallback={<LoadingFallback />}>
+      {children}
+    </Suspense>
+  </ErrorBoundary>
+);
 
 // Lazy loaded pages
 const Home = lazy(() => import('../pages/Home'));
@@ -50,17 +96,11 @@ export default function AppRoutes() {
   }
 
   return (
-    <Suspense fallback={
-      <div className="flex flex-col items-center justify-center py-40 gap-4">
-        <div className="w-12 h-12 border-t-2 border-brand rounded-full animate-spin" />
-        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Carregando Módulo...</p>
-      </div>
-    }>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
             <Route path="/" element={
             isMobile ? (
-              <Home />
+              <SafeSuspense><Home /></SafeSuspense>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -68,30 +108,29 @@ export default function AppRoutes() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
               >
-                <Home />
+                <SafeSuspense><Home /></SafeSuspense>
               </motion.div>
             )
           } />
-          <Route path="/:type/:id" element={<AnimeDetails />} />
-          <Route path="/anime/:id/watch" element={<AnimePlayer />} />
-          <Route path="/manga/:id/read" element={<MangaReader />} />
-          <Route path="/list" element={<MyList />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/ranking" element={<Rankings />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/:uid" element={<PublicProfile />} />
-          <Route path="/social" element={<Social />} />
-          <Route path="/chat" element={<AniChat />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/feedback" element={<Feedback />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/animes-by-year" element={<AnimesByYear />} />
-          <Route path="/search" element={<SearchResults />} />
+          <Route path="/:type/:id" element={<SafeSuspense><AnimeDetails /></SafeSuspense>} />
+          <Route path="/anime/:id/watch" element={<SafeSuspense><AnimePlayer /></SafeSuspense>} />
+          <Route path="/manga/:id/read" element={<SafeSuspense><MangaReader /></SafeSuspense>} />
+          <Route path="/list" element={<SafeSuspense><MyList /></SafeSuspense>} />
+          <Route path="/community" element={<SafeSuspense><Community /></SafeSuspense>} />
+          <Route path="/ranking" element={<SafeSuspense><Rankings /></SafeSuspense>} />
+          <Route path="/profile" element={<SafeSuspense><Profile /></SafeSuspense>} />
+          <Route path="/profile/:uid" element={<SafeSuspense><PublicProfile /></SafeSuspense>} />
+          <Route path="/social" element={<SafeSuspense><Social /></SafeSuspense>} />
+          <Route path="/chat" element={<SafeSuspense><AniChat /></SafeSuspense>} />
+          <Route path="/shop" element={<SafeSuspense><Shop /></SafeSuspense>} />
+          <Route path="/settings" element={<SafeSuspense><Settings /></SafeSuspense>} />
+          <Route path="/feedback" element={<SafeSuspense><Feedback /></SafeSuspense>} />
+          <Route path="/login" element={<SafeSuspense><Login /></SafeSuspense>} />
+          <Route path="/analytics" element={<SafeSuspense><Analytics /></SafeSuspense>} />
+          <Route path="/admin" element={<SafeSuspense><Admin /></SafeSuspense>} />
+          <Route path="/animes-by-year" element={<SafeSuspense><AnimesByYear /></SafeSuspense>} />
+          <Route path="/search" element={<SafeSuspense><SearchResults /></SafeSuspense>} />
         </Routes>
       </AnimatePresence>
-    </Suspense>
   );
 }
