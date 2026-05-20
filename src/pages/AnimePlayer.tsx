@@ -38,6 +38,20 @@ export default function AnimePlayer() {
   const [adShield, setAdShield] = useState<boolean>(() => {
     return localStorage.getItem('ad_shield_active') !== 'false';
   });
+  const [clickShieldActive, setClickShieldActive] = useState(false);
+
+  const handleStartStream = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (clickShieldActive) return;
+    
+    setClickShieldActive(true);
+    // Anti-Click Fall-Through: dita um pequeno delay de 450ms para absorver completamente o clique do mouse e impedir que ele vaze para o iframe
+    setTimeout(() => {
+      setIsReady(true);
+      setClickShieldActive(false);
+    }, 450);
+  };
 
   const installedExts = getInstalledExtensions();
   const Player = ReactPlayer as any;
@@ -247,14 +261,24 @@ export default function AnimePlayer() {
             {/* Loading Overlay with click-to-bypass and autoplay support */}
             {(loadingStream || !isReady) && stream && (
                <div 
-                 onClick={() => setIsReady(true)}
-                 className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md z-20 cursor-pointer select-none group/overlay"
+                 onClick={handleStartStream}
+                 className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-md z-20 cursor-pointer select-none group/overlay"
                >
-                  <div className="w-14 h-14 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mb-4 transition-all duration-300 group-hover/overlay:scale-110 group-hover/overlay:bg-brand/30">
-                    <Play size={24} className="text-brand fill-current ml-1 animate-pulse" />
-                  </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1">Iniciar Transmissão</p>
-                  <p className="text-[8px] text-gray-500 uppercase tracking-widest">Clique se o vídeo não iniciar automaticamente</p>
+                 {clickShieldActive ? (
+                   <div className="flex flex-col items-center justify-center text-center p-6 animate-pulse">
+                     <ShieldCheck size={44} className="text-brand mb-3 stroke-[2.5]" />
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1">Escudo Protetor Ativado</p>
+                     <p className="text-[8px] text-gray-400 uppercase tracking-widest">Estabilizando sinal de vídeo e silenciando popups...</p>
+                   </div>
+                 ) : (
+                   <>
+                     <div className="w-14 h-14 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mb-4 transition-all duration-300 group-hover/overlay:scale-110 group-hover/overlay:bg-brand/30">
+                       <Play size={24} className="text-brand fill-current ml-1 animate-pulse" />
+                     </div>
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1">Iniciar Transmissão</p>
+                     <p className="text-[8px] text-gray-500 uppercase tracking-widest font-semibold">Filtro anti-popups ativo na transmissão</p>
+                   </>
+                 )}
                </div>
             )}
 
