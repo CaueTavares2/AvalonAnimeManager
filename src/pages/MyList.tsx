@@ -19,10 +19,12 @@ export default function MyList() {
   const { t } = useLanguage();
   const [mediaType, setMediaType] = useState<'ANIME' | 'MANGA'>('ANIME');
   const [filter, setFilter] = useState<AnimeStatus | 'ALL'>('ALL');
+  const [sortConfig, setSortConfig] = useState<{ key: 'title' | 'score' | null, direction: 'asc' | 'desc' | 'normal' }>({ key: null, direction: 'normal' });
 
   // Automatically sync Otaku Points (PO) on list changes with a 5s debounce for performance
   useEffect(() => {
     if (!user || list.length === 0) return;
+
 
     const timer = setTimeout(async () => {
       try {
@@ -41,9 +43,27 @@ export default function MyList() {
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const filteredList = useMemo(() => {
-    const typeFiltered = list.filter(a => a.type === mediaType);
-    return filter === 'ALL' ? typeFiltered : typeFiltered.filter(a => a.status === filter);
-  }, [list, filter, mediaType]);
+    let typeFiltered = list.filter(a => a.type === mediaType);
+    let result = filter === 'ALL' ? typeFiltered : typeFiltered.filter(a => a.status === filter);
+
+    if (sortConfig.key && sortConfig.direction !== 'normal') {
+      result = [...result].sort((a, b) => {
+        if (sortConfig.key === 'title') {
+          const titleA = a.title.toLowerCase();
+          const titleB = b.title.toLowerCase();
+          if (titleA < titleB) return sortConfig.direction === 'asc' ? -1 : 1;
+          if (titleA > titleB) return sortConfig.direction === 'asc' ? 1 : -1;
+          return 0;
+        } else if (sortConfig.key === 'score') {
+          const scoreA = a.score || 0;
+          const scoreB = b.score || 0;
+          return sortConfig.direction === 'asc' ? scoreA - scoreB : scoreB - scoreA;
+        }
+        return 0;
+      });
+    }
+    return result;
+  }, [list, filter, mediaType, sortConfig]);
 
   const visibleList = useMemo(() => 
     filteredList.slice(0, visibleCount),
@@ -70,7 +90,18 @@ export default function MyList() {
   // Reset visible count when filter changes
   useEffect(() => {
     setVisibleCount(ITEMS_PER_CHUNK);
-  }, [filter]);
+  }, [filter, sortConfig]);
+
+  const toggleSort = (key: 'title' | 'score') => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        if (prev.direction === 'normal') return { key, direction: 'asc' };
+        if (prev.direction === 'asc') return { key, direction: 'desc' };
+        return { key: null, direction: 'normal' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
 
   const handleStatusChange = useCallback((id: number, newStatus: AnimeStatus) => {
     const anime = list.find(a => a.id === id);
@@ -110,10 +141,43 @@ export default function MyList() {
   }, [list, updateAnime]);
 
   const handleSuggestion = () => {
-    const planningList = list.filter(a => a.type === mediaType && a.status === 'PLANNING');
-    const targetList = planningList.length > 0 ? planningList : list.filter(a => a.type === mediaType);
-    if (targetList.length === 0) return;
-    const random = targetList[Math.floor(Math.random() * targetList.length)];
+    // Advanced Next-Season Auto-Detector logic
+    // We group by anime series name by stripping common trailing prefixes like "Season 2", "Part 2", "2nd Season", etc.
+    // Extremely simplistic grouping approach for demonstration.
+    const sanitizeTitle = (t: string) => t.replace(/(Season|Part) \d+|:\s*(The|An).*/i, '').trim().toLowerCase();
+
+    const getGroups = () => {
+      const groups: Record<string, UserAnime[]> = {};
+      list.filter(a => a.type === mediaType).forEach(a => {
+        const root = sanitizeTitle(a.title);
+        if (!groups[root]) groups[root] = [];
+        groups[root].push(a);
+      });
+      return groups;
+    };
+
+    const groups = getGroups();
+    const candidateList: UserAnime[] = [];
+
+    Object.values(groups).forEach(franchise => {
+      // Sort franchise chronologically or by ID if possible. Using string title as fallback.
+      franchise.sort((a, b) => a.title.localeCompare(b.title));
+      
+      const uncompleted = franchise.filter(a => a.status !== 'COMPLETED' && a.status !== 'DROPPED');
+      if (uncompleted.length > 0) {
+        // Find the first uncompleted season in this franchise
+        candidateList.push(uncompleted[0]);
+      }
+    });
+
+    // Sub-select candidates in PLANNING first
+    let planningCandidates = candidateList.filter(a => a.status === 'PLANNING');
+    if (planningCandidates.length === 0) {
+      planningCandidates = candidateList;
+    }
+    
+    if (planningCandidates.length === 0) return;
+    const random = planningCandidates[Math.floor(Math.random() * planningCandidates.length)];
     setSuggestion(random);
   };
 
@@ -193,11 +257,33 @@ export default function MyList() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-black border-b border-[var(--color-border)]">
+              <thead className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-black border-b border-[var(--color-border)] select-none">
                 <tr>
                   <th className="px-4 py-4 w-20">COVER</th>
-                  <th className="px-4 py-4">TITLE</th>
-                  <th className="px-4 py-4 text-center">SCORE</th>
+                  <th 
+                    className="px-4 py-4 cursor-pointer hover:text-[var(--color-text-bright)] transition-colors"
+                    onClick={() => toggleSort('title')}
+                  >
+                    <div className="flex items-center gap-1">
+                      TITLE
+                      <span className="flex flex-col gap-[1px]">
+                        <span className={cn("text-[6px] leading-[4px]", sortConfig.key === 'title' && sortConfig.direction === 'desc' ? "text-brand" : "text-gray-600 opacity-50")}>▲</span>
+                        <span className={cn("text-[6px] leading-[4px]", sortConfig.key === 'title' && sortConfig.direction === 'asc' ? "text-brand" : "text-gray-600 opacity-50")}>▼</span>
+                      </span>
+                    </div>
+                  </th>
+                  <th 
+                    className="px-4 py-4 text-center cursor-pointer hover:text-[var(--color-text-bright)] transition-colors"
+                    onClick={() => toggleSort('score')}
+                  >
+                     <div className="flex items-center justify-center gap-1">
+                      SCORE
+                      <span className="flex flex-col gap-[1px]">
+                        <span className={cn("text-[6px] leading-[4px]", sortConfig.key === 'score' && sortConfig.direction === 'desc' ? "text-brand" : "text-gray-600 opacity-50")}>▲</span>
+                        <span className={cn("text-[6px] leading-[4px]", sortConfig.key === 'score' && sortConfig.direction === 'asc' ? "text-brand" : "text-gray-600 opacity-50")}>▼</span>
+                      </span>
+                    </div>
+                  </th>
                   <th className="px-4 py-4 text-center">STATUS</th>
                   <th className="px-4 py-4 text-center">PROGRESS</th>
                   <th className="px-4 py-4 text-right">ACTIONS</th>

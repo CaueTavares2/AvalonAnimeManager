@@ -76,8 +76,8 @@ export default function Navbar() {
         {/* Logo & Menu Section */}
         <div className="flex items-center gap-2 md:gap-4">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <img src="/logo-light.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
-            <img src="/logo-dark.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
+            <img src="/logo-light.jpg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
+            <img src="/logo-dark.jpg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
             <div className="text-brand font-black text-lg tracking-tighter uppercase italic hidden sm:block">Avalon</div>
           </Link>
 
@@ -149,6 +149,12 @@ export default function Navbar() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onFocus={() => setIsSearching(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && search.trim()) {
+                  setIsSearching(false);
+                  navigate(`/search?q=${encodeURIComponent(search.trim())}`);
+                }
+              }}
               placeholder="Pesquisar..."
               className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[11px] font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
             />
@@ -159,7 +165,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-3 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden z-[120] backdrop-blur-xl"
+                  className="absolute top-full left-0 right-0 mt-3 bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden z-[120] backdrop-blur-xl flex flex-col"
                 >
                   <div className="p-2 space-y-1">
                     {results.map((item) => (
@@ -176,6 +182,15 @@ export default function Navbar() {
                       </button>
                     ))}
                   </div>
+                  <button 
+                    onClick={() => {
+                      setIsSearching(false);
+                      navigate(`/search?q=${encodeURIComponent(search.trim())}`);
+                    }}
+                    className="w-full p-3 bg-[var(--color-bg)] border-t border-[var(--color-border)] text-brand text-[10px] font-black uppercase tracking-widest hover:bg-brand hover:text-white transition-colors"
+                  >
+                    Ver todos os resultados
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>

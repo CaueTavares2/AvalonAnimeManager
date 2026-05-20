@@ -1,6 +1,18 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.3)
+# 🌌 Avalon - Anime Tracking Saga (v3.1.4)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.1.4 (Otimizações & Organização)
+
+Esta atualização expande o poder de descoberta e adiciona mecânicas sofisticadas de detecção de hardware:
+
+- **📱 Smart Device Tiering**: Um poderoso Hook que detecta sua classe de dispositivo (como celulares Samsung Galaxy após o A13, linha S, e iPhones 14+) distribuindo-os em três níveis de escalonamento: 'Low', 'Mid' e 'High'. Essa classificação protege dispositivos de entrada desligando reflexos gaussianos e filtros passivos de forma inteligente, mantendo a responsividade altíssima.
+- **🔍 Tela de Resultados Estendida**: Pressionar Enter ou clicar em "Ver todos os resultados" na barra de pesquisa agora o transporta para uma página completa de exploração `/search`, munida de filtros por tipos de mídias e navegação por paginação sem limites da Jikan API.
+- **↕️ Múltiplas Ordenações na Lista**: Introdução de seletores de ordenação (sorting) charmosos via touch nas colunas `TITLE` e `SCORE` dentro da aba Minha Lista, para que possa organizá-los por pontuação máxima, mínima ou ordem alfabética livremente!
+- **🎲 Sorteador Inteligente 'Gen-2' (Me Surpreenda)**: O "Me Surpreenda!" ficou genial. Ele agora analisa o título das suas franquias passadas. Se você ainda tem a 'Temprada 1' como pendente na lista, ele filtrará ativamente as continuações ('Temporada 2' ou 'Parte 2'), direcionando seu destino corretamente para a raiz da obra!
+- **✨ Legacy Logos Restored**: As saudosistas e aclamadas logos JPG foram plenamente restauradas ao projeto!
 
 ---
 
@@ -98,7 +110,14 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.3] - Sincronização de Trackers & Otimização de Busca (Atual)
+### [v3.1.4] - Otimizações Extremas & Resultados Buscáveis (Atual)
+- **Detecção de Hardware**: Hook dedicado `useDevice` que escala a performance ('Low', 'Mid', 'High') focado em arquiteturas pós-A13 (A14, S23/S24, iPhone 14+) limitando o processamento do hardware.
+- **Search Engine Upgrade**: Página `/search` com grid completa de resultados, paginação nativa e filtros universais.
+- **Lista de Ordenação**: Os valores "TITLE" e "SCORE" na MyList agora possuem gatilhos triangulares clicáveis e bidirecionais de ordenamento.
+- **Restauro Artístico**: Imagens nativas (`.jpg`) oficiais re-empregadas em detrimento do SVG automático gerado no build anterior.
+- **Sorteador Gen-2**: "Me Surpreenda!" com bloqueio de franquias para séries consecutivas em que a primeira temporada não foi finalizada.
+
+### [v3.1.3] - Sincronização de Trackers & Otimização de Busca
 - **Logos Corrigidas**: Regeneração estável para evitar 404 e erros nos logotipos da Navbar.
 - **Limitação de Busca**: Restrição da barra de navegação principal da Navbar apenas para animes e filmes.
 - **Auto PO Sync**: Substituição do botão manual por sincronização reativa de segundo plano em lotes com proteção por debounce de 5 segundos.
