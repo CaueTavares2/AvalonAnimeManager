@@ -3,6 +3,8 @@ import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { jikanService, JikanAnime } from '../../services/jikanService';
+import logoLight from '../../assets/images/logo-light.jpeg';
+import logoDark from '../../assets/images/logo-dark.jpeg';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocial } from '../../context/SocialContext';
@@ -76,8 +78,8 @@ export default function Navbar() {
         {/* Logo & Menu Section */}
         <div className="flex items-center gap-2 md:gap-4">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <img src={`${import.meta.env.BASE_URL}logo-light.jpeg`} alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
-            <img src={`${import.meta.env.BASE_URL}logo-dark.jpeg`} alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
+            <img src={logoLight} alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
+            <img src={logoDark} alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
             <div className="text-brand font-black text-lg tracking-tighter uppercase italic hidden sm:block">Avalon</div>
           </Link>
 

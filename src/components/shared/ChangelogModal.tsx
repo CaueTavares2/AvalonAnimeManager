@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.1.9',
+  version: '3.2.0',
   items: [
-    'A Saga Avalon v3.1.9 — Deploy & Routing Fix',
-    '🌐 Deploy Master: Correção definitiva da "tela branca" via basename no React Router e roteamento absoluto de ativos para subpastas de hospedagem.',
-    '🖼️ Asset Guardian: Recuperação automática das logos usando BASE_URL, garantindo que as imagens nunca sumam após o build de produção.',
-    '⚡ Sync de Manifesto: Atualização do start_url no PWA para compatibilidade total com o domínio GitHub Pages.'
+    'A Saga Avalon v3.2.0 — Asset Guardian & Absolute Pathing',
+    '🛡️ Blindagem de Ativos: Migração das logos para o motor de bundling do Vite. Agora elas são compiladas e gerenciadas pelo núcleo do app, eliminando falhas de pathing no GitHub Pages.',
+    '🔗 Roteamento Cinematográfico: Ajuste no basename do React Router para navegação fluida em subpastas sem erros de 404.',
+    '✨ Visual Clarity: Restauração completa da identidade visual em todas as telas (Navbar, Home, Footer e Player).'
   ]
 };
 

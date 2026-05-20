@@ -1,6 +1,13 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.9)
+# 🌌 Avalon - Anime Tracking Saga (v3.2.0)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.2.0 (Asset Guardian Engine)
+
+- **🛡️ Shielded Assets**: As logos agora são importadas diretamente no código e processadas pelo Vite. Isso garante que o bundler gere os caminhos corretos independentemente de onde o site estiver hospedado.
+- **⚙️ Roteamento Refinado**: Otimização do `basename` e `BASE_URL` para suporte total ao GitHub Pages e PWAs.
 
 ---
 

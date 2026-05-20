@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import type { Media } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
+import logoLight from '../assets/images/logo-light.jpeg';
+import logoDark from '../assets/images/logo-dark.jpeg';
 import { useProfile } from '../context/ProfileContext';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -292,8 +294,8 @@ export default function Home() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-[var(--color-border)] pb-6 md:pb-8">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-1">
-             <img src={`${import.meta.env.BASE_URL}logo-light.jpeg`} alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg block dark:hidden" />
-             <img src={`${import.meta.env.BASE_URL}logo-dark.jpeg`} alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg hidden dark:block" />
+             <img src={logoLight} alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg block dark:hidden" />
+             <img src={logoDark} alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg hidden dark:block" />
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-center md:text-left">
             Explorar {mediaType === 'anime' ? 'Animes' : 'Mangás'}

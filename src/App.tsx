@@ -16,6 +16,8 @@ import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
 import TrackerSyncToast from './components/shared/TrackerSyncToast';
 import MangaReader from './pages/MangaReader';
+import logoLight from './assets/images/logo-light.jpeg';
+import logoDark from './assets/images/logo-dark.jpeg';
 import { motion, AnimatePresence } from 'motion/react';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -136,8 +138,8 @@ function AppRoutes() {
       <footer className="max-w-7xl mx-auto px-4 md:px-12 py-12 border-t border-[var(--color-border)] mt-12 mb-20 lg:mb-0">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 overflow-hidden rounded-full border border-[var(--color-border)]">
-            <img src={`${import.meta.env.BASE_URL}logo-light.jpeg`} alt="Avalon" className="h-8 w-8 object-cover rounded-full block dark:hidden" />
-            <img src={`${import.meta.env.BASE_URL}logo-dark.jpeg`} alt="Avalon" className="h-8 w-8 object-cover rounded-full hidden dark:block" />
+            <img src={logoLight} alt="Avalon" className="h-8 w-8 object-cover rounded-full block dark:hidden" />
+            <img src={logoDark} alt="Avalon" className="h-8 w-8 object-cover rounded-full hidden dark:block" />
           </div>
           <div className="flex gap-8 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
             <span className="opacity-50">© 2026 AVALON SAGA</span>
