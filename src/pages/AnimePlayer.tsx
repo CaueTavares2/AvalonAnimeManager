@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Play, LayoutGrid, Settings, AlertCircle, Share2, Maximize2, X, List, Search as SearchIcon, Terminal as TerminalIcon } from 'lucide-react';
+import { ChevronLeft, Play, LayoutGrid, Settings, AlertCircle, Share2, Maximize2, X, List, Search as SearchIcon, Terminal as TerminalIcon, ShieldCheck } from 'lucide-react';
 import ReactPlayer from 'react-player';
 import { useExtensions, AnimeExtension, Episode, StreamSource, AVAILABLE_EXTENSIONS } from '../services/extensionService';
 import { jikanService } from '../services/jikanService';
@@ -35,6 +35,9 @@ export default function AnimePlayer() {
   const [episodeSearch, setEpisodeSearch] = useState('');
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [adShield, setAdShield] = useState<boolean>(() => {
+    return localStorage.getItem('ad_shield_active') !== 'false';
+  });
 
   const installedExts = getInstalledExtensions();
   const Player = ReactPlayer as any;
@@ -261,6 +264,7 @@ export default function AnimePlayer() {
                 className="w-full h-full border-0 absolute inset-0" 
                 allowFullScreen 
                 allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
+                sandbox={adShield ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock" : undefined}
               />
             ) : (
                 <div className={cn("w-full h-full transition-opacity duration-500", !stream || !isReady ? "opacity-0" : "opacity-100")}>
@@ -363,6 +367,36 @@ export default function AnimePlayer() {
                     {streamIndex === idx && <div className="w-1.5 h-1.5 bg-brand rounded-full shrink-0" />}
                   </button>
                 ))}
+              </div>
+
+              {/* Guardião Anti-Anúncios (Ad Shield Active Control) */}
+              <div className="flex items-center justify-between pt-3 border-t border-white/5 mt-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={14} className={cn("transition-colors", adShield ? "text-brand" : "text-gray-500")} />
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] block">
+                      Escudo Anti-Anúncios
+                    </span>
+                    <span className="text-[8px] text-gray-500 uppercase tracking-widest block -mt-0.5">
+                      Bloqueia popups, novas abas e redirecionamentos invasivos
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const newValue = !adShield;
+                    setAdShield(newValue);
+                    localStorage.setItem("ad_shield_active", String(newValue));
+                  }}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border",
+                    adShield 
+                      ? "bg-brand/10 border-brand/20 text-brand hover:bg-brand/20" 
+                      : "bg-white/5 border-white/5 text-gray-500 hover:text-gray-400 hover:bg-white/10"
+                  )}
+                >
+                  {adShield ? "ATIVADO" : "DESATIVADO"}
+                </button>
               </div>
             </div>
           )}

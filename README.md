@@ -1,6 +1,14 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.1.0 - Precision Era)
+# 🌌 Avalon - Anime Tracking Saga (v4.2.0 - Shield Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.2.0 (The Shield Era)
+
+- **🛡️ Escudo Anti-Anúncios (Ad-Shield)**: Introdução de um sandboxing cirúrgico do HTML5 no iframe para bloquear a abertura de popups, novas abas ou redirects de sites parceiros sem interferir no buffer de áudio e vídeo de alta fidelidade.
+- **⚙️ Controle Dinâmico do Escudo**: Possibilidade de ativar ou desativar o Escudo Anti-Anúncios a qualquer momento no player caso queira abrir links externos ou suporte outros métodos de integração interativa.
+- **✨ Full Control Hub**: Botão indicador do Guardião com status visual de proteção acoplado ao seletor de servidores de maneira intuitiva.
 
 ---
 
