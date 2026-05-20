@@ -35,12 +35,12 @@ export const mappingService = {
     46569: { tmdb_id: 858017, type: 'movie' }, // JJK 0 Movie
 
     // === DEMON SLAYER (KIMETSU NO YAIBA) ===
-    38000: { tmdb_id: 94605, type: 'tv', season: 1, episode_offset: 0 },  // Season 1 (Kamado Tanjiro Arc)
+    38000: { tmdb_id: 85937, type: 'tv', season: 1, episode_offset: 0 },  // Season 1 (Kamado Tanjiro Arc)
     41608: { tmdb_id: 635302, type: 'movie' }, // Mugen Train Movie
-    44074: { tmdb_id: 94605, type: 'tv', season: 2, episode_offset: 0 },  // Mugen Train Arc TV (ep 1-7)
-    47778: { tmdb_id: 94605, type: 'tv', season: 2, episode_offset: 7 },  // Entertainment District Arc (ep 1-11 mapped to TMDB S2 ep 8-18)
-    53413: { tmdb_id: 94605, type: 'tv', season: 3, episode_offset: 0 },  // Swordsmith Village Arc (ep 1-11 mapped to TMDB S3 ep 1-11)
-    55701: { tmdb_id: 94605, type: 'tv', season: 4, episode_offset: 0 },  // Hashira Training Arc (ep 1-8 mapped to TMDB S4 ep 1-8)
+    44074: { tmdb_id: 85937, type: 'tv', season: 2, episode_offset: 0 },  // Mugen Train Arc TV (ep 1-7)
+    47778: { tmdb_id: 85937, type: 'tv', season: 2, episode_offset: 7 },  // Entertainment District Arc (ep 1-11 mapped to TMDB S2 ep 8-18)
+    53413: { tmdb_id: 85937, type: 'tv', season: 3, episode_offset: 0 },  // Swordsmith Village Arc (ep 1-11 mapped to TMDB S3 ep 1-11)
+    55701: { tmdb_id: 85937, type: 'tv', season: 4, episode_offset: 0 },  // Hashira Training Arc (ep 1-8 mapped to TMDB S4 ep 1-8)
 
     // === MY HERO ACADEMIA (BOKU NO HERO ACADEMIA) ===
     31964: { tmdb_id: 63926, type: 'tv', season: 1, episode_offset: 0 }, // S1

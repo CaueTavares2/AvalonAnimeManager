@@ -1,6 +1,13 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.3.0 - Identity Tuning Era)
+# 🌌 Avalon - Anime Tracking Saga (v4.3.1 - Kimetsu Resolution Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.3.1 (Kimetsu Resolution Era)
+
+- **⚔️ Resolução do Conflito "Kimetsu vs Arcane"**: Correção definitiva do desalinhamento de ID que enviava as temporadas de *Demon Slayer: Kimetsu no Yaiba* (MAL ID 38000 + derivativos de temporadas) para o ID `94605` (que no TMDB corresponde à aclamada série animada *Arcane*). Os mapeamentos estáticos foram atualizados com o ID oficial global de Demon Slayer: **`85937`**.
+- **💥 Atualização Instantânea**: Ajustes aplicados em todos os mappers de offset e seasons do anime (incluindo Mugen Train Arc, Entertainment District Arc, Swordsmith Village e Hashira Training), restabelecendo as sintonias de áudio/legenda corretas sob demanda.
 
 ---
 
