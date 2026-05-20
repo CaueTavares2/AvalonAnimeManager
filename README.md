@@ -1,17 +1,17 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.0)
+# 🌌 Avalon - Anime Tracking Saga (v3.1.1)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
 
 ---
 
-## 🚀 O que há de Novo na Versão v3.1.0 (Otimização PWA & Mobile Conforto)
+## 🚀 O que há de Novo na Versão v3.1.1 (Premium Ultra-Performance & Mobile)
 
-Esta versão eleva a usabilidade do Avalon para dispositivos móveis e aplicativos instaláveis PWA, ao mesmo tempo em que resolve gargalos de consulta de dados que afetavam canais históricos:
+Esta versão eleva a usabilidade do Avalon para dispositivos móveis, aplicativos instaláveis PWA e traz otimizações de renderização que reduzem latência e stuttering em celulares:
 
+- **⚡ Renderização Acelerada (Anti-Stuttering)**: Aplicamos aceleração gráfica tridimensional por hardware nos cartões de anime (usando `translate3d`), habilitamos renderização virtual (`content-visibility: auto`) em mídias dinâmicas e simplificamos filtros de desfoque pesados em navegadores mobile para evitar gargalos em aparelhos low-to-mid range.
 - **📱 Experiência PWA Ultra-confortável**: Otimização completa do menu inferior com detecção automática do estado ativo para destacar a aba corrente, suporte de espaçamento especial para notches/linhas físicas (`env(safe-area-inset-bottom)`) e bloqueio de zoom acidental ao editar campos de entrada (inputs) no celular.
 - **📅 Correção Completa do Explorar por Ano**: O painel de busca por anos foi expandido dinamicamente para acomodar o ano atual de **2026**. Corrigimos a clássica corrida de dados (race-conditions) decorrente de cliques consecutivos rápidos e implementamos travas exclusivas contra requisições duplicadas que causavam animes duplicados na listagem infinita.
 - **🔐 Estabilidade de Vídeo Reforçada**: Manutenção das novas diretrizes de segurança aplicadas após a indisponibilidade global coletiva de agregadores terceiros (Consumet).
-- **🚀 Fluidez e micro-transições**: Transições otimizadas no carregador de páginas para dar um aspecto extremamente polido e nativo.
 
 ---
 
@@ -81,12 +81,11 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.0] - Otimização PWA & Mobile Conforto (Atual)
-- **Experiência do Menu Inferior**: Navegação inferior aprimorada no PWA destacando visualmente a aba ativa através da cor dourada exclusiva.
-- **Adaptação Física (Notch-safe)**: Inclusão de preenchimento dinâmico de segurança (`env(safe-area-inset-bottom)`) para evitar conflitos com barras de home ou gestos do iOS/Android.
-- **Ano Letivo 2026**: Ajuste do indexador de anos para incorporar o ano atual de 2026 de forma automática, listando todos os lançamentos recentes do acervo MAL.
-- **Correção de concorrência (Race conditions)**: Adição de bloqueadoras internas para anular consultas obsoletas em mudanças de página rápidas e evitar mistura indesejada de anos.
-- **Anti-Zoom em Inputs**: Limitação de ampliação automática de layouts em dispositivos móveis no gatilho de caixa de texto para digitação confortável.
+### [v3.1.1] - Ultra-Performance & Mobile Comfort (Atual)
+- **Minimização de Stutterings**: Injeção de renderização virtualizada em imagens e aceleração GPU (`translate3d`) nos cartões de obras.
+- **Suplementação PWA**: Adaptação física das notches (`env(safe-area-inset-bottom)`) e navegação inferior automatizada com realces brilhantes.
+- **Filtro de Anos Corrigido**: Corrida de dados dissipada por locks de rede em tempos de pesquisa intensiva de animes por ano (com ano base estendido até 2026).
+- **Controle Estrito de Zoom**: Correção de input zoom para evitar escalonamentos prejudiciais no teclado do iOS/Android (forçando fono-campo 16px).
 
 ### [v3.0.0] - Era da Estabilidade e Segurança
 - **Remoção das Extensões Instáveis**: Remoção limpa de conexões diretas do Consumet devido ao encerramento mundial de seus serviços.

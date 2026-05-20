@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.1.0',
+  version: '3.1.1',
   items: [
-    'A Saga Avalon v3.1.0 — Edição de Otimização PWA & Mobile',
-    'Melhorias extensas para Comfort Mobile (controle e atalhos táteis otimizados e suporte a notches/safe areas)',
-    'Controles de visualização de animes por ano corrigidos (correção definitiva para corrida de dados e requisições repetidas)',
-    'Otimização do menu inferior de navegação do PWA com detecção automática do estado ativo para cada aba',
-    'Ajustes nos limites de zoom em inputs para garantir digitação confortável em navegadores de celular'
+    'A Saga Avalon v3.1.1 — Ultra-performance & Comfort Mobile',
+    'Minimização de Stutterings: Aceleração por hardware 3D em cards de animes e rolagem nativa suave no celular',
+    'Otimização PWA: Suporte integral a notches/safe areas e destaque ativo de abas no menu inferior',
+    'Navegação por Anos Retificada: Proteção definitiva contra concorrência de cliques e indexador 2026 configurado',
+    'Ajustes Anti-Zoom: Inputs e fono-campos protegidos contra ampliação repentina nas telas de toque'
   ]
 };
 

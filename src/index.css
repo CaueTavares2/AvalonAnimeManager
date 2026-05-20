@@ -70,10 +70,42 @@
 body {
   background-color: var(--color-bg);
   background-image: linear-gradient(rgba(237, 241, 245, 0.55), rgba(237, 241, 245, 0.55)), url('/image.png');
-  background-attachment: fixed;
+  background-attachment: scroll; /* Native scroll on mobile for superior viewport performance */
   background-size: cover;
   background-position: center;
   @apply text-[var(--color-text)] font-sans transition-colors duration-300 antialiased relative;
+  -webkit-overflow-scrolling: touch; /* Butter-smooth momentum scrolling on iOS */
+}
+
+@media (min-width: 768px) {
+  body {
+    background-attachment: fixed; /* Safely resort to fixed attachment only on desktop screens */
+  }
+}
+
+/* Mobile Performance Tuning - Prevents stuttering and repaints */
+@media (max-width: 768px) {
+  /* Leverage browser-level rendering virtualization for cards and images */
+  img {
+    content-visibility: auto;
+  }
+  
+  /* Hardware acceleration boost for cards and interactive wrappers */
+  .group, .aspect-\[2\/3\] {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
+
+  /* Simplify blur computations to save battery and rendering cycles on low/mid tier processors */
+  .backdrop-blur-md, .backdrop-blur-\[2px\] {
+    -webkit-backdrop-filter: blur(4px) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+
+  /* Prevent automatic viewport zoom on mobile inputs, select dropdowns, and textareas */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 .dark body {
