@@ -438,10 +438,10 @@ export default function Settings() {
                           <p className="text-[9px] text-gray-500 font-medium">
                             * Cole seu token aqui se você já o possui, ou autorize o aplicativo para sincronização.
                           </p>
-                          {(import.meta.env.VITE_ANILIST_CLIENT_ID || localSettings.anilistClientId) ? (
+                          {(import.meta.env.VITE_ANILIST_CLIENT_ID || localSettings.anilistClientId || '41911') ? (
                             <div className="text-right flex flex-col items-end gap-1">
                               <a 
-                                href={`https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID || localSettings.anilistClientId}&response_type=token`}
+                                href={`https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID || localSettings.anilistClientId || '41911'}&response_type=token`}
                                 className="text-[10px] text-brand font-bold uppercase tracking-widest hover:underline whitespace-nowrap"
                               >
                                 Obter Token de Acesso (Login AniList)
