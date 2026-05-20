@@ -6,8 +6,9 @@ Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o ras
 
 ## 🚀 O que há de Novo na Versão v3.1.9 (Deploy & Routing Fix)
 
-- **🌐 GitHub Pages Support**: Reativação da `base path` para garantir que o projeto carregue corretamente em subdomínios (ex: `/AvalonAnimeManager/`), resolvendo a tela branca.
-- **📱 PWA Scope Fix**: Ajuste de escopos do PWA para sincronia total com o novo sistema de rotas.
+- **🌐 GitHub Pages Support**: Reativação da `base path` no Vite e configuração do `basename` no React Router para suporte total a subpastas de hospedagem.
+- **🖼️ Image Path Recovery**: Correção das referências de logos na UI utilizando `BASE_URL`, garantindo que as imagens carreguem sob qualquer estrutura de diretório.
+- **📱 PWA Scope Fix**: Ajuste de escopos e Manifesto do PWA para sincronia total com o novo sistema de roteamento absoluto.
 
 ---
 

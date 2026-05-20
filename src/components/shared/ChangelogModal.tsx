@@ -6,9 +6,9 @@ const LATEST_CHANGES = {
   version: '3.1.9',
   items: [
     'A Saga Avalon v3.1.9 — Deploy & Routing Fix',
-    '🌐 Compatibilidade GitHub Pages: Restaurado o "base path" necessário para eliminar a tela branca ao acessar via repositório.',
-    '⚡ PWA Update: Sincronização do start_url e escopos do PWA para carregamento offline estável.',
-    '🖼️ Asset Persistence: Garantia de que as logos carreguem corretamente mesmo em subdiretórios de hospedagem.'
+    '🌐 Deploy Master: Correção definitiva da "tela branca" via basename no React Router e roteamento absoluto de ativos para subpastas de hospedagem.',
+    '🖼️ Asset Guardian: Recuperação automática das logos usando BASE_URL, garantindo que as imagens nunca sumam após o build de produção.',
+    '⚡ Sync de Manifesto: Atualização do start_url no PWA para compatibilidade total com o domínio GitHub Pages.'
   ]
 };
 

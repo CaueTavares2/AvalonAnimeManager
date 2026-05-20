@@ -179,8 +179,8 @@ export default function AnimePlayer() {
           </button>
 
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity z-50">
-            <img src="/logo-light.jpeg" alt="Avalon" className="h-6 w-6 md:h-8 md:w-8 object-cover rounded-lg shadow-md block dark:hidden" />
-            <img src="/logo-dark.jpeg" alt="Avalon" className="h-6 w-6 md:h-8 md:w-8 object-cover rounded-lg shadow-md hidden dark:block" />
+            <img src={`${import.meta.env.BASE_URL}logo-light.jpeg`} alt="Avalon" className="h-6 w-6 md:h-8 md:w-8 object-cover rounded-lg shadow-md block dark:hidden" />
+            <img src={`${import.meta.env.BASE_URL}logo-dark.jpeg`} alt="Avalon" className="h-6 w-6 md:h-8 md:w-8 object-cover rounded-lg shadow-md hidden dark:block" />
             <div className="text-brand font-black text-xs md:text-lg tracking-tighter uppercase italic hidden xs:block">Avalon</div>
           </Link>
         </div>
