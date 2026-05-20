@@ -1,103 +1,104 @@
-# Avalon - Anime Tracking Saga
+# 🌌 Avalon - Anime Tracking Saga (v3.0.0)
 
-Avalon é uma plataforma refinada de rastreamento de animes com uma interface cinematográfica, sistema de progressão otaku e recursos sociais.
+Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
 
 ---
 
-## 🚀 Como Rodar Localmente (Ambiente Independente)
+## 🚀 O que há de Novo na Versão v3.0.0 (Milestone de Estabilidade)
 
-O projeto foi preparado para execução local sem dependência obrigatória de infraestrutura na nuvem (usando Emuladores do Firebase para Auth e Banco de Dados Local).
+Esta versão marca a chegada da **Era de Redirecionamento e Segurança** do Avalon. Com as recentes instabilidades globais e derrubadas consecutivas dos principais agregadores de vídeo na internet (incluindo o Consumet API e seus múltiplos clones), tomamos medidas firmes para proteger o ecossistema do aplicativo e a experiência de nossos usuários:
 
-### 🛠️ Pré-requisitos
+- **🔐 Desativação Preventiva do Consumet**: Removemos de forma limpa todas as conexões instáveis que causavam falhas consecutivas e sobrecargas no aplicativo.
+- **⚠️ Alerta de Transição Temporária**: Adicionamos avisos claros e polidos no reprodutor de vídeos (*Anime Player*) e nas configurações de fontes. Os usuários agora são informados sobre a reestruturação global dos provedores de vídeo de forma transparente.
+- **🏗️ Nova Infraestrutura de Vídeo em Desenvolvimento**: Iniciamos a estruturação de uma nova arquitetura nativa focada em servidores autônomos e backups ultra-rápidos que estarão disponíveis no futuro.
+- **🚀 Otimizações Gerais no Aplicativo**: Revisão completa e refatoração no sistema de busca, controle de rotas de vídeo e estabilização de requisições.
+
+---
+
+## 🌟 Funcionalidades Principais do Avalon
+
+### 1. 🎞️ Rastreamento Cinematográfico e Busca de Animes
+- **Integração Jikan (MyAnimeList)**: Busca instantânea, detalhes de animes, visualização de elencos/personagens, lista de episódios oficial e recomendações contextuais.
+- **Filtros por Anos e Rankings**: Navegue pelos animes organizados por temporadas históricas e anos.
+
+### 2. 🎮 Gamificação Otaku RPG
+- **Sistema de Conquistas (Achievements)**: Notificações animadas usando `motion` que reagem dinamicamente quando você joga, assiste, avalia ou interage na comunidade. Baseado em níveis de raridade (Comum, Raro, Épico, Lendário, Divino).
+- **Badges Equipáveis no Perfil**: Ganhe badges através de tarefas secretas e equipe-as na sua página de perfil para exibir o seu progresso aos outros membros da comunidade.
+- **Perfil de Rastreamento**: Estatísticas ricas com contador de horas assistidas, títulos concluídos, distribuição de notas e exibição de badges selecionadas.
+
+### 3. 💬 AniChat e Feed Social
+- **Chat em Tempo Real**: Canais globais inspirados em tecnologia moderna para os usuários debaterem sobre as últimas obras.
+- **Atividades Sociais**: Feed contínuo atualizado em tempo real exibindo as conquistas coletadas pela comunidade e o progresso das conquistas dos seus amigos.
+
+### 4. 📚 Leitor de Mangás (Beta Experimental)
+- **Leitura Imersiva**: Sistema responsivo para busca e exibição de páginas de mangás integrado ao motor Comick/MangaDex, equipado com aviso de beta controlado para assegurar usabilidade.
+
+### 5. 🛠️ Painel de Administrador e Staff Terminal
+- **Área de Sandbox**: Simulador de conquistas e testes de badges construído para a equipe testar animações de UI e eventos sem poluir o Firestore de produção.
+
+---
+
+## 🛠️ Como Rodar Localmente (Ambiente Independente)
+
+O projeto está totalmente configurado para execução offline/local usando Emuladores do Firebase para Auth e Firestore, dispensando custos na nuvem.
+
+### 📋 Pré-requisitos
 - **Node.js** (v18 ou superior)
-- **Java JRE/JDK** (Necessário para a execução do Firebase Local Emulator)
-- **npm** (Vem com o Node)
+- **Java JRE/JDK** (Necessário para rodar o Firebase Emulator Suite)
 
-O projeto contém um script interno de validação (`npm run dev` rodará o checklist de pré-requisitos antes de subir).
-
-### ⚙️ 1. Configuração de Variáveis de Ambiente
-1. Copie o arquivo de exemplo de ambiente:
-   ```bash
-   cp .env.example .env
-   ```
-2. Caso use as APIs mockadas não modifique, se desejar conectar com backend real apenas preencha as chaves no novo arquivo `.env`. Em `.env` as variáveis padrão já estão configuradas para o funcionamento de modo local/default.
-
-### 📦 2. Instalação e Inicialização
-Criamos atalhos no `package.json` para facilitar sua vida. 
-Abra o seu terminal na pasta do projeto e execute:
-
+### ⚙️ 1. Configuração do Ambiente (.env)
+Abra a raiz do projeto e crie o seu arquivo de variáveis:
 ```bash
-# 1. Instalação de dependências e setup inicial
+cp .env.example .env
+```
+As variáveis padrão já vêm preparadas para os emuladores locais e consumo direto da Jikan API.
+
+### 📦 2. Instalação de Dependências
+```bash
 npm install
 npm run build
 ```
 
-### 💻 3. Como Executar o App (2 Opções)
+### 💻 3. Como Executar (Com Banco Local Simulado / Firebase Emulator)
 
-**OPÇÃO A: Desenvolvimento Local Total (DB Simulado / Firebase Emulator)**
-*Recomendado para evitar custos ou problemas de conexão de nuvem.*
+1. **Abra um terminal** e inicie o Firebase local:
+   ```bash
+   npx firebase-tools emulators:start --only auth,firestore --config firebase.emulator.json
+   ```
 
-Primeiro, em um terminal separado, instale o emulador (se não tiver) e inicie:
-```bash
-npx firebase-tools emulators:start --only auth,firestore --config firebase.emulator.json
-```
+2. **Abra outro terminal** e inicie o front-end em modo de desenvolvimento:
+   ```bash
+   VITE_USE_FIREBASE_EMULATOR=true VITE_JIKAN_API_URL=https://api.jikan.moe/v4 npm run dev
+   ```
+   *O aplicativo iniciará de forma segura em `http://localhost:3000`*.
 
-Depois, em outro terminal, inicie o front-end:
-```bash
-VITE_USE_FIREBASE_EMULATOR=true VITE_JIKAN_API_URL=https://api.jikan.moe/v4 npm run dev
-```
-O app estará rodando em `http://localhost:3000` conectado ao seu banco local!
-
-Em um terceiro terminal, popule os dados iniciais do banco utilizando o nosso seed script:
-```bash
-VITE_USE_FIREBASE_EMULATOR=true npx tsx scripts/seed.ts
-```
-
-**OPÇÃO B: Desenvolvimento com Backend Real**
-Caso as chaves já estejam configuradas ou se estiver num preview/ambiente de produção:
-```bash
-npm run dev
-```
-
-### 🔨 4. Build para Produção
-```bash
-npm run build
-```
+3. **Abra um terceiro terminal** para popular o banco de dados simulado com dados iniciais (Seed):
+   ```bash
+   VITE_USE_FIREBASE_EMULATOR=true npx tsx scripts/seed.ts
+   ```
 
 ---
 
-## 📂 Estrutura do Projeto e Isolamento
-- `.env.example`: Centraliza os endpoints e credenciais (ex: Jikan API URL).
-- `scripts/pre-run-check.ts`: Verifica a versão do Node.js, arquivos cruciais e faz análise de sanidade antes do ambiente rodar.
-- `src/lib/firebase.ts`: O sistema conecta automaticamente aos Emuladores se a flag `VITE_USE_FIREBASE_EMULATOR` estiver presente no momento da build (`npm run dev:local`).
-- Componentes estão isolados, caminhos de importação são todos relativos (ex: `../../` ou `@/`) para garantir a portabilidade total.
+## 📈 Histórico de Atualizações (Changelog de Lançamentos)
+
+### [v3.0.0] - Era da Estabilidade e Segurança (Atual)
+- **Remoção das Extensões Instáveis**: Remoção limpa do Consumet de `extensionService.ts` devido à queda global de seus servidores.
+- **Avisos Informativos**: Integração de mensagens oficiais no Player e na Área de Ajustes informando aos usuários os motivos da reestruturação.
+- **Controle Sanitário**: Atualização de todos os logs internos, banners de desenvolvimento e tratamento fino de exceptions de rede.
+
+### [v2.2.0] - Otimizações de Conclusão e Customizações
+- **Fluxo de Conclusão**: Implementado aviso mandatório de feedback e notas na finalização do anime.
+- **Badges do Perfil**: Sistema onde o usuário consegue escolher e equipar no seu header badges de conquistas.
+- **Ajustes de Design**: Interface refinada da Home com estatísticas rotativas e novos temas paletados de cores.
+
+### [v2.1.0] - Sistema de Conquistas Reativo
+- **Notificações em Tempo Real**: Adicionado modal dinâmico no estilo RPG para conquistas desbloqueadas.
+- **Terminal GoAnime**: Painel interno de comandos e testes rápidos.
 
 ---
-
-## 🆕 Novidades
-- **Leitor de Mangás (Experimental Beta):** Nova UI no Manga Reader com aviso de sistema experimental, enquanto estruturamos novas fontes seguras de conteúdo.
-- **Scraper Interno e Proxy Inteligente:** Adição de um sistema escalável no backend (`/server/scraper/`) equipado com `cheerio` para futura extração local, protegendo contra falhas de conexão ou indisponibilidades de APIs de terceiros. Ajustes no Proxy para lidar com erros de getaddrinfo.
-- **Home Stats Carrosel (Fix):** Correção do hook de rotação das estatísticas na tela Home para prevenir memory leaks e inconsistências.
-- **Integrações de API (Comick & MangaDex):** Fix de instabilidades nos subdomínios da Comick originando timeouts na home e busca.
-- **Sistema de Notificações de Conquistas:** Notificações visuais e animadas (Motion) para desbloqueio de conquistas, adaptadas ao nível de raridade.
-- **Painel de Testes (Staff):** Área administrativa para testar o sistema de notificações de conquistas sem impactar o banco de dados.
 
 ## 📱 Instalação como App (PWA)
-Avalon agora funciona como um Progressive Web App (PWA). Você pode instalá-lo no seu computador ou dispositivo móvel para uma experiência nativa:
-
-1. **Chrome/Edge/Brave:** Clique no ícone de "Instalar" na barra de endereços (lado direito).
-2. **Mobile (Android):** No Chrome, abrir o menu e selecionar "Instalar App" ou "Adicionar à tela inicial".
-3. **iOS (Safari):** Tocar no botão de "Compartilhar" e selecionar "Adicionar à Tela de Início".
-
-*Nota: Ícones personalizados do app serão adicionados em uma atualização futura.*
+O Avalon é um **Progressive Web App**. Você pode adicioná-lo à tela inicial do celular ou instalá-lo no computador através do navegador Chrome ou Safari clicando em **"Adicionar à tela de início"** / **"Instalar App"**.
 
 ---
-
-## 🛠️ Tecnologias
-- **Frontend:** React + Vite + TypeScript
-- **Estilização:** Tailwind CSS (Modern v4)
-- **Animações:** Motion (Framer Motion)
-- **Backend/DB:** Firebase (Auth, Firestore) & Firebase Local Emulators
-- **Dados:** Jikan API (MyAnimeList)
-
-Para mais detalhes e arquitetura, consulte a documentação na pasta `docs/`.
+*Avalon é desenvolvido com dedicação artística e engenharia limpa. Que sua jornada otaku seja lendária! 🌌*

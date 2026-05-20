@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '1.2.0',
+  version: '3.0.0',
   items: [
-    'Sistema de Badges Equipáveis no Perfil',
-    'Otimização do fluxo de conclusão de obras: agora marca tudo como concluído e obriga nota',
-    'Melhorias visuais e técnicas no sistema de conquistas',
-    'Correção de bugs em badges secretas'
+    'A Saga Avalon v3.0.0 — Nova Fase de Estabilidade Global',
+    'Remoção temporária das extensões e APIs instáveis do Consumet (que foram desativadas mundialmente)',
+    'Aviso oficial e painel explicativo na área de Fontes de Anime e Player',
+    'Desenvolvimento de uma nova infraestrutura interna de vídeo ultra-rápida e segura em andamento',
+    'Melhorias no sistema de conquistas, badges equipáveis e desempenho geral'
   ]
 };
 
