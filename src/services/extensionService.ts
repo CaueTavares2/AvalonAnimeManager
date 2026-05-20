@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { jikanService } from './jikanService';
 
 export interface Episode {
   id: string;

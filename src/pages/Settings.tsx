@@ -1,4 +1,4 @@
-import { Cog, Shield, Bell, Palette, Globe, Save, Check, DownloadCloud, Loader2, Radio } from 'lucide-react';
+import { Cog, Shield, Bell, Palette, Globe, Save, Check, DownloadCloud, Loader2, Radio, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
 import { useTheme, ColorTheme } from '../context/ThemeContext';
@@ -17,7 +17,6 @@ export default function Settings() {
   
   const [activeTab, setActiveTab] = useState('general');
   
-  // Local state for settings to be saved
   const [localSettings, setLocalSettings] = useState({
     darkMode,
     colorTheme,
@@ -228,44 +227,65 @@ export default function Settings() {
                   <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
                     <Radio className="w-4 h-4 text-brand" /> Fontes de Anime
                   </h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Ative extensões para agregar links e assistir animes</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo</p>
+                </div>
+
+                <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-3xl flex flex-col items-center text-center space-y-4 shadow-xl">
+                  <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div className="space-y-2 max-w-md">
+                    <h4 className="text-xs font-black text-amber-500 uppercase tracking-widest">Aviso de Indisponibilidade Temporária</h4>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                      O sistema de fontes externas está temporariamente offline. Os principais provedores de API e streaming (incluindo o Consumet e parceiros) foram desativados ou estão passando por grandes reestruturações globais.
+                    </p>
+                    <p className="text-[9px] text-gray-500 font-semibold leading-relaxed">
+                      Desativamos as integrações instáveis por precaução para evitar falhas de carregamento consecutivas. Estamos refazendo nosso ecossistema de conexões para oferecer fontes seguras e ultra-rápidas em breve.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {AVAILABLE_EXTENSIONS.map((ext) => {
-                    const isInstalled = installed.includes(ext.id);
-                    return (
-                      <div key={ext.id} className="p-5 bg-[var(--color-bg)] rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-[var(--color-card)] rounded-xl flex items-center justify-center text-2xl shadow-sm">
-                            {ext.icon}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
-                              <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
+                  {AVAILABLE_EXTENSIONS.length === 0 ? (
+                    <div className="p-5 bg-[var(--color-bg)] rounded-2xl border border-dashed border-[var(--color-border)] text-center py-8">
+                      <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest">Nenhuma fonte disponível neste momento.</p>
+                    </div>
+                  ) : (
+                    AVAILABLE_EXTENSIONS.map((ext) => {
+                      const isInstalled = installed.includes(ext.id);
+                      return (
+                        <div key={ext.id} className="p-5 bg-[var(--color-bg)] rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-[var(--color-card)] rounded-xl flex items-center justify-center text-2xl shadow-sm">
+                              {ext.icon}
                             </div>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
+                                <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
+                              </div>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
+                            </div>
                           </div>
+                          <button 
+                            onClick={() => isInstalled ? uninstall(ext.id) : install(ext.id)}
+                            className={cn(
+                              "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                              isInstalled 
+                                ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white" 
+                                : "bg-brand text-white hover:scale-105 shadow-lg shadow-brand/20"
+                            )}
+                          >
+                            {isInstalled ? 'Desativar' : 'Ativar'}
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => isInstalled ? uninstall(ext.id) : install(ext.id)}
-                          className={cn(
-                            "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-                            isInstalled 
-                              ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white" 
-                              : "bg-brand text-white hover:scale-105 shadow-lg shadow-brand/20"
-                          )}
-                        >
-                          {isInstalled ? 'Desativar' : 'Ativar'}
-                        </button>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
 
                 <div className="p-4 bg-brand/5 border border-dashed border-brand/20 rounded-2xl">
-                   <p className="text-[9px] text-brand font-black uppercase tracking-[0.2em] text-center">Novas fontes em breve (Aggregator Engine)</p>
+                   <p className="text-[9px] text-brand font-black uppercase tracking-[0.2em] text-center">Desenvolvendo nova infraestrutura estável de conexões</p>
                 </div>
               </div>
             ) : activeTab === 'language' ? (

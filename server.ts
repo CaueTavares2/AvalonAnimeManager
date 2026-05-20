@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
+import { Readable } from 'stream';
 
 async function startServer() {
   const app = express();
@@ -10,16 +11,18 @@ async function startServer() {
   const cache = new Map<string, { data: Buffer, contentType: string, status: number, expiry: number }>();
   const CACHE_TTL = 1000 * 60 * 10; // 10 minutes
 
-  // Proxy endpoint to bypass CORS and set headers
+  // Proxy endpoint to bypass CORS and set headers with support for streaming/range requests
   app.get('/api/proxy', async (req, res) => {
     const targetUrl = req.query.url as string;
     if (!targetUrl) {
       return res.status(400).json({ error: 'Missing url parameter' });
     }
 
-    // Check cache
     const isRetry = req.query.retry !== undefined;
-    const cached = isRetry ? null : cache.get(targetUrl);
+    const rangeHeader = req.headers.range;
+
+    // We only serve from cache if there is NO range requested
+    const cached = (!rangeHeader && !isRetry) ? cache.get(targetUrl) : null;
     
     if (cached && cached.expiry > Date.now()) {
       console.log(`[Proxy] Cache hit: ${targetUrl}`);
@@ -28,7 +31,7 @@ async function startServer() {
       return res.send(cached.data);
     }
 
-    console.log(`[Proxy] Requesting: ${targetUrl}`);
+    console.log(`[Proxy] Requesting: ${targetUrl}${rangeHeader ? ` with Range: ${rangeHeader}` : ''}`);
 
     let urlObj: URL;
     try {
@@ -40,6 +43,14 @@ async function startServer() {
       console.error(`[Proxy] Invalid target URL: "${targetUrl}" - ${e.message}`);
       return res.status(400).json({ error: 'Invalid URL provided' });
     }
+
+    // Abort controller linked to both time limits and client disconnect
+    const controller = new AbortController();
+    
+    // If the client aborts, cancel the upstream fetch immediately to save bandwidth
+    req.on('close', () => {
+      controller.abort();
+    });
 
     try {
       const referer = urlObj.origin + '/';
@@ -54,9 +65,10 @@ async function startServer() {
       const fetchWithRetry = async (url: string, options: any, maxRetries = 3) => {
         let lastError: any;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
-          const controller = new AbortController();
-          const timeout = 15000 + (attempt * 5000); // Increasing timeout
-          const id = setTimeout(() => controller.abort(), timeout);
+          const timeout = 15000 + (attempt * 5000);
+          const timeoutId = setTimeout(() => {
+            controller.abort();
+          }, timeout);
           
           try {
             const ua = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
@@ -70,8 +82,9 @@ async function startServer() {
               ...options, 
               headers,
               signal: controller.signal,
-              // Some servers act up with certain TLS settings
             });
+
+            clearTimeout(timeoutId);
 
             if (response.status === 429) {
               const retryAfter = response.headers.get('retry-after');
@@ -89,16 +102,18 @@ async function startServer() {
 
             return response;
           } catch (err: any) {
+            clearTimeout(timeoutId);
             lastError = err;
-            if (!err.message?.includes('fetch failed') && !err.message?.includes('getaddrinfo')) {
+            if (!err.message?.includes('fetch failed') && !err.message?.includes('getaddrinfo') && err.name !== 'AbortError') {
               console.error(`[Proxy] Attempt ${attempt + 1} failed for ${url}: ${err.message}`);
+            }
+            if (err.name === 'AbortError') {
+              throw err;
             }
             if (attempt < maxRetries - 1) {
               const delay = 1000 * (attempt + 1);
               await new Promise(r => setTimeout(r, delay));
             }
-          } finally {
-            clearTimeout(id);
           }
         }
         throw lastError;
@@ -110,6 +125,9 @@ async function startServer() {
           'Referer': referer,
           'Connection': 'keep-alive',
         };
+        if (rangeHeader) {
+          base['Range'] = rangeHeader;
+        }
         if (simple) return base;
         
         return {
@@ -141,43 +159,81 @@ async function startServer() {
       console.log(`[Proxy] Response: ${response.status} ${response.statusText}`);
 
       res.status(response.status);
-      const contentType = response.headers.get('content-type');
-      if (contentType) {
-        res.setHeader('Content-Type', contentType);
-      }
-      
-      const data = await response.arrayBuffer();
-      const buffer = Buffer.from(data);
-      
-      if (response.status >= 400) {
-        if (contentType && !contentType.includes('text/html')) {
-          console.log(`[Proxy] Error Response Body (${targetUrl}): ${buffer.toString('utf-8').slice(0, 500)}`);
-        }
-      }
-      
-      // Store in cache for successful 200 responses
-      if (response.status === 200) {
-        cache.set(targetUrl, {
-          data: buffer,
-          contentType: contentType || 'application/octet-stream',
-          status: response.status,
-          expiry: Date.now() + CACHE_TTL
-        });
 
-        // Basic cache size management
-        if (cache.size > 2000) {
-          const now = Date.now();
-          for (const [key, val] of cache.entries()) {
-            if (val.expiry < now) cache.delete(key);
-            if (cache.size <= 1500) break;
+      const contentType = response.headers.get('content-type') || '';
+      const contentLength = response.headers.get('content-length');
+      const contentRange = response.headers.get('content-range');
+      const acceptRanges = response.headers.get('accept-ranges');
+
+      if (contentType) res.setHeader('Content-Type', contentType);
+      if (contentLength) res.setHeader('Content-Length', contentLength);
+      if (contentRange) res.setHeader('Content-Range', contentRange);
+      
+      res.setHeader('Accept-Ranges', acceptRanges || 'bytes');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+
+      const isVideo = contentType.startsWith('video/') || 
+                      contentType.startsWith('audio/') || 
+                      targetUrl.includes('.mp4') || 
+                      targetUrl.includes('.ts') || 
+                      targetUrl.includes('.mkv') ||
+                      response.status === 206 ||
+                      (contentLength && parseInt(contentLength) > 10 * 1024 * 1024);
+
+      if (isVideo) {
+        console.log(`[Proxy] Streaming started for target: ${targetUrl} (Type: ${contentType}, Size: ${contentLength || 'unknown'}, Code: ${response.status})`);
+        if (response.body) {
+          const stream = Readable.fromWeb(response.body as any);
+          stream.on('error', (err) => {
+            if (err.name !== 'AbortError') {
+              console.error(`[Proxy] Stream piping encountered error:`, err.message);
+            }
+          });
+          stream.pipe(res);
+        } else {
+          res.end();
+        }
+      } else {
+        const data = await response.arrayBuffer();
+        const buffer = Buffer.from(data);
+        
+        if (response.status >= 400) {
+          if (contentType && !contentType.includes('text/html')) {
+            console.log(`[Proxy] Error Response Body (${targetUrl}): ${buffer.toString('utf-8').slice(0, 500)}`);
           }
         }
-      }
+        
+        if (response.status === 200 && !rangeHeader) {
+          cache.set(targetUrl, {
+            data: buffer,
+            contentType: contentType || 'application/octet-stream',
+            status: response.status,
+            expiry: Date.now() + CACHE_TTL
+          });
 
-      res.send(buffer);
-    } catch (error) {
-      console.error(`[Proxy] Error for ${targetUrl}:`, error);
-      res.status(500).json({ error: 'Failed to fetch target URL' });
+          if (cache.size > 2000) {
+            const now = Date.now();
+            for (const [key, val] of cache.entries()) {
+              if (val.expiry < now) cache.delete(key);
+              if (cache.size <= 1500) break;
+            }
+          }
+        }
+        res.send(buffer);
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log(`[Proxy] Request aborted by client/timeout: ${targetUrl}`);
+        if (!res.headersSent) {
+          res.status(499).json({ error: 'Client closed request' });
+        }
+      } else {
+        console.error(`[Proxy] Error for ${targetUrl}:`, error);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to fetch target URL' });
+        }
+      }
     }
   });
 

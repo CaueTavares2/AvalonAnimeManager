@@ -4,7 +4,7 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { Search, User, TrendingUp, Settings as SettingsIcon, BarChart as ChartIcon, ShoppingBag } from 'lucide-react';
 import { UpdateNotification } from './components/shared/UpdateNotification';
@@ -14,6 +14,7 @@ import { ChangelogModal } from './components/shared/ChangelogModal';
 import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
 import MangaReader from './pages/MangaReader';
+import { motion, AnimatePresence } from 'motion/react';
 
 const Home = lazy(() => import('./pages/Home'));
 const AnimeDetails = lazy(() => import('./pages/AnimeDetails'));
@@ -43,6 +44,7 @@ import { SocialProvider } from './context/SocialContext';
 
 function AppRoutes() {
   const { loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -80,26 +82,37 @@ function AppRoutes() {
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Carregando Módulo...</p>
           </div>
         }>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/:type/:id" element={<AnimeDetails />} />
-            <Route path="/anime/:id/watch" element={<AnimePlayer />} />
-            <Route path="/manga/:id/read" element={<MangaReader />} />
-            <Route path="/list" element={<MyList />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/ranking" element={<Rankings />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/:uid" element={<PublicProfile />} />
-            <Route path="/social" element={<Social />} />
-            <Route path="/chat" element={<AniChat />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/animes-by-year" element={<AnimesByYear />} />
-          </Routes>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  <Home />
+                </motion.div>
+              } />
+              <Route path="/:type/:id" element={<AnimeDetails />} />
+              <Route path="/anime/:id/watch" element={<AnimePlayer />} />
+              <Route path="/manga/:id/read" element={<MangaReader />} />
+              <Route path="/list" element={<MyList />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/ranking" element={<Rankings />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:uid" element={<PublicProfile />} />
+              <Route path="/social" element={<Social />} />
+              <Route path="/chat" element={<AniChat />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/feedback" element={<Feedback />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/animes-by-year" element={<AnimesByYear />} />
+            </Routes>
+          </AnimatePresence>
         </Suspense>
       </main>
 

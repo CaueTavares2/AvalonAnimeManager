@@ -67,7 +67,7 @@ export default function AnimePlayer() {
       
       try {
         if (installedExts.length === 0) {
-          setError("Nenhuma fonte ativa. Vá em Ajustes > Fontes para ativar uma.");
+          setError("As fontes de vídeo estão temporariamente indisponíveis por falta de provedores externos estáveis (sistemas como o Consumet foram desativados mundialmente ou estão em reconstrução). Esse estado é provisório e estamos trabalhando para restabelecer os servidores!");
           return;
         }
         
@@ -201,6 +201,15 @@ export default function AnimePlayer() {
         {/* Main Player Area */}
         <div className="flex-1 space-y-6">
           <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 group">
+            {/* Inside-Player Loading Indicator */}
+            {loadingStream && !stream && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/95 z-20">
+                <div className="w-10 h-10 border-4 border border-brand border-t-transparent rounded-full animate-spin mb-3" />
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-1 animate-pulse">Sintonizando sinal de vídeo...</p>
+                <p className="text-[8px] text-gray-500 uppercase tracking-widest">Conectando aos servidores de streaming...</p>
+              </div>
+            )}
+
             {/* Loading Overlay with click-to-bypass and autoplay support */}
             {(loadingStream || !isReady) && stream && (
                <div 
@@ -315,6 +324,8 @@ export default function AnimePlayer() {
               </div>
             </div>
           )}
+
+
 
           <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] flex items-center justify-between">
             <div className="flex items-center gap-6">

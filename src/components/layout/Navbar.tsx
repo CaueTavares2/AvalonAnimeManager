@@ -70,7 +70,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-14 bg-[var(--color-card)]/80 backdrop-blur-xl text-[var(--color-text-bright)] z-[100] flex items-center px-4 shadow-sm border-b border-[var(--color-border)]/50">
+    <nav className="sticky top-0 left-0 right-0 h-14 bg-[var(--color-card)]/80 backdrop-blur-xl text-[var(--color-text-bright)] z-[100] flex items-center px-4 shadow-sm border-b border-[var(--color-border)]/50">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
         
         {/* Logo & Menu Section */}
