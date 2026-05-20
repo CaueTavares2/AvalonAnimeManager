@@ -136,5 +136,10 @@ export const jikanService = {
   getCharacterDetails: async (id: number) => {
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/characters/${id}/full`);
     return data.data;
+  },
+
+  getExternalIds: async (id: number) => {
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime/${id}/external`);
+    return data.data;
   }
 };

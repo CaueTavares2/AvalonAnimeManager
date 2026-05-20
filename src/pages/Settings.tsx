@@ -7,6 +7,7 @@ import { useAnimeList } from '../hooks/useAnimeList';
 import { useLanguage, Language } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useExtensions, AVAILABLE_EXTENSIONS } from '../services/extensionService';
+import { createStremioExtension } from '../services/stremioExtension';
 import { AnilistGuideModal } from '../components/shared/AnilistGuideModal';
 
 export default function Settings() {
@@ -14,10 +15,11 @@ export default function Settings() {
   const { language, setLanguage, t } = useLanguage();
   const { batchAddAnimes } = useAnimeList();
   const { user } = useAuth();
-  const { installed, install, uninstall } = useExtensions();
+  const { installed, install, uninstall, manifests, addManifest, removeManifest } = useExtensions();
   
   const [activeTab, setActiveTab] = useState('general');
   const [showAnilistGuide, setShowAnilistGuide] = useState(false);
+  const [newManifestUrl, setNewManifestUrl] = useState('');
   
   const initialAnilistUser = localStorage.getItem('avalon_anilist_user') || '';
   const initialAnilistToken = localStorage.getItem('avalon_anilist_token') || '';
@@ -251,48 +253,75 @@ export default function Settings() {
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="space-y-2">
                   <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-brand" /> Fontes de Anime
+                    <Radio className="w-4 h-4 text-brand" /> Fontes de Anime & Streams (P2P)
                   </h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo (Stremio Proto)</p>
                 </div>
 
-                <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-3xl flex flex-col items-center text-center space-y-4 shadow-xl">
-                  <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 animate-pulse" />
+                {/* Custom Manifest Input */}
+                <div className="p-6 bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-widest">Adicionar Addon do Stremio</h4>
+                    <span className="text-[8px] bg-brand/10 text-brand px-2 py-0.5 rounded-full font-black">NOVO</span>
                   </div>
-                  <div className="space-y-2 max-w-md">
-                    <h4 className="text-xs font-black text-amber-500 uppercase tracking-widest">Aviso de Indisponibilidade Temporária</h4>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
-                      O sistema de fontes externas está temporariamente offline. Os principais provedores de API e streaming (incluindo o Consumet e parceiros) foram desativados ou estão passando por grandes reestruturações globais.
-                    </p>
-                    <p className="text-[9px] text-gray-500 font-semibold leading-relaxed">
-                      Desativamos as integrações instáveis por precaução para evitar falhas de carregamento consecutivas. Estamos refazendo nosso ecossistema de conexões para oferecer fontes seguras e ultra-rápidas em breve.
-                    </p>
+                  <div className="flex gap-3">
+                    <input 
+                      type="text" 
+                      placeholder="https://.../manifest.json"
+                      value={newManifestUrl}
+                      onChange={(e) => setNewManifestUrl(e.target.value)}
+                      className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-xs font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand"
+                    />
+                    <button 
+                      onClick={() => {
+                        if (newManifestUrl.trim().endsWith('manifest.json')) {
+                          addManifest(newManifestUrl.trim());
+                          setNewManifestUrl('');
+                        }
+                      }}
+                      className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand/20"
+                    >
+                      Adicionar
+                    </button>
                   </div>
+                  <p className="text-[8px] text-gray-500 font-medium">
+                    * Avalon suporta addons do Stremio (arquivos manifest.json). Para torrents P2P, recomendamos usar uma configuração com Real-Debrid no Torrentio para evitar bloqueios do navegador.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {AVAILABLE_EXTENSIONS.length === 0 ? (
-                    <div className="p-5 bg-[var(--color-bg)] rounded-2xl border border-dashed border-[var(--color-border)] text-center py-8">
-                      <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest">Nenhuma fonte disponível neste momento.</p>
-                    </div>
-                  ) : (
-                    AVAILABLE_EXTENSIONS.map((ext) => {
-                      const isInstalled = installed.includes(ext.id);
-                      return (
-                        <div key={ext.id} className="p-5 bg-[var(--color-bg)] rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-[var(--color-card)] rounded-xl flex items-center justify-center text-2xl shadow-sm">
-                              {ext.icon}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
-                                <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
-                              </div>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
-                            </div>
+                  {[...AVAILABLE_EXTENSIONS, ...manifests.map(m => createStremioExtension(m))].map((ext) => {
+                    const isInstalled = installed.includes(ext.id);
+                    const isCustom = manifests.includes(AVAILABLE_EXTENSIONS.find(a => a.id === ext.id) ? '' : (ext as any).manifestUrl || ''); // Logic helper
+                    const manifestUrl = manifests.find(m => `stremio-${btoa(m).slice(0, 10)}` === ext.id);
+
+                    return (
+                      <div key={ext.id} className="p-5 bg-[var(--color-bg)] rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className={cn("w-12 h-12 bg-[var(--color-card)] rounded-xl flex items-center justify-center text-2xl shadow-sm", isInstalled && "border border-brand/50")}>
+                            {ext.icon}
                           </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
+                              <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
+                              {manifestUrl && <span className="text-[8px] text-brand font-black uppercase tracking-widest bg-brand/5 px-2 py-0.5 rounded border border-brand/10">Custom</span>}
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {manifestUrl && (
+                            <button 
+                              onClick={() => {
+                                uninstall(ext.id);
+                                removeManifest(manifestUrl);
+                              }}
+                              className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                            >
+                              <Check className="w-4 h-4 rotate-45" />
+                            </button>
+                          )}
                           <button 
                             onClick={() => isInstalled ? uninstall(ext.id) : install(ext.id)}
                             className={cn(
@@ -305,13 +334,9 @@ export default function Settings() {
                             {isInstalled ? 'Desativar' : 'Ativar'}
                           </button>
                         </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                <div className="p-4 bg-brand/5 border border-dashed border-brand/20 rounded-2xl">
-                   <p className="text-[9px] text-brand font-black uppercase tracking-[0.2em] text-center">Desenvolvendo nova infraestrutura estável de conexões</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : activeTab === 'language' ? (

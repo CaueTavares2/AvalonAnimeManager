@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { jikanService } from './jikanService';
+import { createStremioExtension } from './stremioExtension';
 
 export interface Episode {
   id: string;
@@ -124,23 +125,36 @@ export const getStableVideosForEpisode = (epId: string): StreamSource[] => {
   ];
 };
 
-export const AVAILABLE_EXTENSIONS: AnimeExtension[] = [];
+export const AVAILABLE_EXTENSIONS: AnimeExtension[] = [
+  createStremioExtension(
+    'https://torrentio.strem.fun/providers=rutor,comando,bludv,micoleaodublado|language=portuguese|qualityfilter=unknown,cam,scr,other,480p/manifest.json',
+    'Torrentio (P2P)'
+  )
+];
 
 interface ExtensionStore {
   installed: string[];
+  manifests: string[];
   install: (id: string) => void;
   uninstall: (id: string) => void;
+  addManifest: (url: string) => void;
+  removeManifest: (url: string) => void;
   getInstalledExtensions: () => AnimeExtension[];
 }
 
 export const useExtensions = create<ExtensionStore>()(
   persist(
     (set, get) => ({
-      installed: [], // Pre-installed favorites
+      installed: ['stremio-dG9ycmVudGlv'], // Auto-install Torrentio for the user as requested
+      manifests: [],
       install: (id) => set((state) => ({ installed: [...new Set([...state.installed, id])] })),
       uninstall: (id) => set((state) => ({ installed: state.installed.filter(ext => ext !== id) })),
+      addManifest: (url) => set((state) => ({ manifests: [...new Set([...state.manifests, url])] })),
+      removeManifest: (url) => set((state) => ({ manifests: state.manifests.filter(m => m !== url) })),
       getInstalledExtensions: () => {
-        return AVAILABLE_EXTENSIONS.filter(ext => get().installed.includes(ext.id));
+        const custom = get().manifests.map(m => createStremioExtension(m));
+        const all = [...AVAILABLE_EXTENSIONS, ...custom];
+        return all.filter(ext => get().installed.includes(ext.id));
       }
     }),
     {

@@ -1,6 +1,15 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.3.0)
+# 🌌 Avalon - Anime Tracking Saga (v3.4.0)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.4.0 (The Stremio Update)
+
+- **🎬 Stremio Addon Engine**: Implementação de suporte nativo ao protocolo Stremio. O Torrentio agora é uma fonte selecionável, trazendo conteúdo P2P dublado e legendado diretamente para o player do Avalon.
+- **🔗 Intelligent IMDb Mapping**: Sistema de tradução de IDs que mapeia automaticamente animes do MyAnimeList para IDs IMDb, permitindo compatibilidade universal com addons cinematográficos.
+- **⚙️ Custom Sources Central**: Nova interface em Configurações para adicionar qualquer manifest URL de addon do Stremio (.json). Personalize suas fontes de vídeo como quiser.
+- **🛡️ Shielded Asset Guardian v2**: Melhorias na estabilidade de rotas e carregamento de metadados externos.
 
 ---
 

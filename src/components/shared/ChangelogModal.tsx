@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.3.0',
+  version: '3.4.0',
   items: [
-    '🛡️ Sistema Anti-Falha: Implementação de motor de recarregamento inteligente (lazyWithRetry) para evitar erros de cache ou módulos desatualizados.',
-    '✨ Qualidade Premium: Novo filtro global que prioriza séries de TV e Filmes, removendo clipes musicais e especiais aleatórios das listas principais.',
-    '🔍 Busca Interna: Adicionada barra de pesquisa na "Minha Lista" para encontrar rapidamente seus animes favoritados.',
-    '🎨 Visual Master: Cards de mídia redesenhados com badges "PREMIUM", efeitos de vidro (glassmorphism) e transições mais suaves.'
+    '🎬 Integração Stremio (Torrentio): Adicionado suporte nativo a addons do Stremio. O Torrentio foi configurado como fonte padrão para streaming de alta qualidade (P2P).',
+    '🔗 Mapeamento IMDb: Novo motor de sincronização que converte IDs de animes para códigos IMDb, garantindo 99% de precisão na busca de fontes externas.',
+    '⚙️ Fontes Customizáveis: Agora você pode adicionar seus próprios manifestos (.json) de addons do Stremio diretamente nas configurações.',
+    '🛡️ Estabilidade Reforçada: Correções no motor de carregamento de páginas e melhorias no filtro de qualidade global.'
   ]
 };
 
