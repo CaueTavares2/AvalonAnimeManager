@@ -40,6 +40,22 @@ export default function AnimePlayer() {
   });
   const [clickShieldActive, setClickShieldActive] = useState(false);
 
+  // States for the unified Jikan/Anilist-to-TMDB ID translator & tuning console
+  const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [activeMapping, setActiveMapping] = useState<{
+    mal_id: number;
+    tmdb_id: number;
+    type: 'tv' | 'movie';
+    season: number;
+    episode_offset: number;
+    source: string;
+  } | null>(null);
+  const [tuningTmdbId, setTuningTmdbId] = useState<string>('');
+  const [tuningSeason, setTuningSeason] = useState<number>(1);
+  const [tuningOffset, setTuningOffset] = useState<number>(0);
+  const [tuningType, setTuningType] = useState<'tv' | 'movie'>('tv');
+  const [showTuningPanel, setShowTuningPanel] = useState(false);
+
   const handleStartStream = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -86,6 +102,10 @@ export default function AnimePlayer() {
       setError(null);
       setIsReady(false);
       
+      // Cleanup previous episode session state immediately to prevent misalignments
+      setEpisodes([]);
+      setCurrentEpisode(null);
+      
       try {
         if (installedExts.length === 0) {
           setError("As fontes de vídeo estão temporariamente indisponíveis por falta de provedores externos estáveis (sistemas como o Consumet foram desativados mundialmente ou estão em reconstrução). Esse estado é provisório e estamos trabalhando para restabelecer os servidores!");
@@ -117,26 +137,68 @@ export default function AnimePlayer() {
         if (selectedExt.id === 'betterflix' && !id.includes(':') && !isNaN(Number(id))) {
           const mapping = await mappingService.getTMDBId(Number(id), title, releaseYear);
           if (mapping && mapping.tmdb_id) {
-            finalId = `${mapping.type}:${mapping.tmdb_id}`;
+            finalId = `${mapping.type}:${mapping.tmdb_id}:${mapping.season || 1}:${mapping.episode_offset || 0}`;
+            
+            // Popula os detalhes do mapeamento ativo no state para visualização e sintonia fina
+            const mappedDetails = {
+              mal_id: Number(id),
+              tmdb_id: mapping.tmdb_id,
+              type: mapping.type,
+              season: mapping.season || 1,
+              episode_offset: mapping.episode_offset || 0,
+              source: mapping.source || 'api'
+            };
+            setActiveMapping(mappedDetails);
+            setTuningTmdbId(String(mapping.tmdb_id));
+            setTuningSeason(mapping.season || 1);
+            setTuningOffset(mapping.episode_offset || 0);
+            setTuningType(mapping.type);
+          } else {
+            // Mapping failed entirely! Fallback: attempt a direct query search on TMDB for the main title to avoid loading ID 1
+            console.warn(`TMDB ID Mapping failed for MAL ID ${id}. Doing high-precision title fallback...`);
+            const fallbackMapping = await mappingService.getTMDBId(0, title, releaseYear);
+            if (fallbackMapping && fallbackMapping.tmdb_id) {
+              finalId = `${fallbackMapping.type}:${fallbackMapping.tmdb_id}:1:0`;
+              
+              const mappedDetails = {
+                mal_id: Number(id),
+                tmdb_id: fallbackMapping.tmdb_id,
+                type: fallbackMapping.type,
+                season: 1,
+                episode_offset: 0,
+                source: 'fallback'
+              };
+              setActiveMapping(mappedDetails);
+              setTuningTmdbId(String(fallbackMapping.tmdb_id));
+              setTuningSeason(1);
+              setTuningOffset(0);
+              setTuningType(fallbackMapping.type);
+            } else {
+              // Critical mapping failure: betterflix requires a TMDB ID. Show a clean, informative error.
+              throw new Error(`Não foi possível sincronizar o ID do MyAnimeList com o catálogo TMDB do Betterflix para "${title}". Tente pesquisar pelo nome do anime diretamente na barra de pesquisa superior ou trocar de fonte!`);
+            }
           }
+        } else {
+          // Para outras fontes que não requerem tradução para TMDB
+          setActiveMapping(null);
         }
 
         const eps = await selectedExt.getEpisodes(finalId, totalEpisodesCount);
         const sortedEps = [...eps].sort((a, b) => a.number - b.number);
         setEpisodes(sortedEps);
         
-        if (sortedEps.length > 0 && !currentEpisode) {
+        if (sortedEps.length > 0) {
           setCurrentEpisode(sortedEps[0]);
         }
       } catch (e: any) {
-        setError("Erro ao carregar episódios da fonte selecionada.");
+        setError(e.message || "Erro ao carregar episódios da fonte selecionada.");
         console.error(e);
       } finally {
         setLoading(false);
       }
     };
     init();
-  }, [id, extension]);
+  }, [id, extension, reloadTrigger]);
 
   // Load stream when episode changes (stream loading errors are localized now)
   useEffect(() => {
@@ -425,7 +487,156 @@ export default function AnimePlayer() {
             </div>
           )}
 
+          {/* Universal Jikan/AniList to TMDB Translation Alignment Panel (Sintonia de IDs) */}
+          {activeMapping && (
+            <div className="bg-[var(--color-card)] p-5 rounded-3xl border border-[var(--color-border)] space-y-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-ping" />
+                    Tradutor de Identidades de Mídia
+                  </h3>
+                  <span className="text-[8px] text-gray-500 uppercase tracking-widest block mt-0.5">
+                    Converte IDs do MyAnimeList (Jikan) / AniList para o catálogo original TMDB do Player
+                  </span>
+                </div>
+                {/* Visual badge showing mapping resolution source */}
+                <span className={cn(
+                  "text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-current",
+                  activeMapping.source === 'override' ? "text-yellow-500 bg-yellow-500/10" :
+                  activeMapping.source === 'offline' ? "text-blue-500 bg-blue-500/10" :
+                  activeMapping.source === 'cache' ? "text-emerald-500 bg-emerald-500/10" :
+                  activeMapping.source === 'anizip' ? "text-purple-500 bg-purple-500/10" :
+                  "text-gray-400 bg-gray-500/10"
+                )}>
+                  {activeMapping.source === 'override' ? 'Ajuste Manual' :
+                   activeMapping.source === 'offline' ? 'Avalon Index' :
+                   activeMapping.source === 'cache' ? 'Sinal em Cache' :
+                   activeMapping.source === 'anizip' ? 'Cloud AniZip' :
+                   'Busca TMDB'}
+                </span>
+              </div>
 
+              {/* Mapping diagnostics row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-black/20 p-3 rounded-2xl border border-white/5 text-[9px]">
+                <div>
+                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">MyAnimeList ID</span>
+                  <span className="font-mono text-gray-300 font-bold">{activeMapping.mal_id}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">TMDB ID Alvo</span>
+                  <span className="font-mono text-gray-300 font-bold">{activeMapping.tmdb_id}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">Temporada</span>
+                  <span className="font-mono text-gray-300 font-bold">S{activeMapping.season}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">Compensador (Offset)</span>
+                  <span className="font-mono text-gray-300 font-bold">{activeMapping.episode_offset > 0 ? `+${activeMapping.episode_offset}` : activeMapping.episode_offset} eps</span>
+                </div>
+              </div>
+
+              {/* Tuning Panel controller */}
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={() => setShowTuningPanel(!showTuningPanel)}
+                  className="w-full flex items-center justify-between text-xs text-brand hover:text-brand-light transition-colors font-bold px-1"
+                >
+                  <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
+                    ⚙️ {showTuningPanel ? 'Ocultar Sintonia Fina' : 'Sintonizar Canal Manualmente (Calibrar ID ou Temporada)'}
+                  </span>
+                  <span>{showTuningPanel ? '▲' : '▼'}</span>
+                </button>
+
+                {showTuningPanel && (
+                  <div className="space-y-4 pt-2 border-t border-white/5 animate-fadeIn">
+                    <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
+                      Se o player estiver exibindo o anime errado, mude o TMDB ID ou Temporada abaixo. O Avalon lembrará desta sincronização sem comprometer outras mídias.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">TMDB ID Alvo</label>
+                        <input
+                          type="text"
+                          value={tuningTmdbId}
+                          onChange={(e) => setTuningTmdbId(e.target.value.replace(/\D/g, ''))}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
+                          placeholder="Ex: 94605"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">Mídia</label>
+                        <select
+                          value={tuningType}
+                          onChange={(e) => setTuningType(e.target.value as 'tv' | 'movie')}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-xs font-sans text-gray-300 focus:outline-none focus:border-brand"
+                        >
+                          <option value="tv">Série (TV)</option>
+                          <option value="movie">Filme</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">Temporada TMDB</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={tuningSeason}
+                          onChange={(e) => setTuningSeason(Number(e.target.value))}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">Offset de Eps</label>
+                        <input
+                          type="number"
+                          value={tuningOffset}
+                          onChange={(e) => setTuningOffset(Number(e.target.value))}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-2">
+                      {activeMapping.source === 'override' && (
+                        <button
+                          onClick={() => {
+                            mappingService.removeOverride(activeMapping.mal_id);
+                            setShowTuningPanel(false);
+                            setReloadTrigger(prev => prev + 1);
+                          }}
+                          className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+                        >
+                          Restaurar Padrão
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (!tuningTmdbId) return;
+                          mappingService.saveOverride(activeMapping.mal_id, {
+                            tmdb_id: Number(tuningTmdbId),
+                            type: tuningType,
+                            season: tuningSeason,
+                            episode_offset: tuningOffset
+                          });
+                          setShowTuningPanel(false);
+                          setReloadTrigger(prev => prev + 1);
+                        }}
+                        className="px-4 py-2 bg-brand text-white hover:bg-brand/90 hover:scale-[1.02] active:scale-[0.98] rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
+                        Aplicar Ajuste
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -578,6 +789,7 @@ export default function AnimePlayer() {
                       data-active={currentEpisode?.id === ep.id}
                       onClick={() => setCurrentEpisode(ep)}
                       className={cn(
+                        "w-full flex items-center gap-3 p-2 rounded-xl text-left border transition-all",
                         currentEpisode?.id === ep.id 
                           ? "bg-brand border-brand text-white shadow-md" 
                           : "bg-[var(--color-card)] border-[var(--color-border)] text-gray-400 hover:border-brand/40 hover:text-brand"

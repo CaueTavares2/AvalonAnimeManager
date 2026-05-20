@@ -1,6 +1,23 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.2.5 - Anti-Leak Shield)
+# 🌌 Avalon - Anime Tracking Saga (v4.3.0 - Identity Tuning Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.3.0 (Identity Tuning Era)
+
+- **🛠️ Sintonizador e Tradutor de Identidades de Mídia (DevTools)**: Novo painel acoplado ao player exibe detalhadamente a identidade do MyAnimeList ou AniList cruzando com o ID do TMDB correspondente, temporada e compensador (offset) do fluxo de vídeo em tempo real.
+- **⚡ Sintonia Fina Manual Resiliente**: Se o fluxo automático sintonizar a temporada errada ou sofrer dessincronização por arcos segmentados de MyAnimeList, recalibre o ID de TMDb Alvo, mídia, temporada correspondente ou compensador (offset) no ato! O Avalon salvará os ajustes preferenciais localmente em seu navegador com prioridade absoluta.
+- **🧩 Flexibilidade de Mapeamento Multi-Payload**: Ajustes profundos na recuperação de chaves de tradução pelo servidor cloud da AniZip. O receptor foi blindado para decodificar e processar com 100% de estabilidade e tolerância falhas em payloads que distribuem informações sob chaves variadas (`tmdb_id`, `themoviedb_id` ou via coleções aninhadas em `mappings`).
+- **💡 Correção Fluida no Modo Lista de Episódios**: Ajuste no alinhamento de layout flex do modo "Lista" nos episódios da coluna lateral, garantindo espaçamento simétrico e alta elegância visual no desktop e mobile.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.2.6 (Season Alignment Era)
+
+- **🔄 Sincronização Absoluta de Temporadas**: Implementação de um dicionário inteligente e estendido de mappers que traduz IDs segmentados do MyAnimeList (ex: *Demon Slayer: Hashira Training*, *Yuukaku-hen*, *Swordsmith Village*, *Attack on Titan Final Part 1/2*) para as temporadas consolidadas correspondentes dentro do banco da TMDB, garantindo que o player carregue o sinal correto sob demanda.
+- **📐 Compensador Dinâmico de Episódios (Offset)**: Mecanismo de remapeamento interno que aplica cálculos de offset (ex: *Yuukaku-hen* iniciando no episódio 8 na numeração da S2 do TMDB) para garantir que você clique no botão "Episódio 1" e assista ao exato primeiro episódio daquele Arco sem rupturas ou desalinhamentos.
+- **🛡️ Escudo Anti-Desvio "Undercurrents"**: Algoritmo de segurança e validação severa das requisições que impede IDs não mapeados de caírem na requisição genérica de valor ID "1" (que exibia a série "Undercurrents"). Agora exibe um aviso acolhedor incentivando a busca direta ou alternância de fonte caso a triangulação automática seja interceptada.
 
 ---
 

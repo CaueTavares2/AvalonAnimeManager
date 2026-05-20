@@ -48,7 +48,11 @@ export const betterflixExtension: AnimeExtension = {
   },
 
   getEpisodes: async (id: string, totalCount?: number) => {
-    const [type, tmdbId] = id.split(':');
+    const parts = id.split(':');
+    const type = parts[0];
+    const tmdbId = parts[1];
+    const season = parts[2] || '1';
+    const offset = parseInt(parts[3] || '0', 10);
     
     if (type === 'movie') {
       return [{ id: `${id}:1`, number: 1, title: 'Filme Completo' }];
@@ -57,7 +61,8 @@ export const betterflixExtension: AnimeExtension = {
     // Optimization: Use provided totalCount for accurate paging, or default to 100 for long series
     const count = totalCount || 100;
     return Array.from({ length: count }, (_, i) => ({
-      id: `${id}:${i + 1}`,
+      // Under the hood, encode the real TMDB season and calculated absolute episode inside the ID
+      id: `${type}:${tmdbId}:${season}:${i + 1 + offset}`,
       number: i + 1,
       title: `Episódio ${i + 1}`
     }));
@@ -65,49 +70,63 @@ export const betterflixExtension: AnimeExtension = {
 
   getStreams: async (id: string, episodeId?: string) => {
     const fullId = episodeId || id;
-    const [type, tmdbId, epNum] = fullId.split(':');
-    const episode = epNum || '1';
+    const parts = fullId.split(':');
     
-    // Betterflix Sources
+    const type = parts[0];
+    const tmdbId = parts[1];
+    
+    let season = '1';
+    let episode = '1';
+    
+    if (parts.length === 4) {
+      // Format from getEpisodes: type:tmdbId:season:calculatedTMDBEpisode
+      season = parts[2];
+      episode = parts[3];
+    } else if (parts.length === 3) {
+      // Legacy or manual: type:tmdbId:episode
+      episode = parts[2] || '1';
+    }
+    
+    // Betterflix Sources with dynamic season and episode values!
     const sources = [
       {
         url: type === 'movie' 
           ? `https://betterflix.click/api/player?id=${tmdbId}&type=movie`
-          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=1&episode=${episode}`,
+          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=${season}&episode=${episode}`,
         type: 'iframe' as const,
         quality: 'Betterflix HD (S1)'
       },
       {
         url: type === 'movie'
           ? `https://betterflix.click/api/player?id=${tmdbId}&type=movie&server=2`
-          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=1&episode=${episode}&server=2`,
+          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=${season}&episode=${episode}&server=2`,
         type: 'iframe' as const,
         quality: 'Betterflix HD (S2)'
       },
       {
         url: type === 'movie'
           ? `https://betterflix.click/api/player?id=${tmdbId}&type=movie&server=3`
-          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=1&episode=${episode}&server=3`,
+          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=${season}&episode=${episode}&server=3`,
         type: 'iframe' as const,
         quality: 'Betterflix HD (S3)'
       },
       {
         url: type === 'movie'
           ? `https://betterflix.click/watch?id=${tmdbId}&type=movie`
-          : `https://betterflix.click/watch?id=${tmdbId}&type=tv&season=1&episode=${episode}`,
+          : `https://betterflix.click/watch?id=${tmdbId}&type=tv&season=${season}&episode=${episode}`,
         type: 'iframe' as const,
         quality: 'Betterflix (Completo + Dub)'
       },
       {
         url: type === 'tv'
-          ? `https://vidlink.pro/embed/tv/${tmdbId}/1/${episode}?primaryColor=ff0000`
+          ? `https://vidlink.pro/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=ff0000`
           : `https://vidlink.pro/embed/movie/${tmdbId}?primaryColor=ff0000`,
         type: 'iframe' as const,
         quality: 'VidLink (Ultra HD)'
       },
       {
         url: type === 'tv' 
-          ? `https://vidsrc.xyz/embed/tv?tmdb=${tmdbId}&season=1&episode=${episode}`
+          ? `https://vidsrc.xyz/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
           : `https://vidsrc.xyz/embed/movie?tmdb=${tmdbId}`,
         type: 'iframe' as const,
         quality: 'Global Multi-Source'
