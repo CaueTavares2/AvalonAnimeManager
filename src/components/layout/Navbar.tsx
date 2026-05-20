@@ -76,8 +76,8 @@ export default function Navbar() {
         {/* Logo & Menu Section */}
         <div className="flex items-center gap-2 md:gap-4">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <img src="/logo-light.jpg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
-            <img src="/logo-dark.jpg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
+            <img src="/logo-light.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md block dark:hidden" />
+            <img src="/logo-dark.jpeg" alt="Avalon" className="h-8 w-8 object-cover rounded-lg group-hover:rotate-6 transition-transform shadow-md hidden dark:block" />
             <div className="text-brand font-black text-lg tracking-tighter uppercase italic hidden sm:block">Avalon</div>
           </Link>
 

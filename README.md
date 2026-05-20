@@ -1,6 +1,27 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.4)
+# 🌌 Avalon - Anime Tracking Saga (v3.1.8)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.1.8 (Final Assets Restoration)
+
+- **🖼️ Logos Reconectadas**: As marcas visuais `logo-light.jpeg` e `logo-dark.jpeg` foram restauradas no diretório `/public` e vinculadas permanentemente em toda a UI.
+- **🛠️ Fix de Paths**: Correção dos caminhos estáticos para garantir compatibilidade com o PWA e Build de Produção.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.1.7 (Engine Optimization & Assets)
+
+- **🖼️ Asset Sync. Definitivo**: Remoção da `base path` redundante no Vite que impedia a resolução das logos `.jpeg` originais. Inserção das marcas visuais na Home, Navbar e Players.
+- **📝 Log de Novidades v3.1.7**: Sincronização do sistema de Changelog para refletir os últimos reparos estéticos e funcionais.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.1.6 (Hotfix & Visuals)
+
+- **🖼️ Asset Sync. Concluído**: Integração direta (`import`) do recurso visual oficial carregado internamente na plataforma, contornando a exclusão dos CDNs estáticos.
+- **📝 Modal de Changelog Consertado**: Atualização do modal para espelhar as últimas versões (a partir da v3.1.6). Fix das versões congeladas na antiga detecção da v3.1.2.
 
 ---
 
@@ -110,7 +131,17 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.4] - Otimizações Extremas & Resultados Buscáveis (Atual)
+### [v3.1.8] - Final Assets Restoration (Atual)
+- **Logos Restauradas**: Recarregamento das logos originais e fix de caminhos absolutos no Navbar e Footer.
+
+### [v3.1.7] - Asset Restoration & Log Engine
+- **Recuperação Nativa de Assets**: Mapeamento fixo de `.jpeg` e `.jpg` corrigido com importações modulares diretas na UI e retorno das logomarcas originais criadas pelo usuário.
+- **Log Engine Refactored**: Fix para a modalidade visual travada nas antigas versões, passando a expor os dados estritos da última arquitetura.
+
+### [v3.1.5] - Hotfix: Asset Resolution Engine
+- **Recuperação Nativa de Assets**: Mapeamento fixo de `.jpeg` e `.jpg` corrigido em `/public`, além de substituição global nas Views (Navbar, App e Player).
+
+### [v3.1.4] - Otimizações Extremas & Resultados Buscáveis
 - **Detecção de Hardware**: Hook dedicado `useDevice` que escala a performance ('Low', 'Mid', 'High') focado em arquiteturas pós-A13 (A14, S23/S24, iPhone 14+) limitando o processamento do hardware.
 - **Search Engine Upgrade**: Página `/search` com grid completa de resultados, paginação nativa e filtros universais.
 - **Lista de Ordenação**: Os valores "TITLE" e "SCORE" na MyList agora possuem gatilhos triangulares clicáveis e bidirecionais de ordenamento.

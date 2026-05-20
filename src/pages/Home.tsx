@@ -290,9 +290,15 @@ export default function Home() {
       </AnimatePresence>
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-[var(--color-border)] pb-6 md:pb-8">
-        <h1 className="text-3xl md:text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-center md:text-left">
-          Explorar {mediaType === 'anime' ? 'Animes' : 'Mangás'}
-        </h1>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-1">
+             <img src="/logo-light.jpeg" alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg block dark:hidden" />
+             <img src="/logo-dark.jpeg" alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg hidden dark:block" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-center md:text-left">
+            Explorar {mediaType === 'anime' ? 'Animes' : 'Mangás'}
+          </h1>
+        </div>
         
         <div className="flex bg-[var(--color-card)] p-1.5 rounded-2xl border border-[var(--color-border)] w-full md:w-auto">
           <button 

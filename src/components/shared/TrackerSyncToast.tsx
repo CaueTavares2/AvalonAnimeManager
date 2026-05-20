@@ -39,7 +39,7 @@ export default function TrackerSyncToast() {
         <div className="flex items-center gap-2 border-b border-white/10 pb-2 mb-3">
           <RefreshCw className="w-4 h-4 text-brand animate-spin" />
           <span className="text-[10px] font-black uppercase tracking-widest text-brand flex items-center gap-1.5">
-            Auto-Sync Trackers v3.1.3
+            Auto-Sync Trackers v3.1.6
           </span>
           <span className="ml-auto text-[8px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded font-bold uppercase">Ativo</span>
         </div>

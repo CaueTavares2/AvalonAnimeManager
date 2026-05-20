@@ -117,7 +117,7 @@ export default function GoAnimeTerminal({ onClose }: GoAnimeTerminalProps) {
             </div>
             <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-widest ml-4">
               <TerminalIcon size={12} />
-              GoAnime v3.1.2 — user@avalon
+              GoAnime v3.1.8 — user@avalon
             </div>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
