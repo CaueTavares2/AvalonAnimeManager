@@ -5,29 +5,74 @@ import { useDevice } from '../hooks/useDevice';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+/**
+ * High-performance lazy loading with automatic retry for chunk failures.
+ * This prevents the "Routing Failure" (ChunkLoadError) when the app is updated.
+ */
+function lazyWithRetry(componentImport: () => Promise<any>) {
+  return lazy(async () => {
+    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+      window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+    );
+
+    try {
+      const component = await componentImport();
+      window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      return component;
+    } catch (error) {
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        // Log to console for debugging
+        console.warn('Chunk load failed, attempting automatic reload...', error);
+        window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+        return window.location.reload();
+      }
+
+      // If we already tried refreshing once and it still fails, bubble up to ErrorBoundary
+      throw error;
+    }
+  });
+}
+
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
   constructor(props: {children: React.ReactNode}) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
   }
+  
+  resetError = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.reload();
+  };
+
   render() {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center py-40 gap-4 text-center px-4">
-          <AlertTriangle className="w-12 h-12 text-red-500 mb-2" />
+          <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-2">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+          </div>
           <h2 className="text-xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter">Falha de Roteamento</h2>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest max-w-sm mb-4">
-            Houve uma falha ao carregar este módulo. Isso geralmente ocorre devido a atualizações em andamento ou cache.
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest max-w-sm mb-4 leading-relaxed">
+            Houve uma falha ao carregar este módulo. Isso geralmente ocorre devido a atualizações em andamento ou cache expirado.
           </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-dark transition-colors"
-          >
-            <RefreshCw size={14} /> Recarregar Módulo
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button 
+              onClick={this.resetError}
+              className="group flex items-center justify-center gap-2 px-8 py-3 bg-brand text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark transition-all shadow-lg shadow-brand/20"
+            >
+              <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" /> 
+              Forçar Recarregamento
+            </button>
+            <button 
+              onClick={() => window.location.href = '/AvalonAnimeManager'}
+              className="px-8 py-3 bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text-bright)] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-border)] transition-all"
+            >
+              Voltar ao Início
+            </button>
+          </div>
         </div>
       );
     }
@@ -37,8 +82,13 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 
 const LoadingFallback = () => (
   <div className="flex flex-col items-center justify-center py-40 gap-4">
-    <div className="w-12 h-12 border-t-2 border-brand rounded-full animate-spin" />
-    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Carregando Módulo...</p>
+    <div className="relative">
+      <div className="w-12 h-12 border-t-2 border-brand rounded-full animate-spin" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-4 h-4 bg-brand/20 rounded-full animate-pulse" />
+      </div>
+    </div>
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest animate-pulse">Sincronizando Módulo...</p>
   </div>
 );
 
@@ -50,26 +100,26 @@ const SafeSuspense = ({ children }: { children: React.ReactNode }) => (
   </ErrorBoundary>
 );
 
-// Lazy loaded pages
-const Home = lazy(() => import('../pages/Home'));
-const AnimeDetails = lazy(() => import('../pages/AnimeDetails'));
-const AnimePlayer = lazy(() => import('../pages/AnimePlayer'));
-const MyList = lazy(() => import('../pages/MyList'));
-const Community = lazy(() => import('../pages/Community'));
-const Rankings = lazy(() => import('../pages/Rankings'));
-const Profile = lazy(() => import('../pages/Profile'));
-const PublicProfile = lazy(() => import('../pages/PublicProfile'));
-const Settings = lazy(() => import('../pages/Settings'));
-const Login = lazy(() => import('../pages/Login'));
-const Analytics = lazy(() => import('../pages/Analytics'));
-const Social = lazy(() => import('../pages/Social'));
-const AniChat = lazy(() => import('../pages/AniChat'));
-const Shop = lazy(() => import('../pages/Shop'));
-const Admin = lazy(() => import('../pages/Admin'));
-const AnimesByYear = lazy(() => import('../pages/AnimesByYear'));
-const Feedback = lazy(() => import('../pages/Feedback'));
-const SearchResults = lazy(() => import('../pages/SearchResults'));
-const MangaReader = lazy(() => import('../pages/MangaReader'));
+// Lazy loaded pages with retry logic
+const Home = lazyWithRetry(() => import('../pages/Home'));
+const AnimeDetails = lazyWithRetry(() => import('../pages/AnimeDetails'));
+const AnimePlayer = lazyWithRetry(() => import('../pages/AnimePlayer'));
+const MyList = lazyWithRetry(() => import('../pages/MyList'));
+const Community = lazyWithRetry(() => import('../pages/Community'));
+const Rankings = lazyWithRetry(() => import('../pages/Rankings'));
+const Profile = lazyWithRetry(() => import('../pages/Profile'));
+const PublicProfile = lazyWithRetry(() => import('../pages/PublicProfile'));
+const Settings = lazyWithRetry(() => import('../pages/Settings'));
+const Login = lazyWithRetry(() => import('../pages/Login'));
+const Analytics = lazyWithRetry(() => import('../pages/Analytics'));
+const Social = lazyWithRetry(() => import('../pages/Social'));
+const AniChat = lazyWithRetry(() => import('../pages/AniChat'));
+const Shop = lazyWithRetry(() => import('../pages/Shop'));
+const Admin = lazyWithRetry(() => import('../pages/Admin'));
+const AnimesByYear = lazyWithRetry(() => import('../pages/AnimesByYear'));
+const Feedback = lazyWithRetry(() => import('../pages/Feedback'));
+const SearchResults = lazyWithRetry(() => import('../pages/SearchResults'));
+const MangaReader = lazyWithRetry(() => import('../pages/MangaReader'));
 
 export default function AppRoutes() {
   const { loading } = useAuth();
