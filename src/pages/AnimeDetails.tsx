@@ -61,6 +61,15 @@ export default function AnimeDetails() {
   useEffect(() => {
     const fetchDetails = async () => {
       if (!id || !type) return;
+
+      // Handle external extension IDs (e.g., tv:12345 or movie:12345)
+      // These don't belong in the MAL-based details page, redirect to player
+      if (id.includes(':')) {
+        console.log('External extension ID detected, redirecting to player:', id);
+        navigate(`/anime/${id}/watch`, { replace: true });
+        return;
+      }
+      
       try {
         const finalType = (type.toUpperCase() as 'ANIME' | 'MANGA');
         const data = await jikanService.getDetails(Number(id), type.toLowerCase() as 'anime' | 'manga');
@@ -96,7 +105,19 @@ export default function AnimeDetails() {
           const charResp = await fetch(`https://api.jikan.moe/v4/${finalType.toLowerCase()}/${id}/characters`);
           const charData = await charResp.json();
           const mainCharacters = charData.data?.filter((c: MediaCharacter) => c.role === 'Main') || [];
-          setCharacters(mainCharacters.slice(0, 12));
+          
+          // Deduplicate by mal_id to prevent key collisions
+          const uniqueChars: MediaCharacter[] = [];
+          const seenCharIds = new Set<number>();
+          
+          for (const char of mainCharacters) {
+            if (!seenCharIds.has(char.character.mal_id)) {
+              uniqueChars.push(char);
+              seenCharIds.add(char.character.mal_id);
+            }
+          }
+          
+          setCharacters(uniqueChars.slice(0, 12));
         } catch (e) {
           console.error("Failed to fetch characters:", e);
         }

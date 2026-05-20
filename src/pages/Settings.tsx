@@ -271,10 +271,10 @@ export default function Settings() {
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="space-y-2">
                   <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-brand" /> Fontes de Anime & Streams (P2P)
+                    <Radio className="w-4 h-4 text-brand" /> Fontes de Anime & Streams (Híbridas)
                   </h3>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo (Stremio Proto)</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo (Stremio & APIs)</p>
                     <button 
                       onClick={testAllExtensions}
                       className="text-[9px] font-black uppercase text-brand flex items-center gap-1.5 hover:underline"
@@ -284,26 +284,37 @@ export default function Settings() {
                   </div>
                 </div>
 
-        {/* Maintenance Message */}
-                <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-3xl flex flex-col items-center text-center space-y-4 shadow-xl">
-                  <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 animate-pulse" />
+                {/* Custom Manifest Input */}
+                <div className="p-6 bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-widest">Adicionar Addon do Stremio</h4>
+                    <span className="text-[8px] bg-brand/10 text-brand px-2 py-0.5 rounded-full font-black">STREMIO PROTO</span>
                   </div>
-                  <div className="space-y-2 max-w-md">
-                    <h4 className="text-xs font-black text-amber-500 uppercase tracking-widest">Aviso de Indisponibilidade Temporária</h4>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
-                      O sistema de fontes externas está temporariamente offline para manutenção. Os provedores P2P e streaming estão passando por uma reestruturação para garantir maior segurança e velocidade.
-                    </p>
-                    <p className="text-[9px] text-gray-500 font-semibold leading-relaxed">
-                      Desativamos as integrações instáveis por precaução. Estamos trabalhando em uma nova infraestrutura de conexões dedicada.
-                    </p>
+                  <div className="flex gap-3">
+                    <input 
+                      type="text" 
+                      placeholder="https://.../manifest.json"
+                      value={newManifestUrl}
+                      onChange={(e) => setNewManifestUrl(e.target.value)}
+                      className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-xs font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand"
+                    />
+                    <button 
+                      onClick={() => {
+                        if (newManifestUrl.trim().endsWith('manifest.json')) {
+                          addManifest(newManifestUrl.trim());
+                          setNewManifestUrl('');
+                        }
+                      }}
+                      className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand/20"
+                    >
+                      Adicionar
+                    </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 opacity-40 pointer-events-none grayscale">
+                <div className="grid grid-cols-1 gap-4">
                   {AVAILABLE_EXTENSIONS.map((ext) => {
                     const isInstalled = installed.includes(ext.id);
-                    const isCustom = manifests.includes(AVAILABLE_EXTENSIONS.find(a => a.id === ext.id) ? '' : (ext as any).manifestUrl || ''); // Logic helper
                     const manifestUrl = manifests.find(m => `stremio-${btoa(m).slice(0, 10)}` === ext.id);
 
                     return (
@@ -318,8 +329,8 @@ export default function Settings() {
                               <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
                               {manifestUrl && <span className="text-[8px] text-brand font-black uppercase tracking-widest bg-brand/5 px-2 py-0.5 rounded border border-brand/10">Custom</span>}
                               {testingStatus[ext.id] === 'pending' && <Loader2 className="w-3 h-3 animate-spin text-brand" />}
-                              {testingStatus[ext.id] === 'success' && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />}
-                              {testingStatus[ext.id] === 'error' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50" />}
+                              {testingStatus[ext.id] === 'success' && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50 animate-pulse" />}
+                              {testingStatus[ext.id] === 'error' && <div className="w-2 h-2 rounded-full bg-red-500 shadow-md shadow-red-500/50" />}
                             </div>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
                           </div>

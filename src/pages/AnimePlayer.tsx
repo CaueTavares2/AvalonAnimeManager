@@ -4,6 +4,7 @@ import { ChevronLeft, Play, LayoutGrid, Settings, AlertCircle, Share2, Maximize2
 import ReactPlayer from 'react-player';
 import { useExtensions, AnimeExtension, Episode, StreamSource, AVAILABLE_EXTENSIONS } from '../services/extensionService';
 import { jikanService } from '../services/jikanService';
+import { mappingService } from '../services/mappingService';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import logoLight from '../assets/images/logo-light.jpeg';
@@ -26,6 +27,7 @@ export default function AnimePlayer() {
   
   const [loading, setLoading] = useState(true);
   const [loadingStream, setLoadingStream] = useState(false);
+  const [animeTitle, setAnimeTitle] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [showSourceSelector, setShowSourceSelector] = useState(false);
@@ -76,7 +78,32 @@ export default function AnimePlayer() {
         const selectedExt = extension || installedExts[0];
         setExtension(selectedExt);
 
-        const eps = await selectedExt.getEpisodes(id);
+        let finalId = id;
+        let title = '';
+
+        // Fetch anime title for mapping accuracy if ID is numeric
+        if (!id.includes(':') && !isNaN(Number(id))) {
+          try {
+            const data = await jikanService.getDetails(Number(id));
+            title = data.title;
+            setAnimeTitle(title);
+          } catch (e) {
+            console.warn('Failed to fetch anime title for mapping fallback', e);
+          }
+        }
+
+        // AUTOMATIC MAPPING FOR BETTERFLIX
+        // If extension is betterflix and id is purely numeric (MAL)
+        if (selectedExt.id === 'betterflix' && !id.includes(':') && !isNaN(Number(id))) {
+          console.log(`Betterflix detected with MAL ID:${id}, attempting mapping for "${title}"...`);
+          const mapping = await mappingService.getTMDBId(Number(id), title);
+          if (mapping && mapping.tmdb_id) {
+            finalId = `${mapping.type}:${mapping.tmdb_id}`;
+            console.log(`Mapped MAL:${id} to TMDB:${finalId}`);
+          }
+        }
+
+        const eps = await selectedExt.getEpisodes(finalId);
         const sortedEps = [...eps].sort((a, b) => a.number - b.number);
         setEpisodes(sortedEps);
         
@@ -227,7 +254,12 @@ export default function AnimePlayer() {
             )}
 
             {stream && stream.type === 'iframe' ? (
-              <iframe src={stream.url} className="w-full h-full border-0 absolute inset-0" allowFullScreen />
+              <iframe 
+                src={stream.url} 
+                className="w-full h-full border-0 absolute inset-0" 
+                allowFullScreen 
+                allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
+              />
             ) : (
                 <div className={cn("w-full h-full transition-opacity duration-500", !stream || !isReady ? "opacity-0" : "opacity-100")}>
                 {stream && (

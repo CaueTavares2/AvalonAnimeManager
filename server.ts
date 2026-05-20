@@ -122,7 +122,8 @@ async function startServer() {
       const getHeaders = (simple = false) => {
         const base: any = {
           'Accept': '*/*',
-          'Referer': targetUrl.includes('strem.fun') ? 'https://web.stremio.com/' : referer,
+          'Referer': targetUrl.includes('strem.fun') ? 'https://web.stremio.com/' : 
+                     targetUrl.includes('betterflix.click') ? 'https://betterflix.click/' : referer,
           'Connection': 'keep-alive',
         };
         if (rangeHeader) {
@@ -134,7 +135,8 @@ async function startServer() {
           ...base,
           'Accept': 'application/json, text/plain, */*',
           'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Origin': targetUrl.includes('strem.fun') ? 'https://web.stremio.com' : referer.replace(/\/$/, ''),
+          'Origin': targetUrl.includes('strem.fun') ? 'https://web.stremio.com' : 
+                    targetUrl.includes('betterflix.click') ? 'https://betterflix.click' : referer.replace(/\/$/, ''),
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
           'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',

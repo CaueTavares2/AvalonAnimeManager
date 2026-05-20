@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { jikanService } from './jikanService';
 import { createStremioExtension } from './stremioExtension';
+import { betterflixExtension } from './betterflixService';
 
 export interface Episode {
   id: string;
@@ -126,6 +127,7 @@ export const getStableVideosForEpisode = (epId: string): StreamSource[] => {
 };
 
 export const AVAILABLE_EXTENSIONS: AnimeExtension[] = [
+  betterflixExtension,
   createStremioExtension(
     'https://torrentio.strem.fun/providers=rutor,comando,bludv,micoleaodublado|language=portuguese|qualityfilter=unknown,cam,scr,other,480p/manifest.json',
     'Torrentio (P2P)'

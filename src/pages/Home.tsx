@@ -112,11 +112,27 @@ export default function Home() {
         if (!isMounted) return;
 
         if (trendingData) {
-          setTrending(trendingData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType)));
+          const trendingMapped = trendingData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType));
+          // Deduplicate
+          const seen = new Set();
+          const uniqueTrending = trendingMapped.filter((item: any) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+          setTrending(uniqueTrending);
         }
         
         if (popularData) {
-          setPopular(popularData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType)));
+          const popularMapped = popularData.map((item: JikanAnime) => mapJikanToMedia(item, mediaType));
+           // Deduplicate
+           const seen = new Set();
+           const uniquePopular = popularMapped.filter((item: any) => {
+             if (seen.has(item.id)) return false;
+             seen.add(item.id);
+             return true;
+           });
+          setPopular(uniquePopular);
         }
 
         const getRandomTitle = (arr: any[]) => {

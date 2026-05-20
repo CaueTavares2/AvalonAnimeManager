@@ -35,9 +35,19 @@ export default function SearchResults() {
         let data = json.data || [];
         if (filterType !== 'anime') {
            data = data.filter((a: any) => filterType === 'movie' ? a.type === 'Movie' : a.type === 'TV');
+         }
+
+        // Deduplicate results by mal_id to prevent key collisions
+        const uniqueData = [];
+        const seen = new Set();
+        for (const item of data) {
+          if (!seen.has(item.mal_id)) {
+            uniqueData.push(item);
+            seen.add(item.mal_id);
+          }
         }
 
-        setResults(data);
+        setResults(uniqueData);
         setTotalPages(json.pagination?.last_visible_page || 1);
       } catch (err) {
         console.error('Search page error:', err);

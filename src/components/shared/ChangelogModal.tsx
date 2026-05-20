@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.5.1',
+  version: '3.6.0',
   items: [
-    '🛡️ Manutenção de Fontes: Fontes externas (Stremio/Torrentio) colocadas em modo de espera devido a instabilidades de rede e bloqueios de CORS persistentes.',
-    '✨ Qualidade Visual Mantida: Todas as melhorias nos cards e filtro de animes TV/Movies continuam ativas.',
-    '🏗️ Nova Infraestrutura: Iniciamos a construção de um motor de scraping interno independente para o Avalon v4.',
-    '🔍 MyList Search: Busca interna na "Minha Lista" otimizada para listas grandes.'
+    '💎 Betterflix Integration: Nova fonte de alta qualidade adicionada! O catálogo do Betterflix agora é pesquisável e filtrado automaticamente para conteúdo de anime.',
+    '🎬 Fontes Restauradas: O sistema de addons Stremio foi reativado e estabilizado. Torrentio e outras fontes P2P voltam a operar normalmente.',
+    '⚙️ Testes Avançados: Função de teste de conexões expandida com feedback visual em tempo real e indicadores de saúde por provedor.',
+    '🛡️ Proxy Dinâmico: Novo motor de proxy com headers rotativos para garantir o carregamento de imagens e manifestos externos sem bloqueios.'
   ]
 };
 

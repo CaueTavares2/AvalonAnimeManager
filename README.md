@@ -1,6 +1,26 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.5.0)
+# 🌌 Avalon - Anime Tracking Saga (v3.6.6)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.6.6 (Protocol Unlock & Stability)
+
+- **🔓 Global Signal Bypass**: Remoção das restrições de Sandbox nas transmissões, garantindo que provedores externos (Betterflix, VidLink, Vidsrc) carreguem sem interrupções ou detecções de bloqueio.
+- **🔄 Core Player Sync**: Sincronização definitiva dos servidores Betterflix (S1, S2, S3) com o endpoint `/api/player`. Agora o sistema valida a integridade do link em tempo real para evitar telas de erro.
+- **🎧 Full Interactive Hub**: Substituição da fonte interativa para o modo `/watch`, restaurando o acesso total ao seletor nativo de áudio (Dublado/Legendado) e servidores secundários do Betterflix.
+- **🛠️ Failover Watchdog**: Melhoria no motor de failover automático para priorizar servidores de alta velocidade (Tier-1) antes de recorrer a instâncias globais.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.6.5 (Player Stability & Bypass)
+
+## 🚀 O que há de Novo na Versão v3.6.0 (The Betterflix Update)
+
+- **💎 Betterflix API Integration**: Adição do Betterflix como provedor oficial. O Avalon agora filtra inteligentemente o catálogo massivo do Betterflix para destacar animes e filmes relevantes, integrando-os ao ecossistema de tracking.
+- **🎬 Recovery & Stability**: Após um breve período de manutenção, todas as fontes Stremio (Torrentio) foram restauradas. O motor de comunicação com provedores externos foi blindado contra falhas de rede.
+- **⚙️ Advanced Diagnostic Suite**: A aba de fontes agora conta com um suíte de testes aprimorado, permitindo validar cada addon individualmente com logs de resposta e tempos de ping.
+- **🛡️ Secure Proxy Layer v3**: Melhorias no sistema de tunelamento de requisições para contornar restrições de domínios externos e garantir o stream.
 
 ---
 
@@ -172,7 +192,11 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.9] - Deploy & Routing Fix (Atual)
+### [v3.6.1] - Stability & Key Dedup (Atual)
+- **Duplicate Key Shield**: Deduplicação profunda em `AnimeDetails`, `SearchResults`, `Home` e `betterflixService`.
+- **Character Grid Fix**: Correção específica para duplicidades em IDs de personagens de animes com elencos extensos.
+
+### [v3.1.9] - Deploy & Routing Fix
 - **Correção de Tela Branca**: Reintrodução da `base` no Vite para suporte nativo ao GitHub Pages.
 - **PWA Manifest Sync**: Sincronização do `start_url` para evitar erros de cache offline.
 
