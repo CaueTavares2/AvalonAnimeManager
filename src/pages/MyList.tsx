@@ -1,5 +1,5 @@
 import { useAnimeList, AnimeStatus, UserAnime } from '../hooks/useAnimeList';
-import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw, Sparkles, Search } from 'lucide-react';
+import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw, Sparkles, Search, X } from 'lucide-react';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -51,6 +51,14 @@ export default function MyList() {
       const query = searchQuery.toLowerCase();
       result = result.filter(a => a.title.toLowerCase().includes(query));
     }
+
+    // Filter duplicates by id just in case
+    const seen = new Set();
+    result = result.filter(a => {
+      const duplicate = seen.has(a.id);
+      seen.add(a.id);
+      return !duplicate;
+    });
 
     if (sortConfig.key && sortConfig.direction !== 'normal') {
       result = [...result].sort((a, b) => {
