@@ -1,6 +1,13 @@
-# 🌌 Avalon - Anime Tracking Saga (v3.1.8)
+# 🌌 Avalon - Anime Tracking Saga (v3.1.9)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v3.1.9 (Deploy & Routing Fix)
+
+- **🌐 GitHub Pages Support**: Reativação da `base path` para garantir que o projeto carregue corretamente em subdomínios (ex: `/AvalonAnimeManager/`), resolvendo a tela branca.
+- **📱 PWA Scope Fix**: Ajuste de escopos do PWA para sincronia total com o novo sistema de rotas.
 
 ---
 
@@ -131,7 +138,11 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.1.8] - Final Assets Restoration (Atual)
+### [v3.1.9] - Deploy & Routing Fix (Atual)
+- **Correção de Tela Branca**: Reintrodução da `base` no Vite para suporte nativo ao GitHub Pages.
+- **PWA Manifest Sync**: Sincronização do `start_url` para evitar erros de cache offline.
+
+### [v3.1.8] - Final Assets Restoration
 - **Logos Restauradas**: Recarregamento das logos originais e fix de caminhos absolutos no Navbar e Footer.
 
 ### [v3.1.7] - Asset Restoration & Log Engine

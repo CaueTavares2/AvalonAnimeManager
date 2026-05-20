@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.1.8',
+  version: '3.1.9',
   items: [
-    'A Saga Avalon v3.1.8 — Final Assets Restoration',
-    '🖼️ Retorno das Origens: As logos .jpeg que você enviou foram restauradas e blindadas no diretório /public, eliminando qualquer risco de link quebrado.',
-    '⚡ Path Optimization: Ajustes nos caminhos absolutos do Navbar para que as imagens carreguem instantaneamente em qualquer rota do PWA.',
-    '📋 Histórico Consolidado: O README e o Changelog foram sincronizados para documentar a vitória contra os bugs de asset.'
+    'A Saga Avalon v3.1.9 — Deploy & Routing Fix',
+    '🌐 Compatibilidade GitHub Pages: Restaurado o "base path" necessário para eliminar a tela branca ao acessar via repositório.',
+    '⚡ PWA Update: Sincronização do start_url e escopos do PWA para carregamento offline estável.',
+    '🖼️ Asset Persistence: Garantia de que as logos carreguem corretamente mesmo em subdiretórios de hospedagem.'
   ]
 };
 
