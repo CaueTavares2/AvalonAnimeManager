@@ -284,39 +284,24 @@ export default function Settings() {
                   </div>
                 </div>
 
-                {/* Custom Manifest Input */}
-                <div className="p-6 bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-widest">Adicionar Addon do Stremio</h4>
-                    <span className="text-[8px] bg-brand/10 text-brand px-2 py-0.5 rounded-full font-black">NOVO</span>
+        {/* Maintenance Message */}
+                <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-3xl flex flex-col items-center text-center space-y-4 shadow-xl">
+                  <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="w-6 h-6 animate-pulse" />
                   </div>
-                  <div className="flex gap-3">
-                    <input 
-                      type="text" 
-                      placeholder="https://.../manifest.json"
-                      value={newManifestUrl}
-                      onChange={(e) => setNewManifestUrl(e.target.value)}
-                      className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-xs font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand"
-                    />
-                    <button 
-                      onClick={() => {
-                        if (newManifestUrl.trim().endsWith('manifest.json')) {
-                          addManifest(newManifestUrl.trim());
-                          setNewManifestUrl('');
-                        }
-                      }}
-                      className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand/20"
-                    >
-                      Adicionar
-                    </button>
+                  <div className="space-y-2 max-w-md">
+                    <h4 className="text-xs font-black text-amber-500 uppercase tracking-widest">Aviso de Indisponibilidade Temporária</h4>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                      O sistema de fontes externas está temporariamente offline para manutenção. Os provedores P2P e streaming estão passando por uma reestruturação para garantir maior segurança e velocidade.
+                    </p>
+                    <p className="text-[9px] text-gray-500 font-semibold leading-relaxed">
+                      Desativamos as integrações instáveis por precaução. Estamos trabalhando em uma nova infraestrutura de conexões dedicada.
+                    </p>
                   </div>
-                  <p className="text-[8px] text-gray-500 font-medium">
-                    * Avalon suporta addons do Stremio (arquivos manifest.json). Para torrents P2P, recomendamos usar uma configuração com Real-Debrid no Torrentio para evitar bloqueios do navegador.
-                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
-                  {[...AVAILABLE_EXTENSIONS, ...manifests.map(m => createStremioExtension(m))].map((ext) => {
+                <div className="grid grid-cols-1 gap-4 opacity-40 pointer-events-none grayscale">
+                  {AVAILABLE_EXTENSIONS.map((ext) => {
                     const isInstalled = installed.includes(ext.id);
                     const isCustom = manifests.includes(AVAILABLE_EXTENSIONS.find(a => a.id === ext.id) ? '' : (ext as any).manifestUrl || ''); // Logic helper
                     const manifestUrl = manifests.find(m => `stremio-${btoa(m).slice(0, 10)}` === ext.id);

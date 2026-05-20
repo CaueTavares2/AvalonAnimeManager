@@ -4,16 +4,15 @@ Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o ras
 
 ---
 
-## 🚀 O que há de Novo na Versão v3.5.0 (P2P Hybrid & Connectivity)
+## 🚀 O que há de Novo na Versão v3.5.1 (Maintenance & Quality Control)
 
-- **🎬 Enhanced Torrentio Integration**: Suporte otimizado para o Torrentio. Quando o addon retorna um Torrent direto (infoHash) que o navegador não consegue tocar, o Avalon agora roteia automaticamente para o gateway **Webtor.io**, permitindo o streaming instantâneo em nuvem.
-- **🔗 Hybrid ID Mapping Engine**: Sistema aprimorado que vincula suas animes do MyAnimeList aos universos do **Kitsu** e **IMDb** simultaneamente, garantindo compatibilidade total com os catálogos do Stremio.
-- **⚙️ Config Connectivity Tester**: Nova ferramenta integrada nas configurações para testar a saúde de cada addon instalado, com indicadores visuais de status (Sucesso/Aviso).
-- **🛡️ Proxy Mastery**: Atualização do motor de proxy para aceitar headers dinâmicos, reduzindo erros 403 e garantindo anonimato nas requisições de stream.
+- **🛡️ Shielded Sources**: Fontes externas em manutenção para garantir a estabilidade do ecossistema. O aviso de indisponibilidade foi restaurado enquanto preparamos o motor v4.
+- **🎨 Visual Master Refresh**: Os novos cards de mídia com Glassmorphism, badges "PREMIUM" e transições cinematográficas continuam ativos e performáticos.
+- **🔍 Search Precision**: Sistema de busca interna na "Minha Lista" e filtro global de qualidade (TV/Movies) permanecem funcionais.
 
 ---
 
-## 🚀 O que há de Novo na Versão v3.4.0 (The Stremio Update)
+## 🚀 O que há de Novo na Versão v3.5.0 (P2P Hybrid & Connectivity)
 
 - **🎬 Stremio Addon Engine**: Implementação de suporte nativo ao protocolo Stremio. O Torrentio agora é uma fonte selecionável, trazendo conteúdo P2P dublado e legendado diretamente para o player do Avalon.
 - **🔗 Intelligent IMDb Mapping**: Sistema de tradução de IDs que mapeia automaticamente animes do MyAnimeList para IDs IMDb, permitindo compatibilidade universal com addons cinematográficos.

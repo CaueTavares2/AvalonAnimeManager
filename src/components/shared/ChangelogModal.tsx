@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.5.0',
+  version: '3.5.1',
   items: [
-    '🎬 Torrentio Web-Ready: Suporte total para streaming via navegador. Torrents P2P agora abrem via gateway Webtor.io quando links diretos não estão disponíveis.',
-    '🔗 Multiplexador de IDs: Novo sistema de mapeamento híbrido (MAL/Kitsu/IMDb) que aumenta drasticamente a taxa de sucesso ao encontrar animes no Torrentio.',
-    '⚙️ Central de Testes: Adicionado botão "Testar Conexões" nas configurações para verificar instantaneamente a saúde de todas as fontes instaladas.',
-    '🛡️ Proxy de Elite: Motor de proxy refinado com headers inteligentes para evitar bloqueios (403) de provedores externos como Stremio/Torrentio.'
+    '🛡️ Manutenção de Fontes: Fontes externas (Stremio/Torrentio) colocadas em modo de espera devido a instabilidades de rede e bloqueios de CORS persistentes.',
+    '✨ Qualidade Visual Mantida: Todas as melhorias nos cards e filtro de animes TV/Movies continuam ativas.',
+    '🏗️ Nova Infraestrutura: Iniciamos a construção de um motor de scraping interno independente para o Avalon v4.',
+    '🔍 MyList Search: Busca interna na "Minha Lista" otimizada para listas grandes.'
   ]
 };
 

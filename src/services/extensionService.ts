@@ -145,7 +145,7 @@ interface ExtensionStore {
 export const useExtensions = create<ExtensionStore>()(
   persist(
     (set, get) => ({
-      installed: ['stremio-dG9ycmVudGlv'], // Auto-install Torrentio for the user as requested
+      installed: [], 
       manifests: [],
       install: (id) => set((state) => ({ installed: [...new Set([...state.installed, id])] })),
       uninstall: (id) => set((state) => ({ installed: state.installed.filter(ext => ext !== id) })),
