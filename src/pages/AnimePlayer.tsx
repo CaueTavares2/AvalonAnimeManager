@@ -4,6 +4,7 @@ import { ChevronLeft, Play, LayoutGrid, Settings, AlertCircle, Share2, Maximize2
 import ReactPlayer from 'react-player';
 import { useExtensions, AnimeExtension, Episode, StreamSource, AVAILABLE_EXTENSIONS } from '../services/extensionService';
 import { jikanService } from '../services/jikanService';
+import { aniListService } from '../services/aniListService';
 import { mappingService } from '../services/mappingService';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -137,6 +138,18 @@ export default function AnimePlayer() {
             totalEpisodesCount = data.episodes || 0;
             releaseYear = data.year || 0;
             setAnimeTitle(formatTitle(data));
+            
+            // Limit episode count for currently airing anime
+            if (data.status?.toLowerCase().includes('airing')) {
+              try {
+                const schedule = await aniListService.getAiringScheduleByMalId(Number(id));
+                if (schedule?.nextAiringEpisode) {
+                  totalEpisodesCount = schedule.nextAiringEpisode.episode - 1;
+                }
+              } catch (e) {
+                console.warn('Failed to fetch schedule for episode bounding', e);
+              }
+            }
           } catch (e) {
             console.warn('Failed to fetch anime title for mapping fallback', e);
           }

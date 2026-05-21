@@ -237,20 +237,28 @@ export default function AnimeDetails() {
         try {
           const charResp = await fetch(`https://api.jikan.moe/v4/${finalType.toLowerCase()}/${id}/characters`);
           const charData = await charResp.json();
-          const mainCharacters = charData.data?.filter((c: MediaCharacter) => c.role === 'Main') || [];
+          const allChars = charData.data || [];
+          
+          allChars.sort((a: any, b: any) => {
+            // Priority 1: Main characters first
+            if (a.role === 'Main' && b.role !== 'Main') return -1;
+            if (a.role !== 'Main' && b.role === 'Main') return 1;
+            // Priority 2: Popularity (favorites)
+            return (b.favorites || 0) - (a.favorites || 0);
+          });
           
           // Deduplicate by mal_id to prevent key collisions
           const uniqueChars: MediaCharacter[] = [];
           const seenCharIds = new Set<number>();
           
-          for (const char of mainCharacters) {
+          for (const char of allChars) {
             if (!seenCharIds.has(char.character.mal_id)) {
               uniqueChars.push(char);
               seenCharIds.add(char.character.mal_id);
             }
           }
           
-          setCharacters(uniqueChars.slice(0, 12));
+          setCharacters(uniqueChars.slice(0, 15));
         } catch (e) {
           console.error("Failed to fetch characters:", e);
         }
@@ -444,7 +452,9 @@ export default function AnimeDetails() {
                   {anime.type === 'ANIME' ? 'Episodes' : 'Chapters'}
                 </span>
                 <span className="text-[var(--color-text)] font-bold">
-                  {anime.type === 'ANIME' ? anime.episodes : anime.chapters || 'Unknown'}
+                  {anime.type === 'ANIME' 
+                    ? (airingSchedule?.nextAiringEpisode ? `${airingSchedule.nextAiringEpisode.episode - 1} / ${anime.episodes || '?'}` : (anime.episodes || 'Unknown')) 
+                    : (anime.chapters || 'Unknown')}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
@@ -640,7 +650,7 @@ export default function AnimeDetails() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-brand" /> Personagens Principais
+                  <Flame className="w-5 h-5 text-brand" /> Elenco & Batalha
                 </h3>
                 <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Combate e Afinidade</span>
               </div>
