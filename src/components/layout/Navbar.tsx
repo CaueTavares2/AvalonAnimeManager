@@ -128,7 +128,7 @@ export default function Navbar() {
                     setSearch('');
                   }
                 }}
-                placeholder="Pesquisar animes..."
+                placeholder="Pesquisar animes ou mangás..."
                 className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
               />
             </div>

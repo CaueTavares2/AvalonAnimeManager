@@ -1,6 +1,16 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.5.0 - Luxury Design & Fluid Kinetic Tab Switch)
+# 🌌 Avalon - Anime Tracking Saga (v4.5.1 - Manga Search Correction)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🎨 O que há de Novo na Versão v4.5.1 (Manga Search Correction)
+
+Nesta atualização, corrigimos e otimizamos o motor de busca global para integrar e libertar a pesquisa de mangás diretamente pela interface unificada:
+
+- **📚 Busca Unificada e Corrigida de Mangás**: Sanamos a limitação que impedia a pesquisa de mangás. Adicionamos a aba nativa de filtro para **"Mangás"** nos resultados de busca global.
+- **🌐 Roteamento e Icons Inteligentes**: Ao buscar por mangás, o sistema agora redireciona com precisão o usuário para a página específica de detalhes ou leitura de mangás (`/manga/:id`), ao invés de forçar o caminho de anime. Adicionamos o ícone de leitura `BookOpen` dinâmico em cards de mangás e refinamos as datas originais de publicação exibindo o ano correto (`published.prop.from.year`).
+- **🔍 Placeholder de Busca Expandido**: A barra de pesquisa do cabeçalho foi sutilmente recalibrada para `"Pesquisar animes ou mangás..."`, promovendo maior clareza para navegação no acervo literário.
 
 ---
 
