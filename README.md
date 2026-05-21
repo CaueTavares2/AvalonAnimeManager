@@ -1,6 +1,17 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.3.4 - Otaku Roulette Era)
+# 🌌 Avalon - Anime Tracking Saga (v4.3.5 - Shield & Stream Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🛡️ O que há de Novo na Versão v4.3.5 (Shield & Stream Era)
+
+- **🛡️ Escudo Anti-Anúncios Inteligente ("Smart Guard")**: Upgrade profundo no motor de filtragem de anúncios dos iframes e players de streaming. Anteriormente, um sandbox estrito bloqueava todas as requisições geradoras de popups/novas abas indiscriminadamente, o que fazia com que servidores de vídeo modernos (como Betterflix S1/S2/S3, VidLink e Vidsrc) tivessem comportamentos de travamento, loops infinitos de sintonia ou disparassem telas de **Erro 404** e erros de carregamento na reprodução ao falhar tentativas de abrir scripts de publicidade ou telemetria em plano secundário.
+- **⚓ Isolamento Seguro Sem Perda de Sinal**: O novo modo **Smart Guard** (Recomendado) permite que os scripts das fontes rodem e gerenciem conexões de forma segura, inclusive liberando a simulação de popups e novos contexts (`allow-popups` e `allow-popups-to-escape-sandbox`), mas **remove estritamente a permissão de redirecionamento da página principal (`allow-top-navigation`)**. Suas sintonizações e episódios agora carregam 100% livres de Erro 404, enquanto mantemos o Avalon e sua navegação principal totalmente blindados de redirects!
+- **🎛️ Painel Seletor de Níveis do Escudo**: Integrado um seletor visual de alta fidelidade com 3 botões rápidos acoplados diretamente no painel de controle do player de vídeo, permitindo a alternância imediata dependendo da fonte escolhida:
+  - 🛡️ **Smart Guard (Recomendado)**: Compatibilidade máxima, performance limpa, evita 100% dos erros 404 e protege sua aba ativa contra sequestros de redirecionamento.
+  - ⚡ **Estrito (Strict)**: Bloqueio absoluto agressivo (pode ocasionar tela 404 em servidores sensíveis com scripts anti-sandbox).
+  - 🧼 **Desativado (Off)**: Sem restrições de sandbox, reproduzindo no player de forma nativa e sem intervenção.
 
 ---
 

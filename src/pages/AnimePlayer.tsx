@@ -35,8 +35,14 @@ export default function AnimePlayer() {
   const [episodeSearch, setEpisodeSearch] = useState('');
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [adShield, setAdShield] = useState<boolean>(() => {
-    return localStorage.getItem('ad_shield_active') !== 'false';
+  const [adShieldMode, setAdShieldMode] = useState<'smart' | 'strict' | 'off'>(() => {
+    const saved = localStorage.getItem('ad_shield_mode');
+    if (saved === 'smart' || saved === 'strict' || saved === 'off') {
+      return saved;
+    }
+    const legacy = localStorage.getItem('ad_shield_active');
+    if (legacy === 'false') return 'off';
+    return 'smart'; // Default to 'smart' to completely bypass 404 errors!
   });
   const [clickShieldActive, setClickShieldActive] = useState(false);
 
@@ -350,7 +356,13 @@ export default function AnimePlayer() {
                 className="w-full h-full border-0 absolute inset-0" 
                 allowFullScreen 
                 allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
-                sandbox={adShield ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock" : undefined}
+                sandbox={
+                  adShieldMode === 'smart' 
+                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox" 
+                    : adShieldMode === 'strict' 
+                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock" 
+                    : undefined
+                }
               />
             ) : (
                 <div className={cn("w-full h-full transition-opacity duration-500", !stream || !isReady ? "opacity-0" : "opacity-100")}>
@@ -456,33 +468,76 @@ export default function AnimePlayer() {
               </div>
 
               {/* Guardião Anti-Anúncios (Ad Shield Active Control) */}
-              <div className="flex items-center justify-between pt-3 border-t border-white/5 mt-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck size={14} className={cn("transition-colors", adShield ? "text-brand" : "text-gray-500")} />
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] block">
-                      Escudo Anti-Anúncios
-                    </span>
-                    <span className="text-[8px] text-gray-500 uppercase tracking-widest block -mt-0.5">
-                      Bloqueia popups, novas abas e redirecionamentos invasivos
-                    </span>
+              <div className="pt-3 border-t border-white/5 mt-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={14} className={cn("transition-colors", adShieldMode !== 'off' ? "text-brand" : "text-gray-500")} />
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] block">
+                        Escudo Anti-Anúncios (Gold Guard)
+                      </span>
+                      <span className="text-[8px] text-gray-500 uppercase tracking-widest block -mt-0.5">
+                        Defende o player contra redirecionamentos, popups e abas intrusivas
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    const newValue = !adShield;
-                    setAdShield(newValue);
-                    localStorage.setItem("ad_shield_active", String(newValue));
-                  }}
-                  className={cn(
-                    "px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border",
-                    adShield 
-                      ? "bg-brand/10 border-brand/20 text-brand hover:bg-brand/20" 
-                      : "bg-white/5 border-white/5 text-gray-500 hover:text-gray-400 hover:bg-white/10"
-                  )}
-                >
-                  {adShield ? "ATIVADO" : "DESATIVADO"}
-                </button>
+
+                <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#050505]/40 rounded-xl border border-white/5">
+                  {[
+                    { 
+                      mode: 'smart' as const, 
+                      label: 'Smart Guard', 
+                      desc: 'Evita Erro 404', 
+                      color: 'text-brand' 
+                    },
+                    { 
+                      mode: 'strict' as const, 
+                      label: 'Estrito', 
+                      desc: 'Máximo Bloqueio', 
+                      color: 'text-yellow-500' 
+                    },
+                    { 
+                      mode: 'off' as const, 
+                      label: 'Desativado', 
+                      desc: 'Sem Bloqueio', 
+                      color: 'text-gray-400' 
+                    }
+                  ].map(opt => (
+                    <button
+                      key={opt.mode}
+                      type="button"
+                      onClick={() => {
+                        setAdShieldMode(opt.mode);
+                        localStorage.setItem("ad_shield_mode", opt.mode);
+                        localStorage.setItem("ad_shield_active", String(opt.mode !== 'off'));
+                      }}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-2 rounded-lg transition-all text-center border cursor-pointer",
+                        adShieldMode === opt.mode
+                          ? opt.mode === 'smart' 
+                            ? "bg-brand border-brand text-white shadow-md shadow-brand/10 md:scale-[1.01]"
+                            : opt.mode === 'strict'
+                            ? "bg-yellow-500 border-yellow-500 text-black shadow-md shadow-yellow-500/10 md:scale-[1.01]"
+                            : "bg-white/10 border-white/25 text-white md:scale-[1.01]"
+                          : `bg-transparent border-transparent text-gray-400 hover:text-white`
+                      )}
+                    >
+                      <span className="text-[8.5px] font-black uppercase tracking-wider">
+                        {opt.label}
+                      </span>
+                      <span className={cn("text-[7px] font-bold uppercase tracking-widest mt-0.5 opacity-75")}>
+                        {opt.desc}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {adShieldMode === 'strict' && (
+                  <p className="text-[8px] text-yellow-500 font-medium px-2.5 py-2 bg-yellow-500/5 rounded-xl border border-yellow-500/15 animate-pulse leading-snug">
+                    ⚠️ Atenção: Algumas fontes (como Betterflix e VidLink) têm scripts anti-privacidade que detectam o bloqueio estrito e exibem Erro 404 ou fecham a tela. Altere para o modo &quot;Smart Guard&quot; para assistir sem erros.
+                  </p>
+                )}
               </div>
             </div>
           )}
