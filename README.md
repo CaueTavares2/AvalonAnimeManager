@@ -1,6 +1,15 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.3.5 - Shield & Stream Era)
+# 🌌 Avalon - Anime Tracking Saga (v4.3.6 - Dynamic Airing & Liberation Update)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🛡️ O que há de Novo na Versão v4.3.6 (Dynamic Airing & Liberation Update)
+
+- **⏰ Cronograma de Próximos Episódios e Lançamento Real-Time**: Nova integração sênior combinando Jikan API e AniList GraphQL para exibir contagem regressiva viva e data/hora do lançamento internacional dos novos episódios em tempo real direto na página de detalhes da obra.
+- **🎛️ Barra de Servidores e Escudo Compacta**: Refatoração visual na página do Reprodutor. A seleção de servidores e o Escudo de Anúncios agora residem em um único painel minimalista com botões enxutos e um badge de clique cíclico que alterna o nível do Escudo com um clique.
+- **⚙️ Sintonizador de Mídia Colapsável**: O painel do Tradutor de Identidades de Mídia foi simplificado para uma única linha de status ativa por padrão. Os cliques no link expandem horizontalmente as opções de calibragem TMDB sob demanda, reduzindo a poluição informativa em 85%.
+- **🔓 Limitador Dinâmico de Contagem de Episódios**: Caso um anime em lançamento receba episódios de surpresa (ou que o MyAnimeList atrase em sincronizar o progresso de novos episódios), adicionamos dois gatilhos interativos (**"+ 12 Eps"** e **"Grade 100"**), permitindo ao usuário estender o tamanho do catálogo no ato de forma limpa e resiliente.
 
 ---
 
@@ -280,7 +289,12 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v3.6.1] - Stability & Key Dedup (Atual)
+### [v4.3.6] - Dynamic Airing & Liberation (Atual)
+- **Ajuste Próximo Episódio**: Integração do cronômetro de lançamentos reais do AniList em conjunção ao Jikan no `AnimeDetails`.
+- **Simplificação de Modos**: Redução monumental do ruído visual e simplificação inteligente da seleção de servidores e do painel tradutor TMDB no `AnimePlayer`.
+- **Limitadores Eliminados**: Bypass dinâmico de limites oficiais sincronizados de episódios nas janelas de exibição através dos botões "+ 12 Eps" e "Grade 100".
+
+### [v3.6.1] - Stability & Key Dedup
 - **Duplicate Key Shield**: Deduplicação profunda em `AnimeDetails`, `SearchResults`, `Home` e `betterflixService`.
 - **Character Grid Fix**: Correção específica para duplicidades em IDs de personagens de animes com elencos extensos.
 

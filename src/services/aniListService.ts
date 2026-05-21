@@ -170,5 +170,38 @@ export const aniListService = {
       console.error("AniList Fetch Stats Error:", error);
       return null;
     }
+  },
+
+  getAiringScheduleByMalId: async (idMal: number, type: 'ANIME' | 'MANGA' = 'ANIME') => {
+    const query = `
+      query ($idMal: Int, $type: MediaType) {
+        Media (idMal: $idMal, type: $type) {
+          status
+          nextAiringEpisode {
+            airingAt
+            timeUntilAiring
+            episode
+          }
+        }
+      }
+    `;
+
+    const variables = { idMal, type };
+
+    try {
+      const response = await fetch(ANILIST_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ query, variables })
+      });
+      const data = await response.json();
+      return data.data?.Media || null;
+    } catch (error) {
+      console.error("AniList Fetch Airing Schedule Error:", error);
+      return null;
+    }
   }
 };

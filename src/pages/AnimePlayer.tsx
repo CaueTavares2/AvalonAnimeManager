@@ -45,6 +45,7 @@ export default function AnimePlayer() {
     return 'smart'; // Default to 'smart' to completely bypass 404 errors!
   });
   const [clickShieldActive, setClickShieldActive] = useState(false);
+  const [customEpisodesCount, setCustomEpisodesCount] = useState<number | null>(null);
 
   // States for the unified Jikan/Anilist-to-TMDB ID translator & tuning console
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -189,12 +190,13 @@ export default function AnimePlayer() {
           setActiveMapping(null);
         }
 
-        const eps = await selectedExt.getEpisodes(finalId, totalEpisodesCount);
+        const targetCount = customEpisodesCount !== null ? customEpisodesCount : (totalEpisodesCount || 100);
+        const eps = await selectedExt.getEpisodes(finalId, targetCount);
         const sortedEps = [...eps].sort((a, b) => a.number - b.number);
         setEpisodes(sortedEps);
         
         if (sortedEps.length > 0) {
-          setCurrentEpisode(sortedEps[0]);
+          setCurrentEpisode(prev => prev || sortedEps[0]);
         }
       } catch (e: any) {
         setError(e.message || "Erro ao carregar episódios da fonte selecionada.");
@@ -426,270 +428,215 @@ export default function AnimePlayer() {
                 </button>
               </div>
             )}
-            
-            {/* Quick Controls overlay? */}
           </div>
 
           {/* Server Selector / Alternador de Servidor */}
-          {streams.length > 1 && (
-            <div className="bg-[var(--color-card)] p-5 rounded-3xl border border-[var(--color-border)] space-y-3 shadow-xl">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-brand flex items-center gap-2">
-                  <span className="w-2 h-2 bg-brand rounded-full animate-pulse" />
-                  Servidores de Streaming
+          {streams.length > 0 && (
+            <div className="bg-[var(--color-card)] p-4 rounded-3xl border border-[var(--color-border)] space-y-3.5 shadow-xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse" />
+                  Servidores
                 </span>
-                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/10">
-                  Auto-Failover Ativo
-                </span>
+                
+                {/* Cycles Shield Mode elegantly on click */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdShieldMode(prev => {
+                      const next = prev === 'smart' ? 'strict' : prev === 'strict' ? 'off' : 'smart';
+                      localStorage.setItem("ad_shield_mode", next);
+                      localStorage.setItem("ad_shield_active", String(next !== 'off'));
+                      return next;
+                    });
+                  }}
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
+                    adShieldMode === 'smart' ? "bg-brand/10 border-brand/20 text-brand font-black" :
+                    adShieldMode === 'strict' ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 font-bold" :
+                    "bg-white/5 border-white/5 text-gray-500 hover:text-white"
+                  )}
+                  title="Clique para alternar o nível do Escudo de Anúncios"
+                >
+                  <ShieldCheck size={10} />
+                  Escudo: {adShieldMode === 'smart' ? 'Smart Guard' : adShieldMode === 'strict' ? 'Estrito' : 'Off'}
+                </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                 {streams.map((s, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => {
                       setStreamIndex(idx);
                       setIsReady(false);
                       setStreamError(null);
                     }}
                     className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border",
+                      "flex items-center justify-between px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border",
                       streamIndex === idx
-                        ? "bg-brand/10 border-brand/30 text-brand scale-[1.01]"
-                        : "bg-black/20 border-transparent text-gray-500 hover:border-white/10 hover:text-gray-300"
+                        ? "bg-brand/10 border-brand/20 text-brand"
+                        : "bg-black/20 border-transparent text-gray-400 hover:border-white/10 hover:text-gray-300"
                     )}
                   >
-                    <div className="flex items-center gap-2 truncate">
+                    <div className="flex items-center gap-1.5 truncate">
                       <span>{idx === 0 ? "⚡" : idx === 1 ? "📺" : "🔗"}</span>
-                      <span className="truncate">{s.quality || `Servidor ${idx + 1}`}</span>
+                      <span className="truncate">{s.quality || `Sinal ${idx + 1}`}</span>
                     </div>
-                    {streamIndex === idx && <div className="w-1.5 h-1.5 bg-brand rounded-full shrink-0" />}
+                    {streamIndex === idx && <div className="w-1.5 h-1.5 bg-brand rounded-full shrink-0 animate-pulse" />}
                   </button>
                 ))}
               </div>
 
-              {/* Guardião Anti-Anúncios (Ad Shield Active Control) */}
-              <div className="pt-3 border-t border-white/5 mt-3 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck size={14} className={cn("transition-colors", adShieldMode !== 'off' ? "text-brand" : "text-gray-500")} />
-                    <div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] block">
-                        Escudo Anti-Anúncios (Gold Guard)
-                      </span>
-                      <span className="text-[8px] text-gray-500 uppercase tracking-widest block -mt-0.5">
-                        Defende o player contra redirecionamentos, popups e abas intrusivas
-                      </span>
-                    </div>
-                  </div>
+              {adShieldMode === 'strict' && (
+                <div className="text-[8px] text-yellow-500 bg-yellow-500/5 px-2.5 py-1.5 rounded-xl border border-yellow-500/10 leading-snug">
+                  ⚠️ Algumas fontes (Betterflix, VidLink) requerem <strong>Smart Guard</strong> para evitar erros de 404.
                 </div>
-
-                <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#050505]/40 rounded-xl border border-white/5">
-                  {[
-                    { 
-                      mode: 'smart' as const, 
-                      label: 'Smart Guard', 
-                      desc: 'Evita Erro 404', 
-                      color: 'text-brand' 
-                    },
-                    { 
-                      mode: 'strict' as const, 
-                      label: 'Estrito', 
-                      desc: 'Máximo Bloqueio', 
-                      color: 'text-yellow-500' 
-                    },
-                    { 
-                      mode: 'off' as const, 
-                      label: 'Desativado', 
-                      desc: 'Sem Bloqueio', 
-                      color: 'text-gray-400' 
-                    }
-                  ].map(opt => (
-                    <button
-                      key={opt.mode}
-                      type="button"
-                      onClick={() => {
-                        setAdShieldMode(opt.mode);
-                        localStorage.setItem("ad_shield_mode", opt.mode);
-                        localStorage.setItem("ad_shield_active", String(opt.mode !== 'off'));
-                      }}
-                      className={cn(
-                        "flex flex-col items-center justify-center p-2 rounded-lg transition-all text-center border cursor-pointer",
-                        adShieldMode === opt.mode
-                          ? opt.mode === 'smart' 
-                            ? "bg-brand border-brand text-white shadow-md shadow-brand/10 md:scale-[1.01]"
-                            : opt.mode === 'strict'
-                            ? "bg-yellow-500 border-yellow-500 text-black shadow-md shadow-yellow-500/10 md:scale-[1.01]"
-                            : "bg-white/10 border-white/25 text-white md:scale-[1.01]"
-                          : `bg-transparent border-transparent text-gray-400 hover:text-white`
-                      )}
-                    >
-                      <span className="text-[8.5px] font-black uppercase tracking-wider">
-                        {opt.label}
-                      </span>
-                      <span className={cn("text-[7px] font-bold uppercase tracking-widest mt-0.5 opacity-75")}>
-                        {opt.desc}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                {adShieldMode === 'strict' && (
-                  <p className="text-[8px] text-yellow-500 font-medium px-2.5 py-2 bg-yellow-500/5 rounded-xl border border-yellow-500/15 animate-pulse leading-snug">
-                    ⚠️ Atenção: Algumas fontes (como Betterflix e VidLink) têm scripts anti-privacidade que detectam o bloqueio estrito e exibem Erro 404 ou fecham a tela. Altere para o modo &quot;Smart Guard&quot; para assistir sem erros.
-                  </p>
-                )}
-              </div>
+              )}
             </div>
           )}
 
           {/* Universal Jikan/AniList to TMDB Translation Alignment Panel (Sintonia de IDs) */}
           {activeMapping && (
-            <div className="bg-[var(--color-card)] p-5 rounded-3xl border border-[var(--color-border)] space-y-4 shadow-xl">
+            <div className="bg-[var(--color-card)] p-4 rounded-3xl border border-[var(--color-border)] space-y-3 shadow-xl">
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-ping" />
-                    Tradutor de Identidades de Mídia
-                  </h3>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-widest block mt-0.5">
-                    Converte IDs do MyAnimeList (Jikan) / AniList para o catálogo original TMDB do Player
-                  </span>
+                <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-bold">
+                  <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
+                  <span>Sinal de Mídia (TMDB)</span>
                 </div>
-                {/* Visual badge showing mapping resolution source */}
-                <span className={cn(
-                  "text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-current",
-                  activeMapping.source === 'override' ? "text-yellow-500 bg-yellow-500/10" :
-                  activeMapping.source === 'offline' ? "text-blue-500 bg-blue-500/10" :
-                  activeMapping.source === 'cache' ? "text-emerald-500 bg-emerald-500/10" :
-                  activeMapping.source === 'anizip' ? "text-purple-500 bg-purple-500/10" :
-                  "text-gray-400 bg-gray-500/10"
-                )}>
-                  {activeMapping.source === 'override' ? 'Ajuste Manual' :
-                   activeMapping.source === 'offline' ? 'Avalon Index' :
-                   activeMapping.source === 'cache' ? 'Sinal em Cache' :
-                   activeMapping.source === 'anizip' ? 'Cloud AniZip' :
-                   'Busca TMDB'}
-                </span>
-              </div>
-
-              {/* Mapping diagnostics row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-black/20 p-3 rounded-2xl border border-white/5 text-[9px]">
-                <div>
-                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">MyAnimeList ID</span>
-                  <span className="font-mono text-gray-300 font-bold">{activeMapping.mal_id}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">TMDB ID Alvo</span>
-                  <span className="font-mono text-gray-300 font-bold">{activeMapping.tmdb_id}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">Temporada</span>
-                  <span className="font-mono text-gray-300 font-bold">S{activeMapping.season}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">Compensador (Offset)</span>
-                  <span className="font-mono text-gray-300 font-bold">{activeMapping.episode_offset > 0 ? `+${activeMapping.episode_offset}` : activeMapping.episode_offset} eps</span>
-                </div>
-              </div>
-
-              {/* Tuning Panel controller */}
-              <div className="flex flex-col space-y-3">
+                
                 <button
+                  type="button"
                   onClick={() => setShowTuningPanel(!showTuningPanel)}
-                  className="w-full flex items-center justify-between text-xs text-brand hover:text-brand-light transition-colors font-bold px-1"
+                  className="text-brand hover:underline font-black uppercase tracking-wider text-[8px]"
                 >
-                  <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
-                    ⚙️ {showTuningPanel ? 'Ocultar Sintonia Fina' : 'Sintonizar Canal Manualmente (Calibrar ID ou Temporada)'}
-                  </span>
-                  <span>{showTuningPanel ? '▲' : '▼'}</span>
+                  {showTuningPanel ? 'Ocultar Canais' : 'Sintonizar Canal'}
                 </button>
+              </div>
 
-                {showTuningPanel && (
-                  <div className="space-y-4 pt-2 border-t border-white/5 animate-fadeIn">
-                    <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
-                      Se o player estiver exibindo o anime errado, mude o TMDB ID ou Temporada abaixo. O Avalon lembrará desta sincronização sem comprometer outras mídias.
-                    </p>
+              {!showTuningPanel ? (
+                <div className="flex items-center justify-between bg-black/10 p-2 rounded-xl border border-white/5 text-[9px] text-gray-400 font-bold">
+                  <div className="flex items-center gap-2.5">
+                    <span>MAL: <strong className="text-gray-300 font-mono font-black">{activeMapping.mal_id}</strong></span>
+                    <span className="text-white/10">|</span>
+                    <span>TMDB: <strong className="text-gray-300 font-mono font-black">{activeMapping.tmdb_id}</strong></span>
+                    <span className="text-white/10">|</span>
+                    <span>S{activeMapping.season} • {activeMapping.episode_offset > 0 ? `+${activeMapping.episode_offset}` : activeMapping.episode_offset} eps</span>
+                  </div>
+                  <span className={cn(
+                    "text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border border-current font-mono",
+                    activeMapping.source === 'override' ? "text-yellow-500 border-yellow-500/20" : 'text-gray-500 border-[var(--color-border)]'
+                  )}>
+                    {activeMapping.source === 'override' ? 'Manual' : 'Automático'}
+                  </span>
+                </div>
+              ) : (
+                <div className="space-y-3 animate-fadeIn">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-black/20 p-2 rounded-xl border border-white/5 text-[9px]">
+                    <div>
+                      <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">MAL ID</span>
+                      <span className="font-mono text-gray-300 font-bold">{activeMapping.mal_id}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">TMDB ID</span>
+                      <span className="font-mono text-gray-300 font-bold">{activeMapping.tmdb_id}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">Temporada</span>
+                      <span className="font-mono text-gray-300 font-bold">S{activeMapping.season}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block uppercase font-bold tracking-wider mb-0.5">Offset</span>
+                      <span className="font-mono text-gray-300 font-bold">{activeMapping.episode_offset > 0 ? `+${activeMapping.episode_offset}` : activeMapping.episode_offset} eps</span>
+                    </div>
+                  </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <div>
-                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">TMDB ID Alvo</label>
-                        <input
-                          type="text"
-                          value={tuningTmdbId}
-                          onChange={(e) => setTuningTmdbId(e.target.value.replace(/\D/g, ''))}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
-                          placeholder="Ex: 94605"
-                        />
-                      </div>
+                  <p className="text-[8px] text-gray-400 leading-normal">
+                    Se o player estiver exibindo o anime errado, mude o TMDB ID ou Temporada abaixo. O Avalon lembrará desta sincronização.
+                  </p>
 
-                      <div>
-                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">Mídia</label>
-                        <select
-                          value={tuningType}
-                          onChange={(e) => setTuningType(e.target.value as 'tv' | 'movie')}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-xs font-sans text-gray-300 focus:outline-none focus:border-brand"
-                        >
-                          <option value="tv">Série (TV)</option>
-                          <option value="movie">Filme</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">Temporada TMDB</label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={tuningSeason}
-                          onChange={(e) => setTuningSeason(Number(e.target.value))}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-[8px] font-black uppercase text-gray-500 block mb-1.5">Offset de Eps</label>
-                        <input
-                          type="number"
-                          value={tuningOffset}
-                          onChange={(e) => setTuningOffset(Number(e.target.value))}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
-                        />
-                      </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div>
+                      <label className="text-[7.5px] font-black uppercase text-gray-500 block mb-1">TMDB ID Alvo</label>
+                      <input
+                        type="text"
+                        value={tuningTmdbId}
+                        onChange={(e) => setTuningTmdbId(e.target.value.replace(/\D/g, ''))}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-1.5 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
+                        placeholder="Ex: 94605"
+                      />
                     </div>
 
-                    <div className="flex gap-2 justify-end pt-2">
-                      {activeMapping.source === 'override' && (
-                        <button
-                          onClick={() => {
-                            mappingService.removeOverride(activeMapping.mal_id);
-                            setShowTuningPanel(false);
-                            setReloadTrigger(prev => prev + 1);
-                          }}
-                          className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
-                        >
-                          Restaurar Padrão
-                        </button>
-                      )}
+                    <div>
+                      <label className="text-[7.5px] font-black uppercase text-gray-500 block mb-1">Mídia</label>
+                      <select
+                        value={tuningType}
+                        onChange={(e) => setTuningType(e.target.value as 'tv' | 'movie')}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-1 text-xs font-sans text-gray-300 focus:outline-none focus:border-brand"
+                      >
+                        <option value="tv">Série (TV)</option>
+                        <option value="movie">Filme</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[7.5px] font-black uppercase text-gray-500 block mb-1">Temp. TMDB</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={tuningSeason}
+                        onChange={(e) => setTuningSeason(Number(e.target.value))}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-1 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[7.5px] font-black uppercase text-gray-500 block mb-1">Offset</label>
+                      <input
+                        type="number"
+                        value={tuningOffset}
+                        onChange={(e) => setTuningOffset(Number(e.target.value))}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg p-1 text-xs font-mono text-gray-100 focus:outline-none focus:border-brand"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-1.5 justify-end pt-1">
+                    {activeMapping.source === 'override' && (
                       <button
+                        type="button"
                         onClick={() => {
-                          if (!tuningTmdbId) return;
-                          mappingService.saveOverride(activeMapping.mal_id, {
-                            tmdb_id: Number(tuningTmdbId),
-                            type: tuningType,
-                            season: tuningSeason,
-                            episode_offset: tuningOffset
-                          });
+                          mappingService.removeOverride(activeMapping.mal_id);
                           setShowTuningPanel(false);
                           setReloadTrigger(prev => prev + 1);
                         }}
-                        className="px-4 py-2 bg-brand text-white hover:bg-brand/90 hover:scale-[1.02] active:scale-[0.98] rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+                        className="px-2.5 py-1.5 bg-red-500/10 border border-red-500/15 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-wider transition-all"
                       >
-                        Aplicar Ajuste
+                        Padrão
                       </button>
-                    </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!tuningTmdbId) return;
+                        mappingService.saveOverride(activeMapping.mal_id, {
+                          tmdb_id: Number(tuningTmdbId),
+                          type: tuningType,
+                          season: tuningSeason,
+                          episode_offset: tuningOffset
+                        });
+                        setShowTuningPanel(false);
+                        setReloadTrigger(prev => prev + 1);
+                      }}
+                      className="px-2.5 py-1.5 bg-brand text-white hover:bg-brand/90 hover:scale-[1.01] active:scale-[0.99] rounded-lg text-[8px] font-black uppercase tracking-wider transition-all"
+                    >
+                      Aplicar
+                    </button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -875,10 +822,37 @@ export default function AnimePlayer() {
               )}
             </div>
             
-            <div className="p-3 border-t border-[var(--color-border)] bg-white/[0.01]">
-               <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest text-center">
-                 Mostrando {filteredEpisodes.length} de {episodes.length} episódios
+            <div className="p-3 border-t border-[var(--color-border)] bg-white/[0.01] flex items-center justify-between gap-1.5 px-4 font-bold">
+               <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest">
+                 Exibindo {filteredEpisodes.length} de {episodes.length} episódios
                </p>
+               <div className="flex gap-1.5">
+                 <button
+                   type="button"
+                   onClick={() => {
+                     const currentMax = customEpisodesCount !== null ? customEpisodesCount : (episodes.length || 12);
+                     const nextMax = currentMax + 12;
+                     setCustomEpisodesCount(nextMax);
+                     // setReloadTrigger will let the load hook re-run with customEpisodesCount!
+                     setReloadTrigger(prev => prev + 1);
+                   }}
+                   className="px-2 py-1 bg-brand/10 border border-brand/20 text-brand rounded-lg text-[8px] font-black uppercase tracking-wider transition-all hover:bg-brand hover:text-white"
+                   title="Carrega mais episódios além do número de episódios oficial"
+                 >
+                   + 12 Eps
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => {
+                     setCustomEpisodesCount(100);
+                     setReloadTrigger(prev => prev + 1);
+                   }}
+                   className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white"
+                   title="Bypassa as restrições e exibe até 100 episódios"
+                 >
+                   Grade 100
+                 </button>
+               </div>
             </div>
           </div>
         </div>

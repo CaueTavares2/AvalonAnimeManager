@@ -24,7 +24,7 @@ export interface Media {
   image: string;
   banner?: string;
   type: 'ANIME' | 'MANGA';
-  status: 'TRENDING' | 'POPULAR' | 'UPCOMING';
+  status: 'TRENDING' | 'POPULAR' | 'UPCOMING' | string;
   genres: string[];
   score: number;
   format: string;

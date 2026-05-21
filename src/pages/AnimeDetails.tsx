@@ -46,6 +46,7 @@ export default function AnimeDetails() {
   const [loading, setLoading] = useState(true);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [addStatus, setAddStatus] = useState<AnimeStatus>('PLANNING');
+  const [airingSchedule, setAiringSchedule] = useState<any>(null);
   
   const [error, setError] = useState<string | null>(null);
   
@@ -85,7 +86,7 @@ export default function AnimeDetails() {
           title: data.title,
           image: data.images.webp.large_image_url,
           type: finalType,
-          status: 'TRENDING',
+          status: data.status || 'Finished Airing',
           genres: data.genres.map((g: any) => g.name),
           score: Math.round(data.score * 10),
           format: data.type,
@@ -99,6 +100,18 @@ export default function AnimeDetails() {
           rank: data.rank,
           members: data.members
         });
+
+        // Fetch airing schedule from AniList
+        if (finalType === 'ANIME') {
+          try {
+            const schedule = await aniListService.getAiringScheduleByMalId(Number(id), 'ANIME');
+            if (schedule) {
+              setAiringSchedule(schedule);
+            }
+          } catch (e) {
+            console.error("Failed to fetch airing schedule:", e);
+          }
+        }
 
         // Fetch characters
         try {
@@ -314,13 +327,66 @@ export default function AnimeDetails() {
               </div>
               <div className="flex justify-between text-[11px]">
                 <span className="text-gray-500 font-bold uppercase tracking-wider">Status</span>
-                <span className="text-[var(--color-text)] font-bold">Finished Airing</span>
+                <span className={cn(
+                  "font-bold px-1.5 py-0.5 rounded text-[10px]",
+                  anime.status.toLowerCase().includes('currently') || anime.status.toLowerCase().includes('releasing')
+                    ? "text-brand bg-brand/10 border border-brand/10"
+                    : "text-[var(--color-text)]"
+                )}>
+                  {(() => {
+                    const s = anime.status.toLowerCase();
+                    if (s.includes('currently airing') || s.includes('releasing')) return 'Em Lançamento';
+                    if (s.includes('finished')) return 'Finalizado';
+                    if (s.includes('not yet') || s.includes('upcoming')) return 'A Estrear';
+                    if (s.includes('hiatus')) return 'Em Pausa';
+                    return anime.status;
+                  })()}
+                </span>
               </div>
               <div className="flex justify-between text-[11px]">
                 <span className="text-gray-500 font-bold uppercase tracking-wider">Season</span>
                 <span className="text-[var(--color-text)] font-bold">{anime.season} {anime.year}</span>
               </div>
             </div>
+
+            {/* Next Episode Release Airtime Card */}
+            {airingSchedule && airingSchedule.nextAiringEpisode && (
+              <div className="bg-brand/5 border border-brand/20 p-4 rounded-2xl space-y-2.5 shadow-sm animate-pulse">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                  </span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-brand">Próxima Transmissão</span>
+                </div>
+                
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-black text-[var(--color-text-bright)]">Episódio {airingSchedule.nextAiringEpisode.episode}</span>
+                  <span className="text-[9px] font-bold text-gray-400">
+                    {new Date(airingSchedule.nextAiringEpisode.airingAt * 1000).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                
+                <div className="pt-1.5 border-t border-white/5 flex items-center justify-between text-[9px]">
+                  <span className="text-gray-500 uppercase font-black tracking-widest">Contagem Regressiva</span>
+                  <span className="font-mono text-brand font-black bg-brand/10 px-2 py-0.5 rounded">
+                    {(() => {
+                      const seconds = airingSchedule.nextAiringEpisode.timeUntilAiring;
+                      if (seconds <= 0) return "Disponível!";
+                      const days = Math.floor(seconds / (24 * 3600));
+                      const hours = Math.floor((seconds % (24 * 3600)) / 3600);
+                      const minutes = Math.floor((seconds % 3600) / 60);
+                      return days > 0 ? `${days}d ${hours}h ${minutes}m` : `${hours}h ${minutes}m`;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Info Column */}
