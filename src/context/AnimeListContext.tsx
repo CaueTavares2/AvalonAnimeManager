@@ -135,13 +135,21 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
       const batch = writeBatch(db);
       animes.forEach(anime => {
         const docRef = doc(db, 'users', user.uid, 'list', anime.id.toString());
+        const { _parentIdMigration, ...cleanAnime } = anime as any;
+        
         batch.set(docRef, { 
-          ...anime, 
+          ...cleanAnime, 
           mediaId: anime.id,
           userId: user.uid,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
+
+        // If this show was migrated to standard MAL ID, delete its old AniList ID record
+        if (_parentIdMigration) {
+          const oldDocRef = doc(db, 'users', user.uid, 'list', _parentIdMigration.toString());
+          batch.delete(oldDocRef);
+        }
       });
       try {
         await batch.commit();
@@ -150,8 +158,20 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       setList(prev => {
-        const newAnimes = animes.filter(newAnime => !prev.some(a => a.id === newAnime.id));
-        const updated = [...prev, ...newAnimes];
+        const migratedIds = animes
+          .filter(a => (a as any)._parentIdMigration)
+          .map(a => (a as any)._parentIdMigration);
+
+        // Filter out any duplicates referencing the old migrated AniList ID
+        let filteredPrev = prev.filter(a => !migratedIds.includes(a.id));
+
+        const cleanNewAnimes = animes.map(a => {
+          const { _parentIdMigration, ...clean } = a as any;
+          return clean;
+        });
+
+        const finalAnimes = cleanNewAnimes.filter(newAnime => !filteredPrev.some(a => a.id === newAnime.id));
+        const updated = [...filteredPrev, ...finalAnimes];
         localStorage.setItem('avalon_anime_list', JSON.stringify(updated));
         return updated;
       });

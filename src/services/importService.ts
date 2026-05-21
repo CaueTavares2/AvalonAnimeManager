@@ -11,6 +11,7 @@ export const importService = {
             entries {
               media {
                 id
+                idMal
                 title {
                   romaji
                   english
@@ -38,8 +39,11 @@ export const importService = {
     const entries: UserMedia[] = [];
     response.data.data.MediaListCollection.lists.forEach((list: any) => {
       list.entries.forEach((entry: any) => {
+        const idMalValue = entry.media.idMal;
+        const alIdValue = entry.media.id;
+
         entries.push({
-          id: entry.media.id,
+          id: idMalValue || alIdValue,
           title: entry.media.title.english || entry.media.title.romaji,
           image: entry.media.coverImage.large,
           type: 'ANIME',
@@ -48,8 +52,10 @@ export const importService = {
           totalProgress: entry.media.episodes || 0,
           score: entry.score,
           genres: entry.media.genres,
-          updatedAt: new Date().toISOString()
-        });
+          updatedAt: new Date().toISOString(),
+          // Store original AniList ID if it is different from the MAL ID to purge old mismatched records
+          _parentIdMigration: (idMalValue && idMalValue !== alIdValue) ? alIdValue : undefined
+        } as any);
       });
     });
 

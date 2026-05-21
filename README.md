@@ -1,6 +1,14 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.3.1 - Kimetsu Resolution Era)
+# 🌌 Avalon - Anime Tracking Saga (v4.3.2 - Sync Alignment Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.3.2 (Sync Alignment Era)
+
+- **🔄 Sincronização e Alinhamento de IDs (AniList Import)**: Correção do desalinhamento crítico de sincronização entre a Minha Lista e os trackers externos (AniList/MyAnimeList). Os animes importados pelo AniList anteriormente utilizavam o ID interno da plataforma em vez do ID unificado da **MyAnimeList (MAL / Jikan)**, fazendo com que as mutações e atualizações falhassem ou gerassem anotações duplicadas/múltiplas. Agora, o importador puxa diretamente o identificador global unificado `idMal`.
+- **🧼 Migração Automática e Faxina de Duplicados**: Implementação de um motor inteligente e invisível que monitora quando um anime é importado pela segunda vez com o novo ID corrigido. Ele remove **instantaneamente** o registro antigo duplicado correspondente ao ID inválido (do banco Firestore em tempo real e do LocalStorage de visitantes), consolidando seu progresso.
+- **💡 Como Sincronizar**: Basta acessar as Configurações e clicar em **"Importar"** novamente na aba de Migração. Suas duplicatas serão apagadas e seu progresso continuará sincronizado de forma perfeita daqui em diante!
 
 ---
 
