@@ -453,7 +453,7 @@ export default function AnimeDetails() {
                 </span>
                 <span className="text-[var(--color-text)] font-bold">
                   {anime.type === 'ANIME' 
-                    ? (airingSchedule?.nextAiringEpisode ? `${airingSchedule.nextAiringEpisode.episode - 1} / ${anime.episodes || '?'}` : (anime.episodes || 'Unknown')) 
+                    ? (airingSchedule?.nextAiringEpisode ? `${airingSchedule.nextAiringEpisode.episode - 1} / ${airingSchedule.nextAiringEpisode.episode - 1}` : (anime.episodes || 'Unknown')) 
                     : (anime.chapters || 'Unknown')}
                 </span>
               </div>
