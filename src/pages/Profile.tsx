@@ -12,6 +12,7 @@ import { useAnimeList } from '../hooks/useAnimeList';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites, FavoriteCharacter } from '../context/FavoritesContext';
+import { calculateCharacterStats } from '../utils/powerEngine';
 import React, { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
 import { doc, updateDoc, collection, query, getDocs, where, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -188,13 +189,15 @@ export default function Profile() {
               <div className="flex items-center gap-2 mt-0.5">
                 {(() => {
                   try {
-                    const characterAuras = JSON.parse(localStorage.getItem('avalon_character_auras') || '{}');
-                    let auraPower = 0;
-                    Object.values(characterAuras).forEach((lvl: any) => { auraPower += (lvl as number) * 150 + 20; });
-                    const totalPower = (profile.otakuPoints || 0) + auraPower;
+                    let teamPower = 0;
+                    favoriteCharacters.forEach(char => {
+                      const stats = calculateCharacterStats(char, profile.otakuPoints || 0);
+                      teamPower += stats.totalKi;
+                    });
+                    const totalPower = (profile.otakuPoints || 0) + teamPower;
                     return (
                       <p className="text-xl font-black text-amber-400 italic leading-none drop-shadow-md">
-                        {totalPower} <span className="text-[10px] text-amber-500/50">KI</span>
+                        {totalPower.toLocaleString()} <span className="text-[10px] text-amber-500/50">KI</span>
                       </p>
                     );
                   } catch(e) {
@@ -281,7 +284,7 @@ export default function Profile() {
                     viewMode === 'CHARACTERS' ? "bg-brand text-white shadow-md" : "text-gray-500 hover:text-gray-300"
                   )}
                 >
-                  Favoritos
+                  Equipe de Batalha
                 </button>
               </div>
             </div>
@@ -310,20 +313,49 @@ export default function Profile() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                {favoriteCharacters.length > 0 ? favoriteCharacters.map(char => (
-                  <div key={char.id} className="bg-[var(--color-bg)] group rounded-xl overflow-hidden border border-[var(--color-border)] relative">
-                    <div className="aspect-[3/4] overflow-hidden">
-                      <img src={char.image} alt={char.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                {favoriteCharacters.length > 0 ? favoriteCharacters.map(char => {
+                  const stats = calculateCharacterStats(char, profile.otakuPoints || 0);
+                  return (
+                    <div key={char.id} className="bg-[var(--color-bg)] group rounded-2xl overflow-hidden border border-[var(--color-border)] relative shadow-lg">
+                      <div className="aspect-[3/4] overflow-hidden relative">
+                        <img src={char.image} alt={char.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        
+                        {/* Rank Badge */}
+                        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-1 shadow-sm">
+                          <span className={cn("text-[10px] font-black uppercase tracking-wider", 
+                            stats.rank === 'S+' ? "text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]" :
+                            stats.rank === 'S' ? "text-purple-400 drop-shadow-[0_0_5px_rgba(192,132,252,0.8)]" :
+                            stats.rank === 'A' ? "text-red-400" :
+                            stats.rank === 'B' ? "text-blue-400" :
+                            stats.rank === 'C' ? "text-green-400" : "text-gray-400"
+                          )}>Rank {stats.rank}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pt-12">
+                        <p className="text-[10px] font-black text-white uppercase tracking-tighter line-clamp-1 mb-1">{char.name}</p>
+                        
+                        <div className="flex items-end justify-between border-t border-white/10 pt-1 mt-1">
+                          <div>
+                            <p className={cn("text-[8px] uppercase tracking-widest font-black leading-none", stats.affinityColor)}>
+                              Afinidade: {stats.affinityName}
+                            </p>
+                            <p className="text-xs text-amber-400 font-black uppercase tracking-widest leading-none mt-1 shadow-black drop-shadow-md">
+                               {stats.totalKi.toLocaleString()} <span className="text-[8px] text-amber-500/50">KI</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="p-2 text-center">
-                      <p className="text-[9px] font-black text-[var(--color-text-bright)] uppercase tracking-tighter line-clamp-1">{char.name}</p>
-                    </div>
-                  </div>
-                )) : (
-                  <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-500 gap-4">
+                  );
+                }) : (
+                  <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-500 gap-4 bg-[var(--color-card)]/30 rounded-2xl border border-[var(--color-border)] border-dashed">
                     <Ghost className="w-12 h-12 opacity-20" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">Nenhum personagem favorito ainda</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-center">
+                      Sua equipe de batalha está vazia.<br/>
+                      <span className="text-[8px] text-gray-600 mt-2 block">Adicione personagens favoritos nos detalhes do anime para revelar seu Rank Secreto!</span>
+                    </p>
                   </div>
                 )}
               </div>

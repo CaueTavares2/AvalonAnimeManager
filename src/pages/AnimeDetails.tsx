@@ -57,11 +57,6 @@ export default function AnimeDetails() {
   const [error, setError] = useState<string | null>(null);
 
   // RPG Character interactions states
-  const [characterAuras, setCharacterAuras] = useState<Record<number, number>>(() => {
-    const saved = localStorage.getItem('avalon_character_auras');
-    return saved ? JSON.parse(saved) : {};
-  });
-
   const [soulPacts, setSoulPacts] = useState<Record<number, any>>(() => {
     const saved = localStorage.getItem('avalon_soul_pacts');
     return saved ? JSON.parse(saved) : {};
@@ -87,56 +82,7 @@ export default function AnimeDetails() {
     }
   };
 
-  const handleAuraIncrease = (charId: number, charName: string) => {
-    const current = characterAuras[charId] || 0;
-    if (current >= 5) {
-      alert("⚠️ Aura MÁXIMA (Nvl 5) já alcançada para este personagem!");
-      return;
-    }
-    const next = current + 1;
-    
-    // Cost mapping to level up Aura
-    const AURA_COSTS = [0, 25, 75, 150, 350, 800];
-    const cost = AURA_COSTS[next];
-
-    const currentPoints = profile.availablePoints || 0;
-    if (currentPoints < cost) {
-      alert(`⚠️ Você precisa de ${cost} AP (Pontos) para despertar a Aura Nível ${next}!\nAssista animes ou favoritar personagens para ganhar mais pontos.`);
-      return;
-    }
-
-    // Deduct points
-    updateProfile({
-      availablePoints: currentPoints - cost
-    });
-
-    const newAuras = { ...characterAuras, [charId]: next };
-    setCharacterAuras(newAuras);
-    localStorage.setItem('avalon_character_auras', JSON.stringify(newAuras));
-    
-    alert(`⚡ Aura nível ${next} despertada para ${charName}!\n-${cost} AP consumidos. Seu Poder de Combate Aumentou!`);
-
-    // Audio synth keypress feedback
-    try {
-      if (next > 0) {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150 + next * 90, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(320 + next * 130, audioContext.currentTime + 0.35);
-        
-        gain.gain.setValueAtTime(0.04, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.35);
-        
-        osc.start();
-        osc.stop(audioContext.currentTime + 0.35);
-      }
-    } catch (_) {}
-  };
+  const handleAuraIncrease = () => {};
 
   const handlePlayVoice = (charName: string, role?: string) => {
     const vocalData = getCharacterData(charName, role, anime?.title);
@@ -701,37 +647,15 @@ export default function AnimeDetails() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {characters.map((char) => {
                   const charId = char.character.mal_id;
-                  const auraLvl = characterAuras[charId] || 0;
                   const pact = soulPacts[charId];
                   const fav = isFavorite(charId);
-
-                  // Set premium aura borders & glow rings
-                  let auraClass = "border-[var(--color-border)] bg-[var(--color-card)]/40 hover:bg-[var(--color-card)]/60 hover:border-brand/40";
-                  let auraTag = "";
-                  if (auraLvl === 1) {
-                    auraClass = "border-white/20 bg-slate-900/40 shadow-[0_0_12px_rgba(255,255,255,0.12)]";
-                    auraTag = "Chakra Ativo";
-                  } else if (auraLvl === 2) {
-                    auraClass = "border-cyan-500/30 bg-cyan-950/10 shadow-[0_0_15px_rgba(6,182,212,0.2)]";
-                    auraTag = "Fluido Espiritual";
-                  } else if (auraLvl === 3) {
-                    auraClass = "border-orange-500/45 bg-orange-950/10 shadow-[0_0_20px_rgba(249,115,22,0.35)] animate-[pulse_2.5s_infinite]";
-                    auraTag = "Aura do Caos";
-                  } else if (auraLvl === 4) {
-                    auraClass = "border-purple-500/60 bg-purple-950/15 shadow-[0_0_25px_rgba(168,85,247,0.45)] animate-[pulse_1.8s_infinite]";
-                    auraTag = "Despertar Divino";
-                  } else if (auraLvl === 5) {
-                    auraClass = "border-yellow-400 bg-gradient-to-r from-yellow-500/10 via-amber-500/15 to-yellow-600/10 shadow-[0_0_35px_rgba(234,179,8,0.65)] border-2 animate-[pulse_2s_infinite]";
-                    auraTag = "SUPREMO / LIMITLESS";
-                  }
 
                   return (
                     <div 
                       key={charId} 
                       translate="no" 
                       className={cn(
-                        "rounded-xl overflow-hidden border p-3 flex flex-col justify-between gap-3 relative transition-all duration-300 shadow-md group",
-                        auraClass,
+                        "rounded-xl overflow-hidden border p-3 flex flex-col justify-between gap-3 relative transition-all duration-300 shadow-md group border-[var(--color-border)] bg-[var(--color-card)]/40 hover:bg-[var(--color-card)]/60 hover:border-brand/40",
                         pact && "ring-1 ring-yellow-500/40"
                       )}
                     >
@@ -787,18 +711,6 @@ export default function AnimeDetails() {
                           ) : (
                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{char.role}</p>
                           )}
-
-                          {auraLvl > 0 && (
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="flex h-1.5 w-1.5 relative">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand"></span>
-                              </span>
-                              <span className="text-[8px] font-black text-brand tracking-widest uppercase">
-                                KI Lvl {auraLvl} ({auraTag})
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
 
@@ -812,19 +724,6 @@ export default function AnimeDetails() {
                         >
                           <Volume2 className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
                           <span>Ouvir Voz</span>
-                        </button>
-
-                        {/* Power Aura Button */}
-                        <button 
-                          onClick={() => handleAuraIncrease(charId, char.character.name)}
-                          className={cn(
-                            "flex-1 py-1 px-2 rounded-md bg-[var(--color-bg)] hover:bg-white/5 border border-[var(--color-border)]/40 transition-all flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wider",
-                            auraLvl > 0 ? "text-amber-400 border-amber-500/20" : "text-gray-400 hover:text-amber-400"
-                          )}
-                          title="Aumentar Nível de Combate e Aura"
-                        >
-                          <Zap className={cn("w-3.5 h-3.5", auraLvl > 0 ? "text-amber-400 fill-current" : "text-amber-500")} />
-                          <span>Aura {auraLvl > 0 ? `x${auraLvl}` : "Ki"}</span>
                         </button>
 
                         {/* Star Portal Alliance Contract Button */}
