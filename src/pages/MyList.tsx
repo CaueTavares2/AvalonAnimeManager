@@ -17,7 +17,7 @@ export default function MyList() {
   const { list, updateAnime, removeAnime } = useAnimeList();
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { t } = useLanguage();
+  const { t, formatTitle } = useLanguage();
   const navigate = useNavigate();
   const [mediaType, setMediaType] = useState<'ANIME' | 'MANGA'>('ANIME');
   const [filter, setFilter] = useState<AnimeStatus | 'ALL'>('ALL');
@@ -343,7 +343,7 @@ export default function MyList() {
     // Start spinning/wheel animation in the UI modal
     setSuggestion(chosenOne);
     setIsSpinning(true);
-    setSpinningTitle(chosenOne.title);
+    setSpinningTitle(formatTitle(chosenOne));
     setSpinningImage(chosenOne.image);
 
     // Dynamic shuffle list for cover animation
@@ -355,14 +355,14 @@ export default function MyList() {
       const triggerSpinCycle = () => {
         if (runCount < totalRuns) {
           const rand = listForShuffle[Math.floor(Math.random() * listForShuffle.length)];
-          setSpinningTitle(rand.title);
+          setSpinningTitle(formatTitle(rand));
           setSpinningImage(rand.image);
           runCount++;
           const delay = 60 + (runCount * 18); // progressive deceleration
           setTimeout(triggerSpinCycle, delay);
         } else {
           // resolve the spin to final selection
-          setSpinningTitle(chosenOne.title);
+          setSpinningTitle(formatTitle(chosenOne));
           setSpinningImage(chosenOne.image);
           setIsSpinning(false);
         }
@@ -528,7 +528,7 @@ export default function MyList() {
       <CompletionModal 
         isOpen={!!completedAnime} 
         onClose={() => setCompletedAnime(null)}
-        animeTitle={completedAnime?.title || ''}
+        animeTitle={completedAnime ? formatTitle(completedAnime) : ''}
         onRate={(score) => {
           if (completedAnime) {
             updateAnime(completedAnime.id, { score });
@@ -597,7 +597,7 @@ export default function MyList() {
                    {isSpinning ? "PROCURANDO PRECIOSIDADE..." : "A SORTE APONTOU PARA:"}
                  </p>
                  <h3 className="text-base font-black text-[var(--color-text-bright)] uppercase tracking-tight italic leading-snug min-h-[44px] flex items-center justify-center px-2">
-                   {spinningTitle || suggestion.title}
+                   {spinningTitle || formatTitle(suggestion)}
                  </h3>
                  
                  {!isSpinning && (

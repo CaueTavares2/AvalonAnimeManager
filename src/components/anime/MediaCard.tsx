@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import type { Media } from '../../types';
 import { cn } from '../../lib/utils';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface MediaCardProps {
   media: Media;
@@ -15,13 +16,14 @@ const isMobileDevice = typeof window !== 'undefined' && (
 );
 
 const MediaCard = React.memo(({ media }: MediaCardProps) => {
+  const { formatTitle } = useLanguage();
   return (
     <Link to={`/${media.type.toLowerCase()}/${media.id}`} className="group relative cursor-pointer block">
       {/* Cover Image */}
       <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-zinc-900 mb-3 shadow-2xl border border-white/5 group-hover:border-brand/50 transition-all duration-500">
         <img 
           src={media.image} 
-          alt={media.title}
+          alt={formatTitle(media)}
           className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110 opacity-90 group-hover:opacity-100"
           referrerPolicy="no-referrer"
           loading="lazy"
@@ -79,7 +81,7 @@ const MediaCard = React.memo(({ media }: MediaCardProps) => {
       {/* Info */}
       <div className="space-y-1.5 px-1 pb-1">
         <h3 className="text-[13px] font-black text-[var(--color-text-bright)] line-clamp-2 leading-tight group-hover:text-brand transition-colors duration-300 uppercase tracking-tight italic">
-          {media.title}
+          {formatTitle(media)}
         </h3>
         <div className="flex items-center justify-between gap-2">
            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{media.year || '2024'}</p>

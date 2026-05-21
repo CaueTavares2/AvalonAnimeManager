@@ -10,6 +10,7 @@ import { cn } from '../lib/utils';
 import type { Media, AnimeStatus } from '../types';
 import { SPECIAL_ANIMES } from '../constants/specialAnimes';
 import { SpecialAnimeInteraction } from '../components/anime/SpecialAnimeInteraction';
+import { useLanguage } from '../context/LanguageContext';
 
 interface MediaCharacter {
   character: {
@@ -36,6 +37,7 @@ interface Relation {
 
 export default function AnimeDetails() {
   const { type, id } = useParams();
+  const { formatTitle } = useLanguage();
   const navigate = useNavigate();
   const { addAnime, updateAnime, list } = useAnimeList();
   const { addCharacter, removeCharacter, isFavorite } = useFavorites();
@@ -84,6 +86,8 @@ export default function AnimeDetails() {
         setAnime({
           id: data.mal_id,
           title: data.title,
+          title_english: data.title_english,
+          title_japanese: data.title_japanese,
           image: data.images.webp.large_image_url,
           type: finalType,
           status: data.status || 'Finished Airing',
@@ -172,6 +176,8 @@ export default function AnimeDetails() {
     addAnime({
       id: anime.id,
       title: anime.title,
+      title_english: anime.title_english,
+      title_japanese: anime.title_japanese,
       image: anime.image,
       type: anime.type,
       status: addStatus,
@@ -211,7 +217,7 @@ export default function AnimeDetails() {
               animate={{ opacity: 1, y: 0 }}
               className="aspect-[2/3] rounded-lg overflow-hidden shadow-xl border-2 border-[var(--color-border)]"
             >
-              <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
+              <img src={anime.image} alt={formatTitle(anime)} className="w-full h-full object-cover" />
             </motion.div>
 
             {anime.type === 'MANGA' ? (
@@ -392,7 +398,7 @@ export default function AnimeDetails() {
           {/* Info Column */}
           <div className="flex-1 space-y-6 overflow-hidden">
             <div className="space-y-3">
-              <h1 className="text-3xl font-black text-[var(--color-text-bright)] leading-tight">{anime.title}</h1>
+              <h1 className="text-3xl font-black text-[var(--color-text-bright)] leading-tight">{formatTitle(anime)}</h1>
               <div className="flex flex-wrap gap-1.5">
                 {anime.genres.map(genre => (
                   <span key={genre} className="px-2 py-0.5 bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text)] text-[10px] font-bold rounded-lg uppercase tracking-wider">

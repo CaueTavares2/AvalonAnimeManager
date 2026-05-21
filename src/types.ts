@@ -4,6 +4,8 @@ export type AnimeStatus = MediaStatus;
 export interface UserMedia {
   id: number;
   title: string;
+  title_english?: string;
+  title_japanese?: string;
   image: string;
   type: 'ANIME' | 'MANGA';
   status: MediaStatus;
@@ -21,6 +23,8 @@ export interface UserMedia {
 export interface Media {
   id: number;
   title: string;
+  title_english?: string;
+  title_japanese?: string;
   image: string;
   banner?: string;
   type: 'ANIME' | 'MANGA';

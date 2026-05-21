@@ -81,6 +81,8 @@ export default function Home() {
   const mapJikanToMedia = (item: JikanAnime, type: 'anime' | 'manga'): Media => ({
     id: item.mal_id,
     title: item.title,
+    title_english: item.title_english,
+    title_japanese: item.title_japanese,
     image: item.images.webp.large_image_url || item.images.webp.image_url,
     type: type.toUpperCase() as 'ANIME' | 'MANGA',
     status: 'TRENDING',

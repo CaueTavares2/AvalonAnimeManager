@@ -2,18 +2,20 @@ import { Play, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Media } from '../../types';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface HeroProps {
   media: Media;
 }
 
 export default function Hero({ media }: HeroProps) {
+  const { formatTitle } = useLanguage();
   return (
     <div className="relative w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden mb-12">
       {/* Background Banner */}
       <img 
         src={media.banner || media.image} 
-        alt={media.title}
+        alt={formatTitle(media)}
         className="w-full h-full object-cover"
         referrerPolicy="no-referrer"
       />
@@ -39,7 +41,7 @@ export default function Hero({ media }: HeroProps) {
           </div>
           
           <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight">
-            {media.title}
+            {formatTitle(media)}
           </h1>
           
           <p className="text-white/80 text-sm md:text-base line-clamp-2 md:line-clamp-3 max-w-2xl leading-relaxed">

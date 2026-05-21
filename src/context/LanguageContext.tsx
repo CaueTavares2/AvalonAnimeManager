@@ -81,10 +81,25 @@ const translations: Record<Language, Translation> = {
   }
 };
 
+export type TitleLanguage = 'Romaji' | 'Inglês' | 'Nativo';
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
+  titleLanguage: TitleLanguage;
+  setTitleLanguage: (lang: TitleLanguage) => void;
   t: (key: string) => string;
+  formatTitle: (media?: {
+    title?: string;
+    title_english?: string;
+    title_japanese?: string;
+    english?: string;
+    japanese?: string;
+    titleEnglish?: string;
+    titleJapanese?: string;
+    titleRomaji?: string;
+    name?: string;
+  }) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -95,16 +110,47 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return (saved as Language) || 'pt';
   });
 
+  const [titleLanguage, setTitleLanguage] = useState<TitleLanguage>(() => {
+    const saved = localStorage.getItem('titleLanguage');
+    return (saved as TitleLanguage) || 'Romaji';
+  });
+
   useEffect(() => {
     localStorage.setItem('language', language);
   }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem('titleLanguage', titleLanguage);
+  }, [titleLanguage]);
 
   const t = (key: string) => {
     return translations[language][key] || key;
   };
 
+  const formatTitle = (media?: {
+    title?: string;
+    title_english?: string;
+    title_japanese?: string;
+    english?: string;
+    japanese?: string;
+    titleEnglish?: string;
+    titleJapanese?: string;
+    titleRomaji?: string;
+    name?: string;
+  }) => {
+    if (!media) return '';
+    const mainTitle = media.title || media.name || '';
+    if (titleLanguage === 'Inglês') {
+      return media.title_english || media.english || media.titleEnglish || mainTitle;
+    }
+    if (titleLanguage === 'Nativo') {
+      return media.title_japanese || media.japanese || media.titleJapanese || mainTitle;
+    }
+    return media.titleRomaji || mainTitle;
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, titleLanguage, setTitleLanguage, t, formatTitle }}>
       {children}
     </LanguageContext.Provider>
   );

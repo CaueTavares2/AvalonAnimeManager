@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { jikanService } from '../services/jikanService';
 import { cn } from '../lib/utils';
 import { Loader2, Calendar } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AnimesByYear() {
+  const { formatTitle } = useLanguage();
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
   
@@ -131,7 +133,7 @@ export default function AnimesByYear() {
                 <div className="aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-[var(--color-border)] relative">
                   <img 
                     src={anime.images.webp.large_image_url} 
-                    alt={anime.title} 
+                    alt={formatTitle(anime)} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
@@ -139,7 +141,7 @@ export default function AnimesByYear() {
                     <p className="text-[8px] md:text-[10px] font-black tracking-widest uppercase text-white">{anime.type}</p>
                   </div>
                 </div>
-                <h3 className="text-xs md:text-sm font-bold text-[var(--color-text-bright)] line-clamp-2 group-hover:text-brand transition-colors px-1 leading-tight">{anime.title}</h3>
+                <h3 className="text-xs md:text-sm font-bold text-[var(--color-text-bright)] line-clamp-2 group-hover:text-brand transition-colors px-1 leading-tight">{formatTitle(anime)}</h3>
               </Link>
             );
           })}

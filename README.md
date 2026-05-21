@@ -1,6 +1,22 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.5.1 - Manga Search Correction)
+# 🌌 Avalon - Anime Tracking Saga (v4.6.0 - Universal Title Localization)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🎨 O que há de Novo na Versão v4.6.0 (Universal Title Localization)
+
+Nesta versão, desbloqueamos uma camada definitiva de personalização cultural em toda a plataforma através do controle absoluto do idioma de exibição dos títulos:
+
+- **🌐 Preferência de Idioma do Título**: Nas Configurações de Aparência, agora você pode selecionar entre **"Romaji"**, **"Inglês"** ou **"Nativo"** (Japonês original).
+- **💫 Propagação Dinâmica e Instantânea**: Sua preferência agora atualiza imediatamente, sem recarregamento de página, em todos os cantos do site:
+  - Carrosséis e grandes Banners na página inicial (`Hero` & `MediaCard`)
+  - Página de detalhes completas da obra (`AnimeDetails`)
+  - Pesquisa unificada global (`SearchResults`)
+  - Lista de Animes por Ano (`AnimesByYear`)
+  - Visual de listas pessoais, roleta aleatória e cards de compartilhamento e avaliação (`MyList` & `AnimeListRow`)
+  - No reprodutor multimídia e ler de mangás (`AnimePlayer` & `MangaReader`)
+- **🛠️ Sincronização Estendida**: Novos títulos em japonês e inglês são indexados dinamicamente das requisições Jikan API e persistidos localmente no banco para que transições fiquem 100% fluidas.
 
 ---
 
@@ -319,7 +335,17 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v4.3.6] - Dynamic Airing & Liberation (Atual)
+### [v4.6.0] - Universal Title Localization (Atual)
+- **Localização de Títulos**: Lógica centralizada para formatação nos idiomas Romaji, Inglês e Nativo.
+- **Sincronia Estendida**: Aplicação dinâmica da tradução no banner principal, detalhes, resultados de buscas, leitor de mangá, roleta de sorteios, logs e players.
+
+### [v4.5.1] - Manga Search Correction
+- **Busca unificada**: Sanamos a limitação que impedia a pesquisa de mangás pela barra unificada global.
+
+### [v4.5.0] - Luxury Design Upgrade
+- **Visual Premium**: Nova paleta cromática contrastada, sombras com gradientes e transições cinéticas de abas para suavidade a 60 FPS.
+
+### [v4.3.6] - Dynamic Airing & Liberation
 - **Ajuste Próximo Episódio**: Integração do cronômetro de lançamentos reais do AniList em conjunção ao Jikan no `AnimeDetails`.
 - **Simplificação de Modos**: Redução monumental do ruído visual e simplificação inteligente da seleção de servidores e do painel tradutor TMDB no `AnimePlayer`.
 - **Limitadores Eliminados**: Bypass dinâmico de limites oficiais sincronizados de episódios nas janelas de exibição através dos botões "+ 12 Eps" e "Grade 100".

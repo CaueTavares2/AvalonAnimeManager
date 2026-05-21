@@ -4,7 +4,7 @@ import { cn } from '../lib/utils';
 import { useTheme, ColorTheme } from '../context/ThemeContext';
 import { importService } from '../services/importService';
 import { useAnimeList } from '../hooks/useAnimeList';
-import { useLanguage, Language } from '../context/LanguageContext';
+import { useLanguage, Language, TitleLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useExtensions, AVAILABLE_EXTENSIONS } from '../services/extensionService';
 import { createStremioExtension } from '../services/stremioExtension';
@@ -12,7 +12,7 @@ import { AnilistGuideModal } from '../components/shared/AnilistGuideModal';
 
 export default function Settings() {
   const { darkMode, setDarkMode, colorTheme, setColorTheme } = useTheme();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, titleLanguage, setTitleLanguage, t } = useLanguage();
   const { batchAddAnimes } = useAnimeList();
   const { user } = useAuth();
   const { installed, install, uninstall, manifests, addManifest, removeManifest } = useExtensions();
@@ -32,7 +32,7 @@ export default function Settings() {
     darkMode,
     colorTheme,
     language,
-    titleLanguage: localStorage.getItem('titleLanguage') || 'Romaji',
+    titleLanguage,
     anilistUser: initialAnilistUser,
     anilistToken: initialAnilistToken,
     anilistClientId: initialAnilistClientId,
@@ -49,17 +49,17 @@ export default function Settings() {
       ...s,
       darkMode,
       colorTheme,
-      language
+      language,
+      titleLanguage
     }));
-  }, [darkMode, colorTheme, language]);
+  }, [darkMode, colorTheme, language, titleLanguage]);
 
   useEffect(() => {
-    const currentTitleLang = localStorage.getItem('titleLanguage') || 'Romaji';
     const changed = 
       localSettings.darkMode !== darkMode ||
       localSettings.colorTheme !== colorTheme ||
       localSettings.language !== language ||
-      localSettings.titleLanguage !== currentTitleLang ||
+      localSettings.titleLanguage !== titleLanguage ||
       localSettings.anilistUser !== initialAnilistUser ||
       localSettings.anilistToken !== initialAnilistToken ||
       localSettings.anilistClientId !== initialAnilistClientId ||
@@ -67,7 +67,7 @@ export default function Settings() {
       localSettings.malToken !== initialMalToken ||
       localSettings.autoSyncTrackers !== initialAutoSyncTrackers;
     setHasChanges(changed);
-  }, [localSettings, darkMode, colorTheme, language, initialAnilistUser, initialAnilistToken, initialAnilistClientId, initialMalUser, initialMalToken, initialAutoSyncTrackers]);
+  }, [localSettings, darkMode, colorTheme, language, titleLanguage, initialAnilistUser, initialAnilistToken, initialAnilistClientId, initialMalUser, initialMalToken, initialAutoSyncTrackers]);
 
   const handleSave = () => {
     setSaveStatus('saving');
@@ -78,9 +78,9 @@ export default function Settings() {
       setDarkMode(localSettings.darkMode);
       setColorTheme(localSettings.colorTheme);
       setLanguage(localSettings.language);
+      setTitleLanguage(localSettings.titleLanguage as any);
       
       // Local storage updates
-      localStorage.setItem('titleLanguage', localSettings.titleLanguage);
       localStorage.setItem('avalon_anilist_user', localSettings.anilistUser);
       localStorage.setItem('avalon_anilist_token', localSettings.anilistToken);
       localStorage.setItem('avalon_anilist_client_id', localSettings.anilistClientId);
@@ -594,7 +594,7 @@ export default function Settings() {
                   </div>
                   <select 
                     value={localSettings.titleLanguage}
-                    onChange={(e) => setLocalSettings(s => ({ ...s, titleLanguage: e.target.value }))}
+                    onChange={(e) => setLocalSettings(s => ({ ...s, titleLanguage: e.target.value as TitleLanguage }))}
                     className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none text-[var(--color-text-bright)] shadow-sm"
                   >
                     <option>Romaji</option>

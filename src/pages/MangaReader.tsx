@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { mangaService } from '../services/mangaService';
 import { jikanService } from '../services/jikanService';
 import { useAnimeList } from '../hooks/useAnimeList';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   ChevronLeft, 
   Loader2, 
@@ -81,6 +82,7 @@ export default function MangaReader() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { list, updateAnime } = useAnimeList();
+  const { formatTitle } = useLanguage();
   const searchInProgress = useRef(false);
 
   const [loading, setLoading] = useState(true);
@@ -151,7 +153,7 @@ export default function MangaReader() {
           throw new Error("Informações do mangá não encontradas.");
         }
 
-        setMangaTitle(jikanData.title);
+        setMangaTitle(formatTitle(jikanData));
         setLoading(false);
 
         // 2. Search on MangaDex

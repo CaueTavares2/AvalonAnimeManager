@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { UserAnime, AnimeStatus } from '../../hooks/useAnimeList';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface AnimeListRowProps {
   anime: UserAnime;
@@ -19,16 +20,17 @@ const AnimeListRow = memo(({
   onStatusChange, 
   onProgressUpdate 
 }: AnimeListRowProps) => {
+  const { formatTitle } = useLanguage();
   return (
     <tr className="group hover:bg-[var(--color-card)]/30 transition-colors border-b border-[var(--color-border)] last:border-0">
       <td className="px-4 py-3">
         <Link to={`/${anime.type.toLowerCase()}/${anime.id}`}>
-          <img src={anime.image} className="w-10 h-14 object-cover rounded shadow-lg border border-black/10" alt={anime.title} />
+          <img src={anime.image} className="w-10 h-14 object-cover rounded shadow-lg border border-black/10" alt={formatTitle(anime)} />
         </Link>
       </td>
       <td className="px-4 py-3">
         <Link to={`/${anime.type.toLowerCase()}/${anime.id}`} className="font-bold text-[var(--color-text-bright)] hover:text-brand transition-colors block truncate max-w-md text-sm tracking-tight mb-1">
-          {anime.title}
+          {formatTitle(anime)}
         </Link>
         <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest opacity-70">
           {anime.type} • {anime.updatedAt ? new Date(anime.updatedAt).toLocaleDateString('pt-BR') : 'RECENTEMENTE'}

@@ -11,11 +11,13 @@ import logoLight from '../assets/images/logo-light.jpeg';
 import logoDark from '../assets/images/logo-dark.jpeg';
 import GoAnimeTerminal from '../components/anime/GoAnimeTerminal';
 import AdSenseBanner from '../components/anime/AdSenseBanner';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AnimePlayer() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getInstalledExtensions } = useExtensions();
+  const { formatTitle } = useLanguage();
   
   const [extension, setExtension] = useState<AnimeExtension | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -134,7 +136,7 @@ export default function AnimePlayer() {
             title = data.title;
             totalEpisodesCount = data.episodes || 0;
             releaseYear = data.year || 0;
-            setAnimeTitle(title);
+            setAnimeTitle(formatTitle(data));
           } catch (e) {
             console.warn('Failed to fetch anime title for mapping fallback', e);
           }

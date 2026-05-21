@@ -3,8 +3,10 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { jikanService, JikanAnime } from '../services/jikanService';
 import { Search, Loader2, Filter, Play, Star, Calendar, BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function SearchResults() {
+  const { formatTitle } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -137,7 +139,7 @@ export default function SearchResults() {
                     <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-[var(--color-border)]/50">
                       <img 
                         src={anime.images.webp.large_image_url || anime.images.webp.image_url} 
-                        alt={anime.title}
+                        alt={formatTitle(anime)}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -165,7 +167,7 @@ export default function SearchResults() {
                     </div>
                     <div>
                       <h3 className="font-bold text-[12px] text-[var(--color-text-bright)] leading-tight line-clamp-2 uppercase tracking-tight group-hover:text-brand transition-colors">
-                        {anime.title}
+                        {formatTitle(anime)}
                       </h3>
                     </div>
                   </Link>
