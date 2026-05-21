@@ -1,6 +1,26 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.3.6 - Dynamic Airing & Liberation Update)
+# 🌌 Avalon - Anime Tracking Saga (v4.5.0 - Luxury Design & Fluid Kinetic Tab Switch)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🎨 O que há de Novo na Versão v4.5.0 (Luxury Design & Fluid Kinetic Tab Switch)
+
+Nesta versão, realizamos uma transformação estética completa e otimização de de fidelidades de animações, deixando a plataforma rápida, leve e com visual premium digno de cinema:
+
+- **🎨 Harmonia e Visual Premium Contrastado (Modo Claro & Escuro)**: Redefinimos a paleta cromática nativa e as variáveis estéticas. O modo claro adquire um tom azul-acinzentado ultra limpo (`#f4f6fa`), enquanto o modo escuro sintoniza em um azul espacial profundo e elegante (`#090e17`). Adicionamos bordas ultrafinas brilhantes (`1px border`) e sombras estéticas com dispersão em gradiente nas caixas, cards e navbars.
+- **✨ Transições Cinéticas de Abas (Rotas fluidas)**: Implementamos o componente `PageTransition` integrado sobre Framer Motion (`motion.div`) em todo o ecossistema de rotas. O chaveamento de páginas ocorre através de um suave efeito de fade acompanhado de uma sutil flutuação espacial, regida por curvas de velocidade Bézier personalizadas (`duration: 0.22, ease: [0.16, 1, 0.3, 1]`), garantindo suavidade máxima sem pesar tanto em celulares básicos quanto em PCs.
+- **💫 Polimento de Elementos Interativos**: Refatoramos botões, sliders, links ativos e elementos secundários para aderirem organicamente às tonalidades do tema sintonizado no ato (Avalon Gold, Crunchyroll, Netflix), entregando transições táteis responsivas e visual impecável.
+
+---
+
+## 🎨 O que há de Novo na Versão v4.4.0 (Theme Integration & Contrast Harmonizer Update)
+
+Nesta versão, realizamos uma revisão estética aprofundada para garantir harmonia visual absoluta do Avalon com seu inovador ecossistema de temas dinâmicos (Avalon Gold, Crunchyroll, Netflix):
+
+- **🎨 Harmonização de Cores e Temas Dinâmicos**: Refatoramos componentes cruciais e fluxos que utilizavam paletas de cores estáticas (como amarelos/orange fixos) para adotarem variáveis nativas de cada tema. Os Star Ratings de cartões de mídia, botões de ação e componentes de rankings agora adquirem as nuances estilizadas de forma instantânea de acordo com o tema selecionado.
+- **✨ Botão "Me Surpreenda!" e Modal Temáticos**: O clássico sintonizador de sorte "Me Surpreenda!" e todo o visual do modal de recomendação aleatória foram completamente reconstruídos sob o design system adaptativo do Avalon. Os status das obras, vibes ("Qualquer", "Curtos", etc.) e o botão alternativo "OUTRO" seguem os gradientes, sombras e as cores autênticas dos temas.
+- **📈 Contraste Aperfeiçoado e Cards Reconstruídos**: Os boxes de status e gráficos em barras na página física de detalhes da obra foram readequados para remover planos de fundo escuros fixos, garantindo compatibilidade elegante tanto em modo escuro quanto em modo claro sintonizado. Tags de categorias e gêneros receberam novos limites de contrastes legíveis em todas as variações de displays.
 
 ---
 

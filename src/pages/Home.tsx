@@ -362,7 +362,7 @@ export default function Home() {
             
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <Award className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                <Award className="w-4 h-4 md:w-5 md:h-5 text-brand" />
                 <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Popular</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topPopular}</p>
@@ -370,7 +370,7 @@ export default function Home() {
 
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-brand" />
                 <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Próximos</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topUpcoming}</p>
@@ -378,7 +378,7 @@ export default function Home() {
 
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <Heart className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
+                <Heart className="w-4 h-4 md:w-5 md:h-5 text-brand" />
                 <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Favoritos</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topRated}</p>

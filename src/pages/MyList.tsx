@@ -431,9 +431,9 @@ export default function MyList() {
             <button 
               onClick={() => handleSuggestion()}
               disabled={filteredList.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-yellow-500 hover:text-white transition-all shadow-lg shadow-yellow-500/5 group disabled:opacity-40 disabled:hover:bg-yellow-500/10 disabled:hover:text-yellow-500 disabled:shadow-none whitespace-nowrap"
+              className="flex items-center gap-2 px-4 py-2 bg-brand/10 border border-brand/20 text-brand rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand hover:text-white transition-all shadow-lg shadow-brand/5 group disabled:opacity-40 disabled:hover:bg-brand/10 disabled:hover:text-brand disabled:shadow-none whitespace-nowrap"
             >
-              <Sparkles className="w-3.5 h-3.5 text-yellow-500 group-hover:rotate-12 transition-transform shrink-0" /> Me Surpreenda!
+              <Sparkles className="w-3.5 h-3.5 text-brand group-hover:rotate-12 transition-transform shrink-0" /> Me Surpreenda!
             </button>
 
             <div className="flex bg-[var(--color-card)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
@@ -611,8 +611,8 @@ export default function MyList() {
                        ) : null}
                        
                        {suggestion.score ? (
-                         <span className="bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-0.5">
-                           <Star className="w-2.5 h-2.5 fill-yellow-500 stroke-none" /> {suggestion.score}
+                         <span className="bg-brand/10 text-brand px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-0.5">
+                           <Star className="w-2.5 h-2.5 fill-brand stroke-none" /> {suggestion.score}
                          </span>
                        ) : null}
 
@@ -642,7 +642,7 @@ export default function MyList() {
                  </p>
                  <div className="grid grid-cols-4 gap-1">
                    {[
-                     { label: 'Qualquer', vibe: 'any' as const, icon: Sparkles, color: 'text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400' },
+                     { label: 'Qualquer', vibe: 'any' as const, icon: Sparkles, color: 'text-brand hover:bg-brand/10 hover:text-brand' },
                      { label: 'Curtos', vibe: 'quick' as const, icon: Zap, color: 'text-indigo-500 hover:bg-indigo-500/10 hover:text-indigo-400' },
                      { label: 'Relíquias', vibe: 'treasures' as const, icon: Crown, color: 'text-amber-500 hover:bg-amber-500/10 hover:text-amber-400' },
                      { label: 'Mundiais', vibe: 'marathon' as const, icon: Compass, color: 'text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-400' }
@@ -684,7 +684,7 @@ export default function MyList() {
                    disabled={isSpinning}
                    type="button"
                    onClick={() => handleSuggestion(vibeFilter)}
-                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-3 bg-yellow-500/15 border border-yellow-500/25 text-yellow-500 hover:bg-yellow-500 hover:text-black rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-45"
+                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-3 bg-brand/15 border border-brand/25 text-brand hover:bg-brand hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-45"
                  >
                    <Shuffle className={cn("w-3 h-3", isSpinning ? "animate-spin" : "")} />
                    OUTRO

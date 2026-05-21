@@ -3,12 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, Zap } from 'lucide-react';
 
 const LATEST_CHANGES = {
-  version: '3.6.0',
+  version: '4.5.0',
   items: [
-    '💎 Betterflix Integration: Nova fonte de alta qualidade adicionada! O catálogo do Betterflix agora é pesquisável e filtrado automaticamente para conteúdo de anime.',
-    '🎬 Fontes Restauradas: O sistema de addons Stremio foi reativado e estabilizado. Torrentio e outras fontes P2P voltam a operar normalmente.',
-    '⚙️ Testes Avançados: Função de teste de conexões expandida com feedback visual em tempo real e indicadores de saúde por provedor.',
-    '🛡️ Proxy Dinâmico: Novo motor de proxy com headers rotativos para garantir o carregamento de imagens e manifestos externos sem bloqueios.'
+    '🎨 Luxury Light & Dark Contrast: Sintonização estética premium do modo nocturno e modo claro, introduzindo cores ricas, sombras suaves e bordas ultrafinas para maior conforto visual.',
+    '✨ Kinetic Tab & Route Transitions: Transições entre telas fluidas e leves guiadas por curvas Bézier de alta-fidelidade espacial, otimizadas para notebooks e aparelhos mobile de entrada.',
+    '💫 Premium UI Overhaul: Botões, estados ativos e elementos interativos Magnetic Cards agora adaptam-se com precisão absoluta aos temas, entregando feedback tátil deslumbrante.'
   ]
 };
 

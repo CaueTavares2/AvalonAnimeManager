@@ -258,7 +258,7 @@ export default function AnimeDetails() {
                   
                   <div className={cn(
                     "bg-[var(--color-card)] p-3 rounded-lg border space-y-2 transition-all duration-500",
-                    inList.status === 'COMPLETED' && !inList.score ? "border-brand shadow-[0_0_10px_rgba(255,107,0,0.15)] animate-pulse" : "border-[var(--color-border)]"
+                    inList.status === 'COMPLETED' && !inList.score ? "border-brand shadow-[0_0_10px_var(--color-brand)]/15 animate-pulse" : "border-[var(--color-border)]"
                   )}>
                     <p className={cn(
                         "text-[9px] font-black uppercase tracking-[0.2em] text-center",
@@ -395,7 +395,7 @@ export default function AnimeDetails() {
               <h1 className="text-3xl font-black text-[var(--color-text-bright)] leading-tight">{anime.title}</h1>
               <div className="flex flex-wrap gap-1.5">
                 {anime.genres.map(genre => (
-                  <span key={genre} className="px-2 py-0.5 bg-[var(--color-card)] border border-[var(--color-border)] text-gray-300 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                  <span key={genre} className="px-2 py-0.5 bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text)] text-[10px] font-bold rounded-lg uppercase tracking-wider">
                     {genre}
                   </span>
                 ))}
@@ -408,7 +408,7 @@ export default function AnimeDetails() {
 
             <div className="grid grid-cols-4 gap-2 sm:gap-4">
               <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                <Star className="w-4 h-4 text-brand fill-current" />
                 <span className="text-base font-black text-[var(--color-text-bright)]">{Math.round(anime.score)}%</span>
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Score</span>
               </div>
@@ -418,12 +418,12 @@ export default function AnimeDetails() {
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Rank</span>
               </div>
               <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <BookOpen className="w-4 h-4 text-emerald-500" />
+                <BookOpen className="w-4 h-4 text-brand" />
                 <span className="text-base font-black text-[var(--color-text-bright)]">{anime.members ? (anime.members / 1000).toFixed(1) + 'k' : '--'}</span>
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Members</span>
               </div>
               <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] flex flex-col items-center justify-center gap-1 shadow-sm">
-                <Calendar className="w-4 h-4 text-orange-400" />
+                <Calendar className="w-4 h-4 text-brand" />
                 <span className="text-base font-black text-[var(--color-text-bright)]">{anime.year}</span>
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-center">Year</span>
               </div>
@@ -433,7 +433,7 @@ export default function AnimeDetails() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Status Distribution</h3>
-                  <div className="bg-[#151a24] p-3 rounded-lg border border-[var(--color-border)] shadow-sm flex flex-col justify-between h-24">
+                  <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] shadow-sm flex flex-col justify-between h-24">
                     <div className="flex gap-1.5">
                       {stats.statusDistribution.filter((s: any) => s.status !== 'DROPPED').slice(0, 4).map((s: any) => {
                         const colors: any = { COMPLETED: "#68d639", PLANNING: "#02a9ff", CURRENT: "#9256f3", PAUSED: "#f779a4" };
@@ -463,7 +463,7 @@ export default function AnimeDetails() {
 
                 <div className="space-y-3">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Score Distribution</h3>
-                  <div className="bg-[#151a24] p-3 rounded-lg border border-[var(--color-border)] shadow-sm h-24 flex items-end justify-between gap-1 overflow-hidden py-3 px-4">
+                  <div className="bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)] shadow-sm h-24 flex items-end justify-between gap-1 overflow-hidden py-3 px-4">
                     {(() => {
                       const maxScore = Math.max(...stats.scoreDistribution.map((s: any) => s.amount));
                       return stats.scoreDistribution.map((s: any) => {

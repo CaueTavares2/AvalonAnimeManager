@@ -12,11 +12,11 @@
   --color-brand-dark: #d97706;
   --color-brand-muted: rgba(245, 158, 11, 0.1);
   
-  --color-bg: #edf1f5;
+  --color-bg: #f4f6fa;
   --color-card: #ffffff;
-  --color-text: #4b5563;
-  --color-text-bright: #1f2937;
-  --color-border: rgba(0, 0, 0, 0.08);
+  --color-text: #4e5a70;
+  --color-text-bright: #0f172a;
+  --color-border: rgba(15, 23, 42, 0.06);
 }
 
 .theme-avalon {
@@ -32,22 +32,22 @@
 }
 
 .theme-crunchyroll.dark {
-  --color-bg: #000000;
+  --color-bg: #0a0b0d;
   --color-card: #141519;
-  --color-text: #cacaca;
+  --color-text: #9ca3af;
   --color-text-bright: #ffffff;
-  --color-border: #23252b;
+  --color-border: rgba(255, 255, 255, 0.05);
   --color-brand: #f47521;
   --color-brand-dark: #d35400;
   --color-brand-muted: rgba(244, 117, 33, 0.1);
 }
 
 .theme-crunchyroll:not(.dark) {
-  --color-bg: #f2f2f2;
+  --color-bg: #f6f6f6;
   --color-card: #ffffff;
-  --color-text: #333333;
-  --color-text-bright: #000000;
-  --color-border: #dddddd;
+  --color-text: #4b5563;
+  --color-text-bright: #111827;
+  --color-border: rgba(0, 0, 0, 0.05);
   --color-brand: #f47521;
   --color-brand-dark: #d35400;
   --color-brand-muted: rgba(244, 117, 33, 0.1);
@@ -60,11 +60,11 @@
 }
 
 .dark {
-  --color-bg: #070d19;
-  --color-card: #121922;
+  --color-bg: #090e17;
+  --color-card: #111823;
   --color-text: #94a3b8;
-  --color-text-bright: #f1f5f9;
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text-bright: #f8fafc;
+  --color-border: rgba(255, 255, 255, 0.07);
 }
 
 body {

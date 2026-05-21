@@ -121,11 +121,25 @@ const Feedback = lazyWithRetry(() => import('../pages/Feedback'));
 const SearchResults = lazyWithRetry(() => import('../pages/SearchResults'));
 const MangaReader = lazyWithRetry(() => import('../pages/MangaReader'));
 
+const PageTransition = ({ children }: { children: React.ReactNode }) => {
+  const { isMobile } = useDevice();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: isMobile ? 6 : 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: isMobile ? -6 : -12 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      className="will-change-transform"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 export default function AppRoutes() {
   const { loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isMobile } = useDevice();
 
   useEffect(() => {
     // Check if we are returning from AniList OAuth
@@ -161,40 +175,27 @@ export default function AppRoutes() {
   }
 
   return (
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
-            <Route path="/" element={
-            isMobile ? (
-              <SafeSuspense><Home /></SafeSuspense>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-              >
-                <SafeSuspense><Home /></SafeSuspense>
-              </motion.div>
-            )
-          } />
-          <Route path="/:type/:id" element={<SafeSuspense><AnimeDetails /></SafeSuspense>} />
-          <Route path="/anime/:id/watch" element={<SafeSuspense><AnimePlayer /></SafeSuspense>} />
-          <Route path="/manga/:id/read" element={<SafeSuspense><MangaReader /></SafeSuspense>} />
-          <Route path="/list" element={<SafeSuspense><MyList /></SafeSuspense>} />
-          <Route path="/community" element={<SafeSuspense><Community /></SafeSuspense>} />
-          <Route path="/ranking" element={<SafeSuspense><Rankings /></SafeSuspense>} />
-          <Route path="/profile" element={<SafeSuspense><Profile /></SafeSuspense>} />
-          <Route path="/profile/:uid" element={<SafeSuspense><PublicProfile /></SafeSuspense>} />
-          <Route path="/social" element={<SafeSuspense><Social /></SafeSuspense>} />
-          <Route path="/chat" element={<SafeSuspense><AniChat /></SafeSuspense>} />
-          <Route path="/shop" element={<SafeSuspense><Shop /></SafeSuspense>} />
-          <Route path="/settings" element={<SafeSuspense><Settings /></SafeSuspense>} />
-          <Route path="/feedback" element={<SafeSuspense><Feedback /></SafeSuspense>} />
-          <Route path="/login" element={<SafeSuspense><Login /></SafeSuspense>} />
-          <Route path="/analytics" element={<SafeSuspense><Analytics /></SafeSuspense>} />
-          <Route path="/admin" element={<SafeSuspense><Admin /></SafeSuspense>} />
-          <Route path="/animes-by-year" element={<SafeSuspense><AnimesByYear /></SafeSuspense>} />
-          <Route path="/search" element={<SafeSuspense><SearchResults /></SafeSuspense>} />
+          <Route path="/" element={<PageTransition><SafeSuspense><Home /></SafeSuspense></PageTransition>} />
+          <Route path="/:type/:id" element={<PageTransition><SafeSuspense><AnimeDetails /></SafeSuspense></PageTransition>} />
+          <Route path="/anime/:id/watch" element={<PageTransition><SafeSuspense><AnimePlayer /></SafeSuspense></PageTransition>} />
+          <Route path="/manga/:id/read" element={<PageTransition><SafeSuspense><MangaReader /></SafeSuspense></PageTransition>} />
+          <Route path="/list" element={<PageTransition><SafeSuspense><MyList /></SafeSuspense></PageTransition>} />
+          <Route path="/community" element={<PageTransition><SafeSuspense><Community /></SafeSuspense></PageTransition>} />
+          <Route path="/ranking" element={<PageTransition><SafeSuspense><Rankings /></SafeSuspense></PageTransition>} />
+          <Route path="/profile" element={<PageTransition><SafeSuspense><Profile /></SafeSuspense></PageTransition>} />
+          <Route path="/profile/:uid" element={<PageTransition><SafeSuspense><PublicProfile /></SafeSuspense></PageTransition>} />
+          <Route path="/social" element={<PageTransition><SafeSuspense><Social /></SafeSuspense></PageTransition>} />
+          <Route path="/chat" element={<PageTransition><SafeSuspense><AniChat /></SafeSuspense></PageTransition>} />
+          <Route path="/shop" element={<PageTransition><SafeSuspense><Shop /></SafeSuspense></PageTransition>} />
+          <Route path="/settings" element={<PageTransition><SafeSuspense><Settings /></SafeSuspense></PageTransition>} />
+          <Route path="/feedback" element={<PageTransition><SafeSuspense><Feedback /></SafeSuspense></PageTransition>} />
+          <Route path="/login" element={<PageTransition><SafeSuspense><Login /></SafeSuspense></PageTransition>} />
+          <Route path="/analytics" element={<PageTransition><SafeSuspense><Analytics /></SafeSuspense></PageTransition>} />
+          <Route path="/admin" element={<PageTransition><SafeSuspense><Admin /></SafeSuspense></PageTransition>} />
+          <Route path="/animes-by-year" element={<PageTransition><SafeSuspense><AnimesByYear /></SafeSuspense></PageTransition>} />
+          <Route path="/search" element={<PageTransition><SafeSuspense><SearchResults /></SafeSuspense></PageTransition>} />
         </Routes>
       </AnimatePresence>
   );
