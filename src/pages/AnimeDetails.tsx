@@ -89,10 +89,32 @@ export default function AnimeDetails() {
 
   const handleAuraIncrease = (charId: number, charName: string) => {
     const current = characterAuras[charId] || 0;
-    const next = current >= 5 ? 0 : current + 1;
+    if (current >= 5) {
+      alert("⚠️ Aura MÁXIMA (Nvl 5) já alcançada para este personagem!");
+      return;
+    }
+    const next = current + 1;
+    
+    // Cost mapping to level up Aura
+    const AURA_COSTS = [0, 25, 75, 150, 350, 800];
+    const cost = AURA_COSTS[next];
+
+    const currentPoints = profile.availablePoints || 0;
+    if (currentPoints < cost) {
+      alert(`⚠️ Você precisa de ${cost} AP (Pontos) para despertar a Aura Nível ${next}!\nAssista animes ou favoritar personagens para ganhar mais pontos.`);
+      return;
+    }
+
+    // Deduct points
+    updateProfile({
+      availablePoints: currentPoints - cost
+    });
+
     const newAuras = { ...characterAuras, [charId]: next };
     setCharacterAuras(newAuras);
     localStorage.setItem('avalon_character_auras', JSON.stringify(newAuras));
+    
+    alert(`⚡ Aura nível ${next} despertada para ${charName}!\n-${cost} AP consumidos. Seu Poder de Combate Aumentou!`);
 
     // Audio synth keypress feedback
     try {
@@ -125,7 +147,7 @@ export default function AnimeDetails() {
       translation: vocalData.translation
     });
 
-    playVoice(vocalData.phraseJa, undefined, () => {
+    playVoice(vocalData.audioUrl, vocalData.phraseJa, undefined, () => {
       // Audio playback completed
     });
   };

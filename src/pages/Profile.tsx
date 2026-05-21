@@ -1,4 +1,4 @@
-import { User as UserIcon, Calendar, MapPin, Edit3, Save, X, LogOut, ShieldCheck, TrendingUp, Heart, Trophy, Medal, Star, Ghost, HeartPulse, Wind, Eye, Moon, Compass, Edit2, Trash2, Search, Flame, ShieldPlus, SunDim, Coffee, UserPlus, Users, Image as ImageIcon, Crown, Link as LinkIcon, Sparkles, Hourglass, ShieldCheck as ShieldCheckIcon } from 'lucide-react';
+import { User as UserIcon, Calendar, MapPin, Edit3, Save, X, LogOut, ShieldCheck, TrendingUp, Heart, Trophy, Medal, Star, Ghost, HeartPulse, Wind, Eye, Moon, Compass, Edit2, Trash2, Search, Flame, ShieldPlus, SunDim, Coffee, UserPlus, Users, Image as ImageIcon, Crown, Link as LinkIcon, Sparkles, Hourglass, ShieldCheck as ShieldCheckIcon, Zap } from 'lucide-react';
 
 // Add a helper component to render the icon based on the icon name
 const AchievementIcon = ({ name, className, size }: { name: string, className?: string, size?: number }) => {
@@ -180,10 +180,27 @@ export default function Profile() {
           </div>
           
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 md:gap-4 w-full md:w-auto -mt-2 md:mt-0">
-            <div className="hidden md:flex flex-col items-end justify-center px-4 border-r border-[var(--color-border)]">
-              <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Nível de Poder</p>
-              <div className="flex items-center gap-2">
-                <p className="text-lg font-black text-[var(--color-text-bright)] italic leading-none">{profile.otakuPoints || 0}</p>
+            <div className="hidden md:flex flex-col items-end justify-center px-4 border-r border-[var(--color-border)] relative">
+              <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                Poder de Combate
+                <Zap className="w-2.5 h-2.5 text-amber-500" />
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {(() => {
+                  try {
+                    const characterAuras = JSON.parse(localStorage.getItem('avalon_character_auras') || '{}');
+                    let auraPower = 0;
+                    Object.values(characterAuras).forEach((lvl: any) => { auraPower += (lvl as number) * 150 + 20; });
+                    const totalPower = (profile.otakuPoints || 0) + auraPower;
+                    return (
+                      <p className="text-xl font-black text-amber-400 italic leading-none drop-shadow-md">
+                        {totalPower} <span className="text-[10px] text-amber-500/50">KI</span>
+                      </p>
+                    );
+                  } catch(e) {
+                    return <p className="text-xl font-black text-amber-400 italic leading-none">{profile.otakuPoints || 0}</p>;
+                  }
+                })()}
                 <button 
                   onClick={async () => {
                     const { rankingService } = await import('../services/rankingService');

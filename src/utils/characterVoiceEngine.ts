@@ -5,6 +5,7 @@ export interface VoiceSnippet {
   badge: string;
   auraColor: string; // e.g. golden, crimson, blue, purple, emerald
   pactTitle: string;
+  audioUrl?: string;
 }
 
 const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
@@ -14,7 +15,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Eu nunca desisto, esse é meu jeito ninja! Tô certo!",
     badge: "Determinação Ninja",
     auraColor: "from-amber-400 to-orange-600 shadow-orange-500/50",
-    pactTitle: "Companheiro do Hokage"
+    pactTitle: "Companheiro do Hokage",
+    audioUrl: "https://www.myinstants.com/media/sounds/naruto-kage-bunshin.mp3"
   },
   tanjiro: {
     phraseJa: "水の呼吸、拾ノ型、生生流転！妹は俺が守る！",
@@ -22,7 +24,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Respiração da Água, Décima Forma: Fluxo Constante! Eu protegerei minha irmã!",
     badge: "Espírito da Água",
     auraColor: "from-teal-400 to-blue-600 shadow-cyan-500/50",
-    pactTitle: "Parceiro do Kamado"
+    pactTitle: "Parceiro do Kamado",
+    audioUrl: "https://www.myinstants.com/media/sounds/tanjiro-mizu-no-kokyu.mp3"
   },
   luffy: {
     phraseJa: "海賊王に、俺はなる！肉を食うぞ！",
@@ -30,7 +33,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Eu serei o Rei dos Piratas! Hora de comer carne!",
     badge: "Haki do Rei",
     auraColor: "from-red-500 to-yellow-500 shadow-red-500/50",
-    pactTitle: "Oficial do Chapéu de Palha"
+    pactTitle: "Oficial do Chapéu de Palha",
+    audioUrl: "https://www.myinstants.com/media/sounds/luffy-kaizoku-ou-ni-ore-wa-naru.mp3"
   },
   zoro: {
     phraseJa: "世界一の剣豪になる。勝つまで、もう二と負けねえ！",
@@ -38,15 +42,17 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Vou ser o maior espadachim do mundo. Até vencer, nunca mais perderei!",
     badge: "Três Espadas",
     auraColor: "from-emerald-400 to-green-700 shadow-green-500/50",
-    pactTitle: "Guerreiro das Três Espadas"
+    pactTitle: "Guerreiro das Três Espadas",
+    audioUrl: "https://www.myinstants.com/media/sounds/zoro-santoryu.mp3"
   },
   goku: {
     phraseJa: "オッス！オラ悟空！もっと強くなって、地球を守るぞ！",
     phraseRomaji: "Ossu! Ora Goku! Motto tsuyoku natte, chikyuu o mamoru zo!",
-    translation: "Oi, eu sou o Goku! Vou ficar ainda mais forte para proteger a Terra!",
+    translation: "Oi, eu sou o Goku! Vou ficar ainda mais forte para proteger a Earth!",
     badge: "Instinto Superior",
     auraColor: "from-cyan-400 to-yellow-400 shadow-yellow-500/50",
-    pactTitle: "Aliado dos Saiyajins"
+    pactTitle: "Aliado dos Saiyajins",
+    audioUrl: "https://www.myinstants.com/media/sounds/kamehameha_3.mp3"
   },
   sasuke: {
     phraseJa: "千鳥！俺はうちはの復讐者だ、すべてを闇に葬る。",
@@ -54,7 +60,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Chidori! Eu sou um vingador do clã Uchiha, vou enterrar tudo nas trevas.",
     badge: "Olho do Rinnegan",
     auraColor: "from-indigo-600 to-purple-800 shadow-purple-500/50",
-    pactTitle: "Protetor das Sombras"
+    pactTitle: "Protetor das Sombras",
+    audioUrl: "https://www.myinstants.com/media/sounds/sasuke-chidori.mp3"
   },
   eren: {
     phraseJa: "駆逐してやる、この世から、一匹残らず！進み続ける。",
@@ -62,7 +69,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Vou exterminar todos eles, deste mundo, até o último! Continuarei avançando.",
     badge: "Rumble Fundador",
     auraColor: "from-amber-800 to-red-950 shadow-red-950/50",
-    pactTitle: "Vanguardista da Liberdade"
+    pactTitle: "Vanguardista da Liberdade",
+    audioUrl: "https://www.myinstants.com/media/sounds/eren-tatakae.mp3"
   },
   gojo: {
     phraseJa: "領域展開、無量空処。大丈夫、僕最強だから。",
@@ -70,7 +78,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Expansão de Domínio: Vazio Infinito. Não se preocupe, eu sou o mais forte.",
     badge: "Sem Limites",
     auraColor: "from-sky-300 to-indigo-500 shadow-sky-400/50",
-    pactTitle: "Discípulo do Infinito"
+    pactTitle: "Discípulo do Infinito",
+    audioUrl: "https://www.myinstants.com/media/sounds/gojo-hollow-purple.mp3"
   },
   kaneki: {
     phraseJa: "この世界が間違っている。僕に喰われろ！",
@@ -118,7 +127,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Sou apenas um cara que é herói por diversão. Mas acaba tudo com um soco.",
     badge: "Força Absoluta",
     auraColor: "from-yellow-400 to-yellow-600 shadow-yellow-300/50",
-    pactTitle: "Parceiro de Treino de Saitama"
+    pactTitle: "Parceiro de Treino de Saitama",
+    audioUrl: "https://www.myinstants.com/media/sounds/saitama-ok.mp3"
   },
   light: {
     phraseJa: "僕は新世界の神になる！計画通り！",
@@ -126,7 +136,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Eu serei o Deus do novo mundo! Exatamente como planejado!",
     badge: "Justiça do Kira",
     auraColor: "from-zinc-800 to-red-900 shadow-red-950/50",
-    pactTitle: "Portador do Death Note"
+    pactTitle: "Portador do Death Note",
+    audioUrl: "https://www.myinstants.com/media/sounds/light-yagami-laugh.mp3"
   },
   kilua: {
     phraseJa: "神速！あんた、俺と友達になってよ。",
@@ -158,7 +169,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Faça uma escolha da qual não se arrependerá. Vamos exterminar os titãs.",
     badge: "Líder das Sombras",
     auraColor: "from-slate-500 to-green-800 shadow-green-700/50",
-    pactTitle: "Oficial da Tropa de Exploração"
+    pactTitle: "Oficial da Tropa de Exploração",
+    audioUrl: "https://www.myinstants.com/media/sounds/levi-kennyaaa.mp3"
   },
   nezuko: {
     phraseJa: "んー！んー！（爆血！）",
@@ -166,7 +178,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Mmh! Mmh! (Sangue Explosivo!)",
     badge: "Chama Demoníaca",
     auraColor: "from-pink-400 to-rose-600 shadow-pink-500/50",
-    pactTitle: "Guardião da Nezuko"
+    pactTitle: "Guardião da Nezuko",
+    audioUrl: "https://www.myinstants.com/media/sounds/nezuko-chwaan.mp3"
   },
   megumin: {
     phraseJa: "エクスプロージョン！我が名はめぐみん、紅魔族随一の魔法の使い手！",
@@ -174,7 +187,8 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     translation: "Explooooosion! Meu nome é Megumin, a maior manipuladora de magia do Clã Carmesim!",
     badge: "Magia Explosiva",
     auraColor: "from-red-600 to-yellow-600 shadow-red-500/50",
-    pactTitle: "Companheiro de Arcana Explosiva"
+    pactTitle: "Companheiro de Arcana Explosiva",
+    audioUrl: "https://www.myinstants.com/media/sounds/megumin-explosion.mp3"
   },
   rem: {
     phraseJa: "レムはスバル君を信じています。ここから始めましょう、一から！",
@@ -191,6 +205,33 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     badge: "Magia Espiritual",
     auraColor: "from-purple-300 to-violet-500 shadow-purple-300/50",
     pactTitle: "Cavaleiro Real de Emilia"
+  },
+  dio: {
+    phraseJa: "ザ・ワールド！時よ止まれ！",
+    phraseRomaji: "Za Warudo! Toki yo tomare!",
+    translation: "The World! O tempo para!",
+    badge: "Vampiro Imortal",
+    auraColor: "from-yellow-400 to-amber-600 shadow-yellow-500/50",
+    pactTitle: "Servo de DIO",
+    audioUrl: "https://www.myinstants.com/media/sounds/za-warudo-stop-time-sound-effect_2.mp3"
+  },
+  jotaro: {
+    phraseJa: "やれやれだぜ... オラオラオラ！",
+    phraseRomaji: "Yare yare daze... Ora ora ora!",
+    translation: "Você é um saco... Ora Ora Ora!",
+    badge: "Stand Platinum",
+    auraColor: "from-purple-500 to-indigo-700 shadow-purple-500/50",
+    pactTitle: "Companheiro do Kujo",
+    audioUrl: "https://www.myinstants.com/media/sounds/jotaro-ora.mp3"
+  },
+  zenitsu: {
+    phraseJa: "雷の呼吸 壱ノ型 霹靂一閃！",
+    phraseRomaji: "Kaminari no kokyuu ichi no kata: Hekireki issen!",
+    translation: "Respiração do Trovão, Primeira Forma: Lampejo do Trovão!",
+    badge: "Trovão Adormecido",
+    auraColor: "from-yellow-300 to-yellow-500 shadow-yellow-400/50",
+    pactTitle: "Parceiro do Trovão",
+    audioUrl: "https://www.myinstants.com/media/sounds/zenitsu-thunder-breathing.mp3"
   }
 };
 
@@ -233,17 +274,44 @@ export function getCharacterData(name: string, role?: string, animeTitle?: strin
   }
 }
 
+let currentAudio: HTMLAudioElement | null = null;
+
 /**
- * Triggers the browser's Web Speech API to speak the Japanese voice quote using ja-JP
+ * Plays the character's original voice clip if available, or falls back to Web Speech API.
  */
-export function playVoice(phraseJa: string, onStart?: () => void, onEnd?: () => void) {
-  if (!('speechSynthesis' in window)) {
-    alert("Seu navegador não suporta síntese de voz.");
+export function playVoice(audioUrl: string | undefined, phraseJa: string, onStart?: () => void, onEnd?: () => void) {
+  // Cancel any ongoing speaking to prevent overlays
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+
+  if (audioUrl) {
+    if (onStart) onStart();
+    currentAudio = new Audio(audioUrl);
+    currentAudio.volume = 0.8;
+    currentAudio.onended = () => {
+      if (onEnd) onEnd();
+      currentAudio = null;
+    };
+    currentAudio.play().catch((err) => {
+      console.warn("Failed to play audioUrl, falling back to TTS", err);
+      playTTS(phraseJa, onStart, onEnd);
+    });
     return;
   }
 
-  // Cancel any ongoing speaking to prevent overlays
-  window.speechSynthesis.cancel();
+  playTTS(phraseJa, onStart, onEnd);
+}
+
+function playTTS(phraseJa: string, onStart?: () => void, onEnd?: () => void) {
+  if (!('speechSynthesis' in window)) {
+    return;
+  }
 
   const utterance = new SpeechSynthesisUtterance(phraseJa);
   utterance.lang = 'ja-JP';
