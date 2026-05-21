@@ -1,14 +1,15 @@
 import { useAnimeList, AnimeStatus, UserAnime } from '../hooks/useAnimeList';
-import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw, Sparkles, Search, X } from 'lucide-react';
+import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw, Sparkles, Search, X, Zap, Crown, Compass, Shuffle } from 'lucide-react';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { cn } from '../lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CompletionModal from '../components/shared/CompletionModal';
 import AnimeListRow from '../components/anime/AnimeListRow';
 import { useLanguage } from '../context/LanguageContext';
 import { rankingService } from '../services/rankingService';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 const ITEMS_PER_CHUNK = 50;
 
@@ -17,6 +18,7 @@ export default function MyList() {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [mediaType, setMediaType] = useState<'ANIME' | 'MANGA'>('ANIME');
   const [filter, setFilter] = useState<AnimeStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,6 +42,13 @@ export default function MyList() {
   }, [list, user]);
   const [completedAnime, setCompletedAnime] = useState<UserAnime | null>(null);
   const [suggestion, setSuggestion] = useState<UserAnime | null>(null);
+  
+  // Advanced Suggestion Roulette state
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [spinningImage, setSpinningImage] = useState('');
+  const [spinningTitle, setSpinningTitle] = useState('');
+  const [vibeFilter, setVibeFilter] = useState<'any' | 'quick' | 'treasures' | 'marathon'>('any');
+
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_CHUNK);
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -154,11 +163,95 @@ export default function MyList() {
     });
   }, [list, updateAnime]);
 
-  const handleSuggestion = () => {
-    // Advanced Next-Season Auto-Detector logic
-    // We group by anime series name by stripping common trailing prefixes like "Season 2", "Part 2", "2nd Season", etc.
-    // Extremely simplistic grouping approach for demonstration.
-    const sanitizeTitle = (t: string) => t.replace(/(Season|Part) \d+|:\s*(The|An).*/i, '').trim().toLowerCase();
+  const handleSuggestion = (forcedVibe?: 'any' | 'quick' | 'treasures' | 'marathon') => {
+    const activeVibe = forcedVibe || vibeFilter;
+
+    // Advanced Next-Season Auto-Detector & Smart Filtering logic
+    // We group by anime/manga franchise root by stripping out common sequel suffixes or notations.
+    const sanitizeTitle = (t: string) => {
+      let clean = t;
+      // Strip Common Season/Part indicators of sequels/continuations
+      clean = clean.replace(/\s\b(season|temporada|temp|s\d|t\d)\s*(2|3|4|5|6|7|8|9|10|[iI|vV|xX]+)?\b/gi, '');
+      clean = clean.replace(/\s\b([2-9]|\d{2,})(nd|rd|th)\s+(season|temporada)\b/gi, '');
+      clean = clean.replace(/\s\b(part|partie|parte|cour|arc)\s*(2|3|4|5|6|7|8|9|10|[iI|vV|xX]+)?\b/gi, '');
+      clean = clean.replace(/\s\b(ii|iii|iv|v|vi|vii|viii|ix|x)\b/gi, '');
+      clean = clean.replace(/\s([2-9])$/, '');
+      clean = clean.replace(/\b(r2|r3)\b/gi, '');
+      // Strip subtitle delimiters
+      clean = clean.replace(/[:\-].*$/i, '');
+      return clean.trim().toLowerCase();
+    };
+
+    const isSequelOrSubsequentSeason = (title: string): boolean => {
+      const norm = title.toLowerCase().trim();
+
+      // Standalone or trailing Roman numerals from II to X (cases like "Date A Live V", "InuYasha Kanketsu-hen")
+      if (/\b(ii|iii|iv|v|vi|vii|viii|ix|x)\b$/i.test(norm)) return true;
+      if (/\b(ii|iii|iv|v|vi|vii|viii|ix|x)\b[\s:\-]/i.test(norm)) return true;
+
+      // Season with indices >= 2
+      if (/\b(season|temporada|temp|s|t)\s*([2-9]|\d{2,})\b/i.test(norm)) return true;
+      if (/\b(season|temporada|temp\.)\s*([iI][iI]+|[iI][vV]|[vV]|[vV][iI]+|[iI][xX]|[xX])\b/i.test(norm)) return true;
+
+      // Ordinal seasons >= 2nd
+      if (/\b([2-9]|\d{2,})(nd|rd|th|ª|º)\s*(season|temporada|temp|part|parte)\b/i.test(norm)) return true;
+
+      // Parts >= 2
+      if (/\b(part|partie|parte|cour|arc)\s*([2-9]|0[2-9]|\d{2,})\b/i.test(norm)) return true;
+      if (/\b(part|partie|parte|cour|arc)\s*(ii|iii|iv|v|vi|vii|viii|ix|x)\b/i.test(norm)) return true;
+
+      // Standalone trailing digit >= 2 (e.g. Kaguya-sama 3)
+      if (/\s([2-9]|\d{2,})$/.test(norm)) return true;
+
+      // R2 / R3 sequels
+      if (/\b(r[2-9]|final\s+season|final\s+part|last\s+season|sequel|continuacao|continuação)\b/i.test(norm)) return true;
+
+      // Common sequel title keywords (exclusive/distinctive sequel keywords)
+      const sequelKeywords = [
+        'culling game',
+        'shimetsu kaiyuu',
+        'shibuya jihen',
+        'shibuya incident',
+        'mugen train',
+        'entertainment district',
+        'yuukaku-hen',
+        'swordsmith village',
+        'katanakaji no riso-hen',
+        'hashira training',
+        'hashira geiko-hen',
+        'final season',
+        'last season',
+        'season finale',
+        'final chapter',
+        'kouhen',
+        'zenpen',
+        'shigaiku',
+        'kyoto saga',
+        'kanketsu-hen',
+        'movie 0',
+        '0 the movie'
+      ];
+      if (sequelKeywords.some(keyword => norm.includes(keyword))) return true;
+
+      return false;
+    };
+
+    const getChronologicalSortValue = (item: UserAnime) => {
+      const title = item.title.toLowerCase();
+      if (!isSequelOrSubsequentSeason(item.title)) {
+        return 0;
+      }
+      const matchDigit = title.match(/\b(?:season|temporada|part|parte|seq|v)\s*([0-9]+)\b/i) || title.match(/\s([2-9]|\d+)\b$/);
+      if (matchDigit) {
+        return parseInt(matchDigit[1], 10);
+      }
+      const matchRoman = title.match(/\b(ii|iii|iv|v|vi|vii|viii|ix|x)\b/i);
+      if (matchRoman) {
+        const romanMap: Record<string, number> = { ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10 };
+        return romanMap[matchRoman[1].toLowerCase()] || 2;
+      }
+      return 1.5;
+    };
 
     const getGroups = () => {
       const groups: Record<string, UserAnime[]> = {};
@@ -174,25 +267,112 @@ export default function MyList() {
     const candidateList: UserAnime[] = [];
 
     Object.values(groups).forEach(franchise => {
-      // Sort franchise chronologically or by ID if possible. Using string title as fallback.
-      franchise.sort((a, b) => a.title.localeCompare(b.title));
+      // Sort franchise chronologically by season/part numerical value
+      franchise.sort((a, b) => getChronologicalSortValue(a) - getChronologicalSortValue(b));
       
       const uncompleted = franchise.filter(a => a.status !== 'COMPLETED' && a.status !== 'DROPPED');
       if (uncompleted.length > 0) {
-        // Find the first uncompleted season in this franchise
-        candidateList.push(uncompleted[0]);
+        const firstIncomplete = uncompleted[0];
+        
+        // Find any earlier prequel in this franchise that has status planning or watching
+        const incompletePrequel = franchise.find(anime => {
+          return (
+            (anime.status !== 'COMPLETED' && anime.status !== 'DROPPED') &&
+            getChronologicalSortValue(anime) < getChronologicalSortValue(firstIncomplete)
+          );
+        });
+
+        if (incompletePrequel) {
+          // Add the earlier uncompleted prequel to candidate list instead of the sequel!
+          candidateList.push(incompletePrequel);
+        } else {
+          // If first incomplete is franchise start or previous parts are fully completed, push
+          candidateList.push(firstIncomplete);
+        }
       }
     });
 
-    // Sub-select candidates in PLANNING first
-    let planningCandidates = candidateList.filter(a => a.status === 'PLANNING');
+    // Fallback: if candidate list became completely empty because everything left is a sequel/season, 
+    // fall back to showing original uncompleted list items without the sequel filter so the button doesn't stop working.
+    let finalCandidates = candidateList;
+    if (finalCandidates.length === 0) {
+      Object.values(groups).forEach(franchise => {
+        const uncompleted = franchise.filter(a => a.status !== 'COMPLETED' && a.status !== 'DROPPED');
+        if (uncompleted.length > 0) {
+          finalCandidates.push(uncompleted[0]);
+        }
+      });
+    }
+
+    // Apply interactive "Vibe Filter" on top of final candidates
+    let vibeCandidates = [...finalCandidates];
+    if (activeVibe === 'quick') {
+      vibeCandidates = finalCandidates.filter(a => a.totalProgress && a.totalProgress <= 13);
+      if (vibeCandidates.length === 0) {
+        vibeCandidates = [...finalCandidates].sort((a, b) => (a.totalProgress || 12) - (b.totalProgress || 12)).slice(0, 5);
+      }
+    } else if (activeVibe === 'marathon') {
+      vibeCandidates = finalCandidates.filter(a => !a.totalProgress || a.totalProgress > 13);
+      if (vibeCandidates.length === 0) {
+        vibeCandidates = [...finalCandidates].sort((a, b) => (b.totalProgress || 24) - (a.totalProgress || 24)).slice(0, 5);
+      }
+    } else if (activeVibe === 'treasures') {
+      // High rating candidates or items that user scored high, or favorited
+      vibeCandidates = finalCandidates.filter(a => a.score && a.score >= 8);
+      if (vibeCandidates.length === 0) {
+        vibeCandidates = [...finalCandidates].filter(a => a.score && a.score > 0);
+      }
+      if (vibeCandidates.length === 0) {
+        vibeCandidates = [...finalCandidates];
+      }
+    }
+
+    if (vibeCandidates.length === 0) {
+      vibeCandidates = finalCandidates;
+    }
+
+    // Sub-select candidates in PLANNING first if any are planning, within the vibe candidates
+    let planningCandidates = vibeCandidates.filter(a => a.status === 'PLANNING');
     if (planningCandidates.length === 0) {
-      planningCandidates = candidateList;
+      planningCandidates = vibeCandidates;
     }
     
     if (planningCandidates.length === 0) return;
-    const random = planningCandidates[Math.floor(Math.random() * planningCandidates.length)];
-    setSuggestion(random);
+    const chosenOne = planningCandidates[Math.floor(Math.random() * planningCandidates.length)];
+    
+    // Start spinning/wheel animation in the UI modal
+    setSuggestion(chosenOne);
+    setIsSpinning(true);
+    setSpinningTitle(chosenOne.title);
+    setSpinningImage(chosenOne.image);
+
+    // Dynamic shuffle list for cover animation
+    const listForShuffle = list.filter(a => a.type === mediaType && a.id !== chosenOne.id);
+    if (listForShuffle.length > 2) {
+      let runCount = 0;
+      const totalRuns = 15;
+      
+      const triggerSpinCycle = () => {
+        if (runCount < totalRuns) {
+          const rand = listForShuffle[Math.floor(Math.random() * listForShuffle.length)];
+          setSpinningTitle(rand.title);
+          setSpinningImage(rand.image);
+          runCount++;
+          const delay = 60 + (runCount * 18); // progressive deceleration
+          setTimeout(triggerSpinCycle, delay);
+        } else {
+          // resolve the spin to final selection
+          setSpinningTitle(chosenOne.title);
+          setSpinningImage(chosenOne.image);
+          setIsSpinning(false);
+        }
+      };
+      
+      setTimeout(triggerSpinCycle, 60);
+    } else {
+      // Instantly finish if list doesn't have enough random items to shuffle
+      setIsSpinning(false);
+    }
   };
 
   return (
@@ -249,7 +429,7 @@ export default function MyList() {
             </div>
 
             <button 
-              onClick={handleSuggestion}
+              onClick={() => handleSuggestion()}
               disabled={filteredList.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-yellow-500 hover:text-white transition-all shadow-lg shadow-yellow-500/5 group disabled:opacity-40 disabled:hover:bg-yellow-500/10 disabled:hover:text-yellow-500 disabled:shadow-none whitespace-nowrap"
             >
@@ -359,42 +539,180 @@ export default function MyList() {
       {/* Suggestion Modal */}
       {suggestion && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-           <div className="bg-[var(--color-card)] w-full max-w-md rounded-2xl shadow-2xl border border-[var(--color-border)] overflow-hidden animate-in zoom-in-95 duration-200">
-             <div className="bg-brand h-24 flex items-center justify-center relative">
-               <Star className="w-12 h-12 text-white/50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-150 rotate-12" />
-               <h2 className="text-xl font-black text-white uppercase tracking-widest italic z-10">Próxima Aventura!</h2>
+           <div className="bg-[var(--color-card)] w-full max-w-sm rounded-2xl shadow-3xl border border-[var(--color-border)] overflow-hidden animate-in zoom-in-95 duration-200">
+             <div className="bg-brand h-24 flex items-center justify-center relative overflow-hidden">
+               <motion.div 
+                 animate={isSpinning ? { rotate: 360 } : { rotate: 12 }}
+                 transition={isSpinning ? { repeat: Infinity, duration: 2, ease: "linear" } : { duration: 0.5 }}
+                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[1.8] opacity-20 pointer-events-none"
+               >
+                 <Star className="w-16 h-16 text-white" />
+               </motion.div>
+               <h2 className="text-lg font-black text-white uppercase tracking-widest italic z-10 flex items-center gap-2">
+                 {isSpinning ? (
+                   <>
+                     <RefreshCw className="w-4 h-4 animate-spin text-yellow-350" />
+                     Sorteando...
+                   </>
+                 ) : (
+                   <>
+                     <Sparkles className="w-4 h-4 text-yellow-300" />
+                     Roleta Otaku!
+                   </>
+                 )}
+               </h2>
              </div>
              
-             <div className="p-8 space-y-6 text-center">
-               <div className="w-32 h-44 mx-auto rounded-xl overflow-hidden shadow-2xl border-4 border-[var(--color-card)] -mt-16 relative z-20">
-                 <img src={suggestion.image} className="w-full h-full object-cover" />
+             <div className="p-6 space-y-6 text-center -mt-10 relative z-10">
+               {/* Cover Image with slot machine sliding animation */}
+               <div className="w-32 h-44 mx-auto rounded-xl overflow-hidden shadow-2xl border-4 border-[var(--color-card)] bg-[var(--color-bg)] relative flex items-center justify-center">
+                 <AnimatePresence mode="popLayout">
+                   <motion.div
+                     key={spinningImage || suggestion.image}
+                     initial={{ y: isSpinning ? 40 : 0, opacity: isSpinning ? 0.4 : 1, filter: isSpinning ? "blur(2px)" : "blur(0px)" }}
+                     animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                     exit={{ y: -40, opacity: 0 }}
+                     transition={{ type: "spring", stiffness: isSpinning ? 500 : 300, damping: isSpinning ? 30 : 20 }}
+                     className="absolute inset-0 w-full h-full"
+                   >
+                     <img 
+                       src={spinningImage || suggestion.image} 
+                       className="w-full h-full object-cover select-none"
+                       referrerPolicy="no-referrer"
+                       alt="Sugestão"
+                     />
+                   </motion.div>
+                 </AnimatePresence>
+                 
+                 {isSpinning && (
+                   <span className="absolute inset-x-0 bottom-2 bg-brand/85 text-white text-[8px] font-black uppercase tracking-widest py-0.5 px-1 animate-pulse rounded mx-4 z-30">
+                     GIRANDO
+                   </span>
+                 )}
                </div>
                
-               <div>
-                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">A sorte escolheu:</p>
-                 <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-tight italic">{suggestion.title}</h3>
+               {/* Anime Info Box */}
+               <div className="space-y-2">
+                 <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                   {isSpinning ? "PROCURANDO PRECIOSIDADE..." : "A SORTE APONTOU PARA:"}
+                 </p>
+                 <h3 className="text-base font-black text-[var(--color-text-bright)] uppercase tracking-tight italic leading-snug min-h-[44px] flex items-center justify-center px-2">
+                   {spinningTitle || suggestion.title}
+                 </h3>
+                 
+                 {!isSpinning && (
+                   <div className="flex flex-col items-center gap-1.5 pt-1 animate-in fade-in duration-300">
+                     {/* Attributes tagging */}
+                     <div className="flex flex-wrap items-center justify-center gap-1.5">
+                       {suggestion.totalProgress ? (
+                         <span className="bg-brand/10 text-brand px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest">
+                           {suggestion.totalProgress} {mediaType === 'ANIME' ? 'EPISÓDIOS' : 'CAPÍTULOS'}
+                         </span>
+                       ) : null}
+                       
+                       {suggestion.score ? (
+                         <span className="bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-0.5">
+                           <Star className="w-2.5 h-2.5 fill-yellow-500 stroke-none" /> {suggestion.score}
+                         </span>
+                       ) : null}
+
+                       <span className="bg-neutral-500/10 text-gray-400 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest">
+                         {t(`list.${suggestion.status.toLowerCase()}`)}
+                       </span>
+                     </div>
+                     
+                     {/* Show Genres if any are loaded */}
+                     {suggestion.genres && suggestion.genres.length > 0 && (
+                       <div className="flex flex-wrap justify-center gap-1 mt-1 max-w-[280px]">
+                         {suggestion.genres.slice(0, 3).map((g: string) => (
+                           <span key={g} className="bg-[var(--color-border)] text-gray-400 px-2 py-0.5 rounded text-[7px] font-bold uppercase tracking-widest">
+                             {g}
+                           </span>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 )}
                </div>
 
-               <div className="flex gap-4">
+               {/* Vibe Selector Buttons */}
+               <div className="bg-[var(--color-border)]/20 p-2 rounded-xl border border-[var(--color-border)]/40">
+                 <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1.5 text-center">
+                   Ajustar Vibe do Destino:
+                 </p>
+                 <div className="grid grid-cols-4 gap-1">
+                   {[
+                     { label: 'Qualquer', vibe: 'any' as const, icon: Sparkles, color: 'text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400' },
+                     { label: 'Curtos', vibe: 'quick' as const, icon: Zap, color: 'text-indigo-500 hover:bg-indigo-500/10 hover:text-indigo-400' },
+                     { label: 'Relíquias', vibe: 'treasures' as const, icon: Crown, color: 'text-amber-500 hover:bg-amber-500/10 hover:text-amber-400' },
+                     { label: 'Mundiais', vibe: 'marathon' as const, icon: Compass, color: 'text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-400' }
+                   ].map(v => (
+                     <button
+                       key={v.vibe}
+                       disabled={isSpinning}
+                       type="button"
+                       onClick={() => {
+                         setVibeFilter(v.vibe);
+                         handleSuggestion(v.vibe);
+                       }}
+                       className={cn(
+                         "flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all text-center border disabled:opacity-50",
+                         vibeFilter === v.vibe
+                           ? "bg-brand border-brand text-white scale-[1.03] shadow-md shadow-brand/10"
+                           : `bg-[var(--color-card)] border-transparent text-gray-400 ${v.color}`
+                       )}
+                     >
+                       <v.icon className={cn("w-3.5 h-3.5", vibeFilter === v.vibe ? "text-white" : "")} />
+                       <span className="text-[7px] font-black uppercase tracking-wider">{v.label}</span>
+                     </button>
+                   ))}
+                 </div>
+               </div>
+
+               {/* Action Buttons */}
+               <div className="flex gap-2 pt-2 border-t border-[var(--color-border)]/40">
                  <button 
+                   disabled={isSpinning}
+                   type="button"
                    onClick={() => setSuggestion(null)}
-                   className="flex-1 px-4 py-3 border border-[var(--color-border)] rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-white transition-all"
+                   className="px-4 py-3 border border-[var(--color-border)] rounded-xl text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-[var(--color-border)]/30 transition-all disabled:opacity-45"
                  >
-                   Não agora
+                   IGNORAR
                  </button>
+                 
                  <button 
-                   onClick={() => {
-                     updateAnime(suggestion.id, { status: mediaType === 'ANIME' ? 'WATCHING' : 'READING' });
-                     setSuggestion(null);
-                   }}
-                   className="flex-1 px-4 py-3 bg-brand text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-[1.02] transition-all"
+                   disabled={isSpinning}
+                   type="button"
+                   onClick={() => handleSuggestion(vibeFilter)}
+                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-3 bg-yellow-500/15 border border-yellow-500/25 text-yellow-500 hover:bg-yellow-500 hover:text-black rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-45"
                  >
-                   Começar!
+                   <Shuffle className={cn("w-3 h-3", isSpinning ? "animate-spin" : "")} />
+                   OUTRO
+                 </button>
+
+                 <button 
+                   disabled={isSpinning}
+                   type="button"
+                   onClick={() => {
+                     const activeStatus = mediaType === 'ANIME' ? 'WATCHING' : 'READING';
+                     updateAnime(suggestion.id, { status: activeStatus });
+                     setSuggestion(null);
+                     
+                     if (mediaType === 'ANIME') {
+                       navigate(`/anime/${suggestion.id}/watch`);
+                     } else {
+                       navigate(`/manga/${suggestion.id}/read`);
+                     }
+                   }}
+                   className="flex-1 px-3 py-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-brand/10 hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-45"
+                 >
+                   {mediaType === 'ANIME' ? 'ASSISTIR!' : 'LER SAGA!'}
                  </button>
                </div>
              </div>
            </div>
         </div>
+
       )}
     </div>
   );

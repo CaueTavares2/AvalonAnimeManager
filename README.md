@@ -1,6 +1,26 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.3.2 - Sync Alignment Era)
+# 🌌 Avalon - Anime Tracking Saga (v4.3.4 - Otaku Roulette Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🎲 O que há de Novo na Versão v4.3.4 (Otaku Roulette Era)
+
+- **🎰 Roleta Gamificada e Slot Machine Visual ("Me Surpreenda!")**: Upgrade completo na interface do sorteador inteligente na Minha Lista. Agora, ao acionar o "Me Surpreenda!", o sistema apresenta uma animação inspirada em caça-níqueis (Slot Machine) desacelerando e alternando entre pôsteres e títulos candidatos antes de revelar a escolha do seu destino!
+- **🌀 Filtros por "Vibe" de Recomendação**: Introdução de seletores de vibe dinâmicos no modal da Roleta que moldam o sorteio de acordo com seu humor atual:
+  - ⚡ **Curtos**: Filtra animes/mangás focados em experiências rápidas e dinâmicas (como filmes ou séries de até 13 episódios).
+  - 🏆 **Relíquias**: Prioriza produções lendárias e as maiores notas dadas pela comunidade/você (mídias com score ≥ 8).
+  - 🧭 **Mundiais/Longos (Maratonas)**: Sorteia grandes épicos, sagas de longa duração e histórias imersivas.
+  - ✨ **Qualquer**: Mantém a roleta ampla e descompromissada sobre todos os candidatos.
+- **🔗 Atalhos e Deep Links Rápidos**: Adição do botão **"Assistir!"** / **"Ler Saga!"** que altera o status da mídia instantaneamente e redireciona você de forma indolor e profunda direto para a tela de assistir ou ler, reduzindo atritos na sua experiência diária!
+- **🧼 Ajustes Finos e Alinhamentos**: Correções na tipografia Space Grotesk/JetBrains Mono do modal e controle estrito das animações de Framer Motion (`AnimatePresence`) para assegurar transições fluidas de renderização a 60fps.
+
+---
+
+## 🚀 O que há de Novo na Versão v4.3.3 (Smart Discovery Era)
+
+- **🧠 Algoritmo de Descoberta Inteligente ("Me Surpreenda!")**: Correção definitiva do seletor aleatório inteligente de sugestões. Anteriormente, ele podia sortear temporadas subsequentes, sequências diretas ou arcos continuados (como *Date A Live V*, segundas temporadas ou partes avançadas). Agora, um analisador semântico de alta precisão identifica marcadores ordinais, números romanos (até X), termos de temporada/temporada em múltiplos idiomas e subtitulações de arcos exclusivos para filtrar e excluir sequências do sorteio, priorizando o início de novas jornadas ou primeiras temporadas.
+- **🛡️ Fallback de Resiliência**: Caso sua lista só possua sequências pendentes para assistir, o sistema desativa inteligentemente a barreira de filtro para assegurar que a recomendação continue ativa e funcional sem travamentos.
 
 ---
 
