@@ -1,6 +1,17 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.6.0 - Universal Title Localization)
+# 🌌 Avalon - Anime Tracking Saga (v4.7.0 - Soul Pact & Character Vocalizations)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🔮 O que há de Novo na Versão v4.7.0 (Soul Pact & Astral Vocalizations)
+
+Nesta edição astronômica, elevamos a imersão e o engajamento dos otacus a um patamar místico e gamificado com ritos espirituais e vozes autênticas integradas em alta definição:
+
+- **🌌 Pacto de Alma Cósmico ("Soul Pact")**: Forje uma aliança eterna com seus personagens favoritos! Um portal interativo com constelações estelares, satélites de afinidade e caminhos de energia geometricamente tecidos sintoniza sua alma à do guerreiro, recompensando você com **+55 Otaku Points** e habilitando títulos místicos lendários e insígnias únicas em seu perfil!
+- **🗣️ Vocalizações Reais em Japonês ("Voice Lines")**: Ouça frases icônicas dos personagens mais aclamados do mundo otaku faladas em japonês do áudio oficial (como Naruto, Goku, Luffy, Zoro, Tanjiro, Eren, Mikasa, Lelouch, Alucard e muitos outros) graças ao motor de fala inteligente Web Speech API com **Legenda Sincronizada Flutuante** (Idioma Traduzido / Kana original / Romaji)!
+- **⚡ Despertar de Aura e Nível de Ki**: Canalize seu poder cósmico! Ajuste o nível de combate do personagem em 5 patamares lendários (`Chakra Ativo`, `Fluido Espiritual`, `Aura do Caos`, `Despertar Divino` e `SUPREMO / LIMITLESS`), que banham e envolvem o card com molduras de fótons coloridos brilhantes, sombras de alta difusão e animações pulsantes de energia.
+- **🛡️ Escudo Anti-Mistura de Vozes**: Sistema de casamento fonético de segurança que impede falhas em nomes (por exemplo, tocar áudio do Naruto em Tanjiro ou Goku em Lelouch). Caso a obra não pertença a um herói do dicionário, um sintetizador espiritual de inteligência artificial de fallback proclama o nome do portador com pompa.
 
 ---
 

@@ -1,7 +1,8 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Plus, Star, Calendar, Play, BookOpen, Heart, User as UserIcon } from 'lucide-react';
+import { ChevronLeft, Plus, Star, Calendar, Play, BookOpen, Heart, User as UserIcon, Volume2, Zap, Sparkles, X, Flame, ShieldAlert, Award, Crown } from 'lucide-react';
 import { useAnimeList } from '../hooks/useAnimeList';
 import { useFavorites } from '../context/FavoritesContext';
+import { useProfile } from '../context/ProfileContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { jikanService } from '../services/jikanService';
@@ -11,6 +12,7 @@ import type { Media, AnimeStatus } from '../types';
 import { SPECIAL_ANIMES } from '../constants/specialAnimes';
 import { SpecialAnimeInteraction } from '../components/anime/SpecialAnimeInteraction';
 import { useLanguage } from '../context/LanguageContext';
+import { getCharacterData, playVoice } from '../utils/characterVoiceEngine';
 
 interface MediaCharacter {
   character: {
@@ -41,6 +43,8 @@ export default function AnimeDetails() {
   const navigate = useNavigate();
   const { addAnime, updateAnime, list } = useAnimeList();
   const { addCharacter, removeCharacter, isFavorite } = useFavorites();
+  const { profile, updateProfile } = useProfile();
+  
   const [anime, setAnime] = useState<Media | null>(null);
   const [characters, setCharacters] = useState<MediaCharacter[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
@@ -51,6 +55,28 @@ export default function AnimeDetails() {
   const [airingSchedule, setAiringSchedule] = useState<any>(null);
   
   const [error, setError] = useState<string | null>(null);
+
+  // RPG Character interactions states
+  const [characterAuras, setCharacterAuras] = useState<Record<number, number>>(() => {
+    const saved = localStorage.getItem('avalon_character_auras');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const [soulPacts, setSoulPacts] = useState<Record<number, any>>(() => {
+    const saved = localStorage.getItem('avalon_soul_pacts');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const [activeSubtitle, setActiveSubtitle] = useState<{
+    name: string;
+    phraseJa: string;
+    phraseRomaji: string;
+    translation: string;
+  } | null>(null);
+
+  const [pactCharacter, setPactCharacter] = useState<any | null>(null);
+  const [pactStep, setPactStep] = useState<'idle' | 'aligning' | 'syncing' | 'weaving' | 'success'>('idle');
+  const [pactProgress, setPactProgress] = useState(0);
   
   const inList = list.find(a => a.id === Number(id));
   const special = anime ? SPECIAL_ANIMES[anime.id] : null;
@@ -59,6 +85,128 @@ export default function AnimeDetails() {
     if (inList) {
       updateAnime(inList.id, { score });
     }
+  };
+
+  const handleAuraIncrease = (charId: number, charName: string) => {
+    const current = characterAuras[charId] || 0;
+    const next = current >= 5 ? 0 : current + 1;
+    const newAuras = { ...characterAuras, [charId]: next };
+    setCharacterAuras(newAuras);
+    localStorage.setItem('avalon_character_auras', JSON.stringify(newAuras));
+
+    // Audio synth keypress feedback
+    try {
+      if (next > 0) {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150 + next * 90, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(320 + next * 130, audioContext.currentTime + 0.35);
+        
+        gain.gain.setValueAtTime(0.04, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.35);
+        
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.35);
+      }
+    } catch (_) {}
+  };
+
+  const handlePlayVoice = (charName: string, role?: string) => {
+    const vocalData = getCharacterData(charName, role, anime?.title);
+    setActiveSubtitle({
+      name: charName,
+      phraseJa: vocalData.phraseJa,
+      phraseRomaji: vocalData.phraseRomaji,
+      translation: vocalData.translation
+    });
+
+    playVoice(vocalData.phraseJa, undefined, () => {
+      // Audio playback completed
+    });
+  };
+
+  const startPactRitual = (char: any) => {
+    setPactCharacter(char);
+    setPactStep('idle');
+    setPactProgress(0);
+  };
+
+  const executePactRitual = () => {
+    if (!pactCharacter) return;
+    
+    setPactStep('aligning');
+    setPactProgress(15);
+    
+    const playBleep = (freq: number) => {
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.03, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.15);
+      } catch (_) {}
+    };
+
+    playBleep(350);
+
+    setTimeout(() => {
+      setPactStep('syncing');
+      setPactProgress(50);
+      playBleep(470);
+      
+      setTimeout(() => {
+        setPactStep('weaving');
+        setPactProgress(80);
+        playBleep(590);
+        
+        setTimeout(() => {
+          setPactStep('success');
+          setPactProgress(100);
+          playBleep(830);
+          
+          const vocalData = getCharacterData(pactCharacter.name, pactCharacter.role, anime?.title);
+          
+          const newPacts = {
+            ...soulPacts,
+            [pactCharacter.id]: {
+              id: pactCharacter.id,
+              name: pactCharacter.name,
+              image: pactCharacter.image,
+              title: vocalData.pactTitle,
+              auraColor: vocalData.auraColor,
+              date: new Date().toLocaleDateString('pt-BR'),
+              animeTitle: anime?.title || 'Avalon'
+            }
+          };
+          
+          setSoulPacts(newPacts);
+          localStorage.setItem('avalon_soul_pacts', JSON.stringify(newPacts));
+
+          const updatedBadges = [...(profile.badges || [])];
+          const newBadgeCode = `PACTO_${pactCharacter.id}`;
+          if (!updatedBadges.includes(newBadgeCode)) {
+            updatedBadges.push(newBadgeCode);
+          }
+
+          updateProfile({
+            otakuPoints: (profile.otakuPoints || 0) + 55,
+            availablePoints: (profile.availablePoints || 0) + 55,
+            badges: updatedBadges
+          });
+
+        }, 1200);
+      }, 1200);
+    }, 1250);
   };
 
   useEffect(() => {
@@ -521,41 +669,165 @@ export default function AnimeDetails() {
               </div>
             )}
 
-            <div className="space-y-3">
-              <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest">Personagens Principais</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {characters.map((char) => (
-                  <div key={char.character.mal_id} translate="no" className="bg-[var(--color-card)]/50 rounded-lg overflow-hidden border border-[var(--color-border)] group flex items-center pr-3 gap-3 h-16">
-                    <div className="w-12 h-full relative shrink-0">
-                      <img src={char.character.images.webp.image_url} alt={char.character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <button 
-                        onClick={() => {
-                          if (isFavorite(char.character.mal_id)) {
-                            removeCharacter(char.character.mal_id);
-                          } else {
-                            addCharacter({
-                              id: char.character.mal_id,
-                              name: char.character.name,
-                              image: char.character.images.webp.image_url,
-                              animeTitle: anime.title,
-                              role: char.role
-                            });
-                          }
-                        }}
-                        className={cn(
-                          "absolute top-1 left-1 p-1 rounded-full backdrop-blur-md transition-all scale-100",
-                          isFavorite(char.character.mal_id) ? "bg-brand text-white" : "bg-black/50 text-white hover:bg-brand/80 opacity-0 group-hover:opacity-100"
-                        )}
-                      >
-                        <Heart className={cn("w-3 h-3", isFavorite(char.character.mal_id) && "fill-current")} />
-                      </button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-brand" /> Personagens Principais
+                </h3>
+                <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Combate e Afinidade</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {characters.map((char) => {
+                  const charId = char.character.mal_id;
+                  const auraLvl = characterAuras[charId] || 0;
+                  const pact = soulPacts[charId];
+                  const fav = isFavorite(charId);
+
+                  // Set premium aura borders & glow rings
+                  let auraClass = "border-[var(--color-border)] bg-[var(--color-card)]/40 hover:bg-[var(--color-card)]/60 hover:border-brand/40";
+                  let auraTag = "";
+                  if (auraLvl === 1) {
+                    auraClass = "border-white/20 bg-slate-900/40 shadow-[0_0_12px_rgba(255,255,255,0.12)]";
+                    auraTag = "Chakra Ativo";
+                  } else if (auraLvl === 2) {
+                    auraClass = "border-cyan-500/30 bg-cyan-950/10 shadow-[0_0_15px_rgba(6,182,212,0.2)]";
+                    auraTag = "Fluido Espiritual";
+                  } else if (auraLvl === 3) {
+                    auraClass = "border-orange-500/45 bg-orange-950/10 shadow-[0_0_20px_rgba(249,115,22,0.35)] animate-[pulse_2.5s_infinite]";
+                    auraTag = "Aura do Caos";
+                  } else if (auraLvl === 4) {
+                    auraClass = "border-purple-500/60 bg-purple-950/15 shadow-[0_0_25px_rgba(168,85,247,0.45)] animate-[pulse_1.8s_infinite]";
+                    auraTag = "Despertar Divino";
+                  } else if (auraLvl === 5) {
+                    auraClass = "border-yellow-400 bg-gradient-to-r from-yellow-500/10 via-amber-500/15 to-yellow-600/10 shadow-[0_0_35px_rgba(234,179,8,0.65)] border-2 animate-[pulse_2s_infinite]";
+                    auraTag = "SUPREMO / LIMITLESS";
+                  }
+
+                  return (
+                    <div 
+                      key={charId} 
+                      translate="no" 
+                      className={cn(
+                        "rounded-xl overflow-hidden border p-3 flex flex-col justify-between gap-3 relative transition-all duration-300 shadow-md group",
+                        auraClass,
+                        pact && "ring-1 ring-yellow-500/40"
+                      )}
+                    >
+                      {/* Starry glitter overlay if Soul Pacted */}
+                      {pact && (
+                        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-500/5 via-transparent to-transparent opacity-100 z-0" />
+                      )}
+
+                      <div className="flex items-start gap-3 relative z-10">
+                        {/* Avatar Column */}
+                        <div className="w-14 h-14 rounded-lg overflow-hidden relative shrink-0 border border-[var(--color-border)]/60">
+                          <img src={char.character.images.webp.image_url} alt={char.character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <button 
+                            onClick={() => {
+                              if (fav) {
+                                removeCharacter(charId);
+                              } else {
+                                addCharacter({
+                                  id: charId,
+                                  name: char.character.name,
+                                  image: char.character.images.webp.image_url,
+                                  animeTitle: anime?.title || '',
+                                  role: char.role
+                                });
+                              }
+                            }}
+                            className={cn(
+                              "absolute top-1 left-1 p-0.5 rounded-full backdrop-blur-md transition-all scale-100",
+                              fav ? "bg-brand text-white" : "bg-black/50 text-white hover:bg-brand/80 opacity-0 group-hover:opacity-100"
+                            )}
+                          >
+                            <Heart className={cn("w-2.5 h-2.5", fav && "fill-current")} />
+                          </button>
+                        </div>
+
+                        {/* Name and Meta */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-[11px] font-black text-[var(--color-text-bright)] uppercase tracking-tight truncate">
+                              {char.character.name.split(',').reverse().join(' ')}
+                            </p>
+                            {pact && (
+                              <span className="bg-yellow-500/10 text-yellow-400 p-0.5 rounded-full" title="Pacto de Alma Consagrado!">
+                                <Crown className="w-3 h-3 fill-current" />
+                              </span>
+                            )}
+                          </div>
+                          
+                          {pact ? (
+                            <p className="text-[8px] font-black text-yellow-400 uppercase tracking-widest mt-0.5 line-clamp-1 italic bg-yellow-500/5 px-1 py-0.5 rounded border border-yellow-500/10 inline-block">
+                              ✦ {pact.title}
+                            </p>
+                          ) : (
+                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{char.role}</p>
+                          )}
+
+                          {auraLvl > 0 && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="flex h-1.5 w-1.5 relative">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand"></span>
+                              </span>
+                              <span className="text-[8px] font-black text-brand tracking-widest uppercase">
+                                KI Lvl {auraLvl} ({auraTag})
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Interactive Controls Bar */}
+                      <div className="flex items-center justify-between border-t border-[var(--color-border)]/40 pt-2.5 mt-1 gap-2 relative z-10">
+                        {/* Audio Quote Button */}
+                        <button 
+                          onClick={() => handlePlayVoice(char.character.name, char.role)}
+                          className="flex-1 py-1 px-2 rounded-md bg-[var(--color-bg)] hover:bg-white/5 border border-[var(--color-border)]/40 transition-all text-gray-400 hover:text-white flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wider"
+                          title="Falar Catchphrase Original em Japonês"
+                        >
+                          <Volume2 className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                          <span>Ouvir Voz</span>
+                        </button>
+
+                        {/* Power Aura Button */}
+                        <button 
+                          onClick={() => handleAuraIncrease(charId, char.character.name)}
+                          className={cn(
+                            "flex-1 py-1 px-2 rounded-md bg-[var(--color-bg)] hover:bg-white/5 border border-[var(--color-border)]/40 transition-all flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wider",
+                            auraLvl > 0 ? "text-amber-400 border-amber-500/20" : "text-gray-400 hover:text-amber-400"
+                          )}
+                          title="Aumentar Nível de Combate e Aura"
+                        >
+                          <Zap className={cn("w-3.5 h-3.5", auraLvl > 0 ? "text-amber-400 fill-current" : "text-amber-500")} />
+                          <span>Aura {auraLvl > 0 ? `x${auraLvl}` : "Ki"}</span>
+                        </button>
+
+                        {/* Star Portal Alliance Contract Button */}
+                        <button 
+                          onClick={() => startPactRitual({
+                            id: charId,
+                            name: char.character.name,
+                            image: char.character.images.webp.image_url,
+                            role: char.role
+                          })}
+                          className={cn(
+                            "py-1 px-2.5 rounded-md transition-all flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wider",
+                            pact 
+                              ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 cursor-default" 
+                              : "bg-brand/10 hover:bg-brand/20 text-brand border border-brand/20 hover:border-brand/40"
+                          )}
+                          disabled={!!pact}
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>{pact ? "Pactuado" : "Pacto"}</span>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex-1 py-1 min-w-0">
-                      <p className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-tight truncate pb-0.5">{char.character.name}</p>
-                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest truncate">{char.role}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -568,6 +840,237 @@ export default function AnimeDetails() {
           </div>
         </div>
       </div>
+
+      {/* Floating Original Subtitles Overlay widget */}
+      <AnimatePresence>
+        {activeSubtitle && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95, y: 40 }}
+            className="fixed bottom-6 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 md:w-[500px] bg-slate-950/95 border border-[var(--color-border)] rounded-2xl p-4 shadow-2xl backdrop-blur-md flex items-center justify-between gap-4 border-l-4 border-l-cyan-500"
+          >
+            <div className="flex-1">
+              <p className="text-[8px] font-black tracking-widest text-cyan-400 uppercase mb-1">
+                🗣️ {activeSubtitle.name.split(',').reverse().join(' ').trim()} • Voz em Japonês
+              </p>
+              <h4 className="text-sm font-bold text-white leading-normal tracking-wide mb-1" translate="no">
+                "{activeSubtitle.phraseJa}"
+              </h4>
+              <p className="text-[10px] text-gray-400 font-mono italic mb-2 leading-relaxed" translate="no">
+                {activeSubtitle.phraseRomaji}
+              </p>
+              <div className="h-px bg-zinc-800 w-full mb-1.5" />
+              <p className="text-[11px] font-bold text-gray-300 leading-normal">
+                "{activeSubtitle.translation}"
+              </p>
+            </div>
+            <button 
+              onClick={() => setActiveSubtitle(null)}
+              className="p-1 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white transition-all shrink-0 align-top"
+              title="Fechar legenda"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🔮 Sacred Astronomy Portal: Starry Constellation Ritual Modal */}
+      <AnimatePresence>
+        {pactCharacter && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-950/98 backdrop-blur-xl flex items-center justify-center overflow-y-auto p-4 md:p-8"
+          >
+            {/* Spinning background starlight field */}
+            <div className="absolute inset-0 pointer-events-none opacity-40 overflow-hidden">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-transparent animate-[spin_50s_linear_infinite]" />
+              {/* Twinkling CSS Stars */}
+              <div className="absolute top-1/4 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-ping duration-1000" />
+              <div className="absolute top-1/3 left-3/4 w-1 h-1 bg-white rounded-full animate-ping duration-[3s]" />
+              <div className="absolute top-2/3 left-1/5 w-1 h-1 bg-white rounded-full animate-ping duration-2000" />
+              <div className="absolute top-4/5 left-2/3 w-1.5 h-1.5 bg-white rounded-full animate-ping duration-1500" />
+            </div>
+
+            <div className="relative w-full max-w-xl bg-slate-900/60 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-2xl text-center overflow-hidden z-10">
+              {/* Star-link Header */}
+              <div className="space-y-1.5 mb-6">
+                <span className="text-[10px] text-yellow-400 font-extrabold uppercase tracking-[0.2em] bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">
+                  ✦ Selo de Aliança Cósmica ✦
+                </span>
+                <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight pt-2">
+                  Portal do Pacto de Alma
+                </h3>
+                <p className="text-xs text-gray-400 max-w-md mx-auto">
+                  Forje um elo de destino indelével com {pactCharacter.name.split(',').reverse().join(' ').trim()} através do alinhamento das constelações de Avalon.
+                </p>
+              </div>
+
+              {/* 🌌 Constellation Star Alignment Orbit Centerpiece */}
+              <div className="relative h-64 md:h-72 flex items-center justify-center my-6">
+                {/* Thin Cosmic Astronomy Orbits */}
+                <div className="absolute w-56 h-56 rounded-full border border-zinc-800/40 animate-[spin_40s_linear_infinite]" />
+                <div className="absolute w-44 h-44 rounded-full border border-dashed border-zinc-800/60 animate-[spin_15s_linear_infinite]" />
+                <div className="absolute w-32 h-32 rounded-full border border-zinc-700/40 animate-[spin_8s_linear_infinite]" />
+
+                {/* Star constellation connecting matrix lines (pure responsive SVG) */}
+                <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none opacity-85">
+                  <defs>
+                    <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+                      <stop offset="50%" stopColor="#ec4899" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#eab308" stopOpacity="0.8" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Glowing dynamic pathways connecting left-right and connecting nodes */}
+                  {pactStep !== 'idle' && (
+                    <>
+                      {/* Left to center-left node */}
+                      <line x1="20%" y1="50%" x2="40%" y2="30%" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3" className="animate-[pulse_1s_infinite]" />
+                      {/* Center-left to center-right node */}
+                      <line x1="40%" y1="30%" x2="60%" y2="70%" stroke="#a855f7" strokeWidth="2" strokeDasharray={pactProgress > 40 ? "0" : "4"} className="transition-all" />
+                      {/* Center-right to right */}
+                      <line x1="60%" y1="70%" x2="80%" y2="50%" stroke="#eab308" strokeWidth="2" strokeDasharray={pactProgress > 75 ? "0" : "5"} />
+                      
+                      {/* Solid Laser Beam on Success */}
+                      {pactStep === 'success' && (
+                        <line x1="20%" y1="50%" x2="80%" y2="50%" stroke="url(#beamGradient)" strokeWidth="4" className="shadow-lg shadow-yellow-500/50 animate-pulse duration-100" />
+                      )}
+                    </>
+                  )}
+                </svg>
+
+                {/* Node 1 - User Avatar */}
+                <div className="absolute left-[8%] md:left-[15%] z-10 flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)] overflow-hidden flex items-center justify-center p-0.5">
+                    {profile.photoURL ? (
+                      <img src={profile.photoURL} className="w-full h-full object-cover rounded-full" alt="Mestre" />
+                    ) : (
+                      <UserIcon className="w-8 h-8 text-blue-400" />
+                    )}
+                  </div>
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest mt-2">{profile.username}</span>
+                </div>
+
+                {/* Node 2 - Character Avatar - Sould Bonded */}
+                <div className="absolute right-[8%] md:right-[15%] z-10 flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] overflow-hidden p-0.5">
+                    <img src={pactCharacter.image} className="w-full h-full object-cover rounded-full" alt={pactCharacter.name} />
+                  </div>
+                  <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest mt-2">
+                    {pactCharacter.name.split(',').reverse().join(' ').trim()}
+                  </span>
+                </div>
+
+                {/* Celestial Nodes during alignment */}
+                {pactStep !== 'idle' && (
+                  <>
+                    <div className={cn(
+                      "absolute top-[30%] left-[40%] text-[11px] h-3 w-3 rounded-full transition-all duration-500 z-10 shadow-[0_0_8px_white]",
+                      pactProgress >= 15 ? "bg-blue-400 scale-125" : "bg-zinc-800"
+                    )} />
+                    <div className={cn(
+                      "absolute bottom-[30%] left-[60%] text-[11px] h-3 w-3 rounded-full transition-all duration-500 z-10 shadow-[0_0_8px_white]",
+                      pactProgress >= 80 ? "bg-emerald-400 scale-125" : "bg-zinc-800"
+                    )} />
+                  </>
+                )}
+
+                {/* Core Oracle Sigil center representation */}
+                <div className="absolute z-10 bg-slate-950/90 rounded-full w-24 h-24 border border-zinc-700/60 shadow-inner flex flex-col items-center justify-center p-2">
+                  {pactStep === 'idle' ? (
+                    <Sparkles className="w-7 h-7 text-yellow-400 animate-spin duration-3000" />
+                  ) : pactStep === 'success' ? (
+                    <Award className="w-9 h-9 text-yellow-400 animate-[bounce_1s_infinite]" />
+                  ) : (
+                    <div className="text-center">
+                      <div className="w-10 h-10 border-4 border-zinc-800 border-t-yellow-400 rounded-full animate-spin mx-auto mb-1" />
+                      <span className="text-[9px] font-black text-white">{pactProgress}%</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Status and Wizard Description */}
+              <div className="bg-slate-950/70 p-4 rounded-xl border border-zinc-800 max-w-sm mx-auto mb-6">
+                {pactStep === 'idle' && (
+                  <p className="text-xs text-gray-300">
+                    O pacto consagra a aliança eterna, recompensando você com <span className="text-yellow-400 font-bold">+55 Otaku Points</span> e sela o título honorífico do personagem em seu perfil.
+                  </p>
+                )}
+                {pactStep === 'aligning' && (
+                  <p className="text-xs text-blue-400 font-mono animate-pulse">
+                    📡 ALINHANDO FREQUÊNCIA ESPIRITUAL CÓSMICA...
+                  </p>
+                )}
+                {pactStep === 'syncing' && (
+                  <p className="text-xs text-cyan-400 font-mono animate-pulse">
+                    💫 SINCRONIZANDO MAPA CELESTE DE RITOS...
+                  </p>
+                )}
+                {pactStep === 'weaving' && (
+                  <p className="text-xs text-yellow-500 font-mono animate-pulse">
+                    🌟 TECENDO OS FIOS DO DESTINO DE AVALON...
+                  </p>
+                )}
+                {pactStep === 'success' && (
+                  <div className="space-y-1.5 text-center">
+                    <p className="text-xs text-emerald-400 font-black tracking-widest uppercase">
+                      🎉 PACTO SELADO COM SUCESSO!
+                    </p>
+                    <p className="text-[10px] text-gray-300">
+                      Você ganhou o título extraordinário:
+                    </p>
+                    <p className="text-xs font-black text-yellow-400 tracking-wider">
+                      "{getCharacterData(pactCharacter.name, pactCharacter.role, anime?.title).pactTitle}"
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Trigger Buttons */}
+              <div className="flex gap-3 justify-center items-center">
+                {pactStep === 'idle' ? (
+                  <>
+                    <button 
+                      onClick={() => setPactCharacter(null)}
+                      className="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-[10px] font-black uppercase tracking-wider transition-all"
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={executePactRitual}
+                      className="px-6 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-slate-950 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-yellow-500/20 flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Sincronizar Almas
+                    </button>
+                  </>
+                ) : pactStep === 'success' ? (
+                  <button 
+                    onClick={() => {
+                      // Trigger audio phrase as celebration!
+                      handlePlayVoice(pactCharacter.name, pactCharacter.role);
+                      setPactCharacter(null);
+                    }}
+                    className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-slate-950 text-[10px] font-black uppercase tracking-widest transition-all shadow-md"
+                  >
+                    Consagrar e Retornar
+                  </button>
+                ) : (
+                  <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                    Processando alinhamento estelar...
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
