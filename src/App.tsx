@@ -20,7 +20,7 @@ import AppRoutes from './routes/AppRoutes';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { ProfileProvider } from './context/ProfileContext';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AnimeListProvider } from './context/AnimeListContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthProvider } from './context/AuthContext';
@@ -28,6 +28,7 @@ import { SocialProvider } from './context/SocialContext';
 
 function MobileNav() {
   const location = useLocation();
+  const { t } = useLanguage();
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
@@ -37,11 +38,11 @@ function MobileNav() {
     <div className="fixed bottom-0 left-0 right-0 h-[calc(4.2rem+env(safe-area-inset-bottom))] bg-[var(--color-card)]/98 backdrop-blur-md border-t border-[var(--color-border)] lg:hidden flex items-center justify-around z-50 pb-[env(safe-area-inset-bottom)] px-2">
       <Link to="/" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
         <TrendingUp className={cn("w-5 h-5 transition-all duration-200", isActive('/') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
-        <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Home</span>
+        <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>{t('nav.home')}</span>
       </Link>
       <Link to="/list" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
         <Search className={cn("w-5 h-5 transition-all duration-200", isActive('/list') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
-        <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/list') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Lista</span>
+        <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/list') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>{t('nav.list')}</span>
       </Link>
       <Link to="/shop" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
         <ShoppingBag className={cn("w-5 h-5 transition-all duration-200", isActive('/shop') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
@@ -49,7 +50,7 @@ function MobileNav() {
       </Link>
       <Link to="/profile" className="flex-1 h-full flex flex-col items-center justify-center gap-1 group touch-manipulation">
         <User className={cn("w-5 h-5 transition-all duration-200", isActive('/profile') ? "text-brand scale-110" : "text-gray-400 group-hover:text-brand")} />
-        <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/profile') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>Perfil</span>
+        <span className={cn("text-[8px] font-black uppercase tracking-tighter transition-colors duration-200", isActive('/profile') ? "text-brand" : "text-gray-400 group-hover:text-brand")}>{t('nav.profile')}</span>
       </Link>
     </div>
   );

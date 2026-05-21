@@ -12,8 +12,10 @@ import logoDark from '../assets/images/logo-dark.jpeg';
 import { useProfile } from '../context/ProfileContext';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Home() {
+  const { t } = useLanguage();
   const { mediaType, setMediaType, streakInfo, showStreakPopUp, setShowStreakPopUp } = useAuth();
   const { profile } = useProfile();
   const { user } = useAuth();
@@ -316,7 +318,7 @@ export default function Home() {
              <img src={logoDark} alt="Avalon" className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg hidden dark:block" />
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-[var(--color-text-bright)] uppercase tracking-tighter italic text-center md:text-left">
-            Explorar {mediaType === 'anime' ? 'Animes' : 'Mangás'}
+            {t('home.explore')} {mediaType === 'anime' ? t('home.anime') : t('home.manga')}
           </h1>
         </div>
         
@@ -330,7 +332,7 @@ export default function Home() {
                 : "text-gray-400 hover:text-gray-200"
             )}
           >
-            Animes
+            {t('home.anime')}
           </button>
           <button 
             onClick={() => setMediaType('manga')}
@@ -341,7 +343,7 @@ export default function Home() {
                 : "text-gray-400 hover:text-gray-200"
             )}
           >
-            Mangás
+            {t('home.manga')}
           </button>
         </div>
       </div>
@@ -357,7 +359,7 @@ export default function Home() {
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
                 <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Trending</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.trending')}</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topTrending}</p>
             </div>
@@ -365,7 +367,7 @@ export default function Home() {
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
                 <Award className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Popular</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.popular')}</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topPopular}</p>
             </div>
@@ -373,7 +375,7 @@ export default function Home() {
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
                 <Calendar className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Próximos</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.upcoming')}</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topUpcoming}</p>
             </div>
@@ -381,7 +383,7 @@ export default function Home() {
             <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
               <div className="flex items-center gap-2 md:gap-4 mb-2">
                 <Heart className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">Favoritos</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.favorites')}</span>
               </div>
               <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topRated}</p>
             </div>
@@ -402,14 +404,14 @@ export default function Home() {
                  <div className="flex items-center gap-2 mb-3">
                    <Calendar className="w-5 h-5 text-brand drop-shadow-[0_0_10px_rgba(var(--color-brand-rgb),0.5)]" />
                    <span className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/20 backdrop-blur-md px-3 py-1 rounded-full border border-brand/30">
-                     Sua Máquina do Tempo
+                     {t('home.year.subtitle')}
                    </span>
                  </div>
                  <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter drop-shadow-xl group-hover:text-brand transition-colors duration-300">
-                    Explore por Ano
+                    {t('home.year.title')}
                  </h2>
                  <p className="text-gray-300 font-medium text-xs md:text-sm mt-3 max-w-sm leading-relaxed drop-shadow-md">
-                    Descubra os clássicos atemporais ou os sucessos que definiram cada temporada da história.
+                    {t('home.year.desc')}
                  </p>
              </div>
              
@@ -418,8 +420,8 @@ export default function Home() {
              <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-500 blur-[60px] opacity-10 z-10 group-hover:opacity-20 transition-opacity duration-700" />
           </Link>
 
-          <MediaGrid title={`Em Alta: ${mediaType === 'anime' ? 'Animes' : 'Mangás'}`} items={trending} />
-          <MediaGrid title={`Populares: ${mediaType === 'anime' ? 'Animes' : 'Mangás'}`} items={popular} />
+          <MediaGrid title={`${t('home.trending')}: ${mediaType === 'anime' ? t('home.anime') : t('home.manga')}`} items={trending} />
+          <MediaGrid title={`${t('home.popular')}: ${mediaType === 'anime' ? t('home.anime') : t('home.manga')}`} items={popular} />
         </div>
       )}
     </div>

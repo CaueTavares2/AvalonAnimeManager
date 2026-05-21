@@ -30,8 +30,8 @@ export default function Navbar() {
   }, []);
 
   const menuItems = [
-    { label: t('nav.browse') || 'Explorar', to: '/', icon: Play },
-    { label: t('nav.list') || 'Minha Lista', to: '/list', icon: LayoutGrid },
+    { label: t('nav.browse'), to: '/', icon: Play },
+    { label: t('nav.list'), to: '/list', icon: LayoutGrid },
     { label: 'Ranking', to: '/ranking', icon: Trophy },
     { label: 'Loja', to: '/shop', icon: ShoppingBag },
     { label: 'Social', to: '/social', icon: Radio, badge: (requests?.length || 0) > 0 },
@@ -104,7 +104,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 text-gray-400 hover:bg-[var(--color-bg)] hover:text-brand"
                     >
                       <SettingsIcon size={16} className="text-gray-500" />
-                      <span className="font-black text-[9px] uppercase tracking-wider">Ajustes</span>
+                      <span className="font-black text-[9px] uppercase tracking-wider">{t('nav.config')}</span>
                     </Link>
                   </div>
                 </motion.div>
@@ -128,7 +128,7 @@ export default function Navbar() {
                     setSearch('');
                   }
                 }}
-                placeholder="Pesquisar animes ou mangás..."
+                placeholder={t('nav.search')}
                 className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
               />
             </div>
@@ -157,7 +157,7 @@ export default function Navbar() {
                   onClick={() => logout()}
                   className="px-2 py-1 hover:text-red-500 transition-colors text-[9px] font-black uppercase tracking-widest text-gray-500"
                 >
-                  Sair
+                  {t('nav.logout')}
                 </button>
             </div>
           ) : (
@@ -165,7 +165,7 @@ export default function Navbar() {
               to="/login" 
               className="px-4 py-1.5 bg-brand text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand/20"
             >
-              Entrar
+              {t('nav.login')}
             </Link>
           )}
         </div>

@@ -138,12 +138,12 @@ export default function Settings() {
   };
 
   const tabs = [
-    { id: 'general', icon: Cog, label: 'Geral' },
-    { id: 'appearance', icon: Palette, label: 'Aparência' },
-    { id: 'migration', icon: DownloadCloud, label: 'Migração' },
-    { id: 'extensions', icon: Radio, label: 'Fontes' },
-    { id: 'language', icon: Globe, label: 'Idioma' },
-    { id: 'diagnostics', icon: AlertTriangle, label: 'Testes' },
+    { id: 'general', icon: Cog, label: t('settings.tab.general') },
+    { id: 'appearance', icon: Palette, label: t('settings.tab.appearance') },
+    { id: 'migration', icon: DownloadCloud, label: t('settings.tab.migration') },
+    { id: 'extensions', icon: Radio, label: t('settings.tab.extensions') },
+    { id: 'language', icon: Globe, label: t('settings.tab.language') },
+    { id: 'diagnostics', icon: AlertTriangle, label: t('settings.tab.diagnostics') },
   ];
 
   const themes: { id: ColorTheme; label: string; color: string }[] = [
@@ -177,7 +177,7 @@ export default function Settings() {
           ) : (
             <Save className="w-4 h-4" />
           )}
-          {saveStatus === 'saved' ? 'Salvo!' : t('settings.save')}
+          {saveStatus === 'saved' ? t('settings.saved') : t('settings.save')}
         </button>
       </div>
 
@@ -210,8 +210,8 @@ export default function Settings() {
                   </h3>
                   <div className="flex items-center justify-between bg-[var(--color-bg)] p-6 rounded-2xl border border-[var(--color-border)]">
                     <div>
-                      <p className="text-sm font-bold text-[var(--color-text-bright)]">Modo Noturno</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Dark mode experience</p>
+                      <p className="text-sm font-bold text-[var(--color-text-bright)]">{t('settings.theme.dark_mode')}</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{t('settings.theme.dark_mode_desc')}</p>
                     </div>
                     <button 
                       onClick={async () => {
@@ -271,15 +271,15 @@ export default function Settings() {
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="space-y-2">
                   <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-brand" /> Fontes de Anime & Streams (Híbridas)
+                    <Radio className="w-4 h-4 text-brand" /> {t('settings.extensions.title')}
                   </h3>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sistemas de agregação e conexões externas de vídeo (Stremio & APIs)</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('settings.extensions.subtitle')}</p>
                     <button 
                       onClick={testAllExtensions}
                       className="text-[9px] font-black uppercase text-brand flex items-center gap-1.5 hover:underline"
                     >
-                      <Shield className="w-3 h-3" /> Testar Todas Conexões
+                      <Shield className="w-3 h-3" /> {t('settings.extensions.test_all')}
                     </button>
                   </div>
                 </div>
@@ -584,13 +584,13 @@ export default function Settings() {
             ) : activeTab === 'general' ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                  <Cog className="w-4 h-4 text-brand" /> Preferências do Sistema
+                  <Cog className="w-4 h-4 text-brand" /> {t('settings.general.title')}
                 </h3>
                 
                 <div className="flex items-center justify-between bg-[var(--color-bg)] p-6 rounded-2xl border border-[var(--color-border)]">
                   <div>
-                    <p className="text-sm font-bold text-[var(--color-text-bright)]">Idioma do Título</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Como os nomes dos animes aparecem</p>
+                    <p className="text-sm font-bold text-[var(--color-text-bright)]">{t('settings.general.titleLanguage')}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{t('settings.general.titleLanguageDesc')}</p>
                   </div>
                   <select 
                     value={localSettings.titleLanguage}
@@ -607,9 +607,9 @@ export default function Settings() {
               <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="space-y-2">
                   <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-brand" /> Funcionalidades e Testes de Sistema
+                    <AlertTriangle className="w-4 h-4 text-brand" /> {t('settings.diagnostics.title')}
                   </h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Execute verificações manuais de estado e detecção de erros.</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('settings.diagnostics.subtitle')}</p>
                 </div>
                 
                 <div className="p-6 bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] space-y-4">
@@ -639,13 +639,13 @@ export default function Settings() {
           <div className="bg-red-500/[0.03] p-8 rounded-3xl border-2 border-red-500/10 space-y-5">
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-red-500" />
-              <h3 className="text-xs font-black text-red-500 uppercase tracking-widest">Zona de Perigo</h3>
+              <h3 className="text-xs font-black text-red-500 uppercase tracking-widest">{t('settings.danger.title')}</h3>
             </div>
             <p className="text-[11px] text-red-500/70 font-bold uppercase tracking-wider leading-relaxed">
-              Excluir sua conta removerá permanentemente todas as suas listas de animes, avaliações e progresso. Esta ação não pode ser desfeita.
+              {t('settings.danger.desc')}
             </p>
             <button className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-red-500/20 active:scale-95">
-              Excluir Conta Permanentemente
+              {t('settings.danger.button')}
             </button>
           </div>
         </div>
