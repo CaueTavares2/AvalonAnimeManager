@@ -12,6 +12,18 @@ export default function ConsoleCommandHook() {
   });
 
   useEffect(() => {
+    // Determine admin status securely early on
+    const isOwner = user?.email === 'caue.nanda.tavares@gmail.com';
+    const hasStaffAccess = isAdmin || isOwner;
+
+    if (!user || (!hasStaffAccess)) {
+      // Remove any previously set avalon object to prevent tampering
+      if ((window as any).avalon) {
+        delete (window as any).avalon;
+      }
+      return;
+    }
+
     // Print the welcome header to the inspector's terminal
     console.log(
       '%c 🌌 AVALON DEVCONSOLE v4.7.2 %c\n' +
@@ -28,14 +40,12 @@ export default function ConsoleCommandHook() {
 
     const checkAdminPrivilege = () => {
       if (!user) {
-        console.warn('%c[AVALON DEVCONSOLE]%c Erro: Nenhum usuário autenticado no sistema.', 'color: #ef4444; font-weight: bold;', 'color: #94a3b8;');
+        console.warn('%c[AVALON SECURE]%c Sessão expirada.', 'color: #ef4444; font-weight: bold;', 'color: #94a3b8;');
         return false;
       }
-      // Require email check OR is admin
-      const isOwner = user.email === 'caue.nanda.tavares@gmail.com';
-      if (!isAdmin && !isOwner) {
+      if (!hasStaffAccess) {
         console.error(
-          `%c[AVALON DEVCONSOLE]%c Acesso negado para o email logado: ${user.email || 'N/A'}.\nVocê precisa estar logado com a conta de desenvolvedor correspondente.`,
+          `%c[AVALON SECURE]%c Acesso bloqueado pelo firewall.`,
           'color: #ef4444; font-weight: bold;',
           'color: #94a3b8;'
         );
@@ -80,24 +90,29 @@ export default function ConsoleCommandHook() {
       // 2. Authentication System
       auth: (passcode: string) => {
         if (!user) {
-          console.error('%c[AVALON DEVCONSOLE]%c Login indisponível no momento.', 'color: #ef4444; font-weight: bold;', 'color: #94a3b8;');
+          console.error('%c[AVALON SECURE]%c Login indisponível no momento.', 'color: #ef4444; font-weight: bold;', 'color: #94a3b8;');
           return 'Tente entrar na sua conta e recarregar.';
         }
         
-        // Allowed master keys
-        const validPasscodes = ['avalonDev2026', 'caue1337', 'neoTokyo99', 'avalonadmin'];
-        if (validPasscodes.includes(passcode)) {
-          setIsSessionVerified(true);
-          sessionStorage.setItem('avalon_console_auth', 'verified');
-          console.log(
-            '%c🔓 AUTENTICAÇÃO CONCLUÍDA COM SUCESSO! %c\nSua sessão administrativa foi iniciada com privilégios de desenvolvedor. Todos os comandos de banco de dados foram liberados.',
-            'color: #10b981; font-weight: bold; font-size: 11px;',
-            'color: #94a3b8;'
-          );
-          return `Bem-vindo de volta, ${user.displayName || 'Admin'}!`;
-        } else {
-          console.error('%c[AVALON DEVCONSOLE]%c Senha incorreta!', 'color: #ef4444; font-weight: bold;', 'color: #94a3b8;');
-          return 'Acesso negado. Tente novamente.';
+        // Allowed master keys (obfuscated)
+        const validPasscodesEncoded = ['YXZhbG9uRGV2MjAyNg==', 'Y2F1ZTEzMzc=', 'bmVvVG9reW85OQ==', 'YXZhbG9uYWRtaW4='];
+        
+        try {
+          if (validPasscodesEncoded.includes(btoa(passcode))) {
+            setIsSessionVerified(true);
+            sessionStorage.setItem('avalon_console_auth', 'verified');
+            console.log(
+              '%c🔓 AUTENTICAÇÃO OMEGA LEVEL CONCLUÍDA! %c\nSua sessão hacker administrativa foi iniciada com privilégios master. Todos os comandos DB estão destravados.',
+              'color: #10b981; font-weight: bold; font-size: 11px;',
+              'color: #94a3b8;'
+            );
+            return `Acesso Liberado: Bem-vindo de volta às sombras, Commander ${user.displayName || 'Admin'}.`;
+          } else {
+            console.error('%c[FIREWALL]%c Senha rejeitada. Acesso ao Mainframe negado.', 'color: #ef4444; font-weight: bold;', 'color: #94a3b8;');
+            return 'Acesso negado. Intrusão registrada.';
+          }
+        } catch (e) {
+          return 'Sintaxe inválida.';
         }
       },
 

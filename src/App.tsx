@@ -16,6 +16,7 @@ import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
 import { FallingSakura } from './components/shared/FallingSakura';
 import TrackerSyncToast from './components/shared/TrackerSyncToast';
+import ConsoleCommandHook from './components/admin/ConsoleCommandHook';
 import logoLight from './assets/images/logo-light.jpeg';
 import logoDark from './assets/images/logo-dark.jpeg';
 import AppRoutes from './routes/AppRoutes';
@@ -89,6 +90,7 @@ function MainLayout() {
       <WelcomeModal />
       <MultipleDeviceWarning />
       <TrackerSyncToast />
+      <ConsoleCommandHook />
       
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-6 md:py-12 pb-28 md:pb-24 lg:pb-12">
         <AppRoutes />
