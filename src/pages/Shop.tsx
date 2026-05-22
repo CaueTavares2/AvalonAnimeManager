@@ -21,22 +21,7 @@ interface ShopItem {
   imageUrl?: string;
 }
 
-const SHOP_ITEMS: ShopItem[] = [
-  { 
-    id: 'banner_sakura', 
-    name: 'Tema de Sakura', 
-    description: 'Um banner sereno da primavera com flores de cerejeira e arquitetura clássica.', 
-    price: 500, 
-    icon: ImageIcon, 
-    category: 'COSMETIC', 
-    rarity: 'RARE',
-    imageUrl: '/sakura-theme.png' 
-  },
-  { id: 'otaku_badge_gold', name: 'Selo do Imperador', description: 'Exiba a prestigiosa insígnia de ouro brilhante em seu perfil.', price: 1500, icon: Star, category: 'BADGE', rarity: 'EPIC' },
-  { id: 'otaku_badge_legendary', name: 'Insígnia Sagrada Avalon', description: 'O selo supremo que consagra você como uma lenda viva do reino Avalon.', price: 3000, icon: Crown, category: 'BADGE', rarity: 'LEGENDARY' },
-  { id: 'multiplier_2x', name: 'Boost de PO x2', description: 'Duplica absolutamente todos os seus ganhos de PO pelas próximas 24h.', price: 300, icon: Zap, category: 'BOOST', rarity: 'COMMON' },
-  { id: 'streak_saver', name: 'Pena da Imortalidade', description: 'Protege e blinda seu streak diário contra quebras de inatividade por um dia.', price: 450, icon: Sparkles, category: 'PROTECTION', rarity: 'EPIC' }
-];
+const SHOP_ITEMS: ShopItem[] = [];
 
 const RARITY_STYLING = {
   COMMON: {

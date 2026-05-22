@@ -1,6 +1,15 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.8.0 - Cosmic Cleanse & Purged Voices)
+# 🌌 Avalon - Anime Tracking Saga (v4.9.0 - The Clean Slate Era)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🔮 O que há de Novo na Versão v4.9.0 (The Clean Slate Era)
+
+Nesta sublime atualização, abraçamos o vazio para pavimentar o caminho do resplendor. A economia sofre um "reset" filosófico:
+
+- **🫧 Purificação Total da Loja**: Todos os itens da Loja de Avalon foram provisoriamente retirados do sistema. A vitrine e o inventário atual encontram-se em estado neutro, aguardando novas decisões e mecânicas gloriosas.
+- **🛡️ Clean Code Foundation**: A limpeza temporária servirá de fundação para novos protótipos de escalonamento em breve.
 
 ---
 
