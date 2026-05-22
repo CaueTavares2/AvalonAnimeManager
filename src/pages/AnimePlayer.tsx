@@ -377,7 +377,7 @@ export default function AnimePlayer() {
                 allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
                 sandbox={
                   adShieldMode === 'smart'
-                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation" 
+                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation" 
                     : undefined
                 }
               />
@@ -462,6 +462,7 @@ export default function AnimePlayer() {
                       const next = prev === 'smart' ? 'off' : 'smart';
                       localStorage.setItem("ad_shield_mode", next);
                       localStorage.setItem("ad_shield_active", String(next !== 'off'));
+                      window.location.reload();
                       return next;
                     });
                   }}
