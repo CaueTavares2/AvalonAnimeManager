@@ -22,7 +22,7 @@ interface ShopItem {
 
 const SHOP_ITEMS: ShopItem[] = [
   { id: 'premium_banner_pack', name: 'Santuário de Sakura', description: 'Um banner panorâmico das cerejeiras para o cabeçalho do seu perfil.', price: 500, icon: ImageIcon, category: 'COSMETIC', rarity: 'RARE' },
-  { id: 'banner_vintage_future', name: 'Lofi Synthwave Dream', description: 'A estética cyberpunk lo-fi dos anos 80 para iluminar o seu perfil.', price: 800, icon: ImageIcon, category: 'COSMETIC', rarity: 'RARE' },
+  { id: 'banner_vintage_future', name: 'Hack Overlord Cyberpunk', description: 'O visual definitivo do submundo hacker de Neo-Tokyo. Néon cianeto, arquitetura brutalista industrial e códigos criptografados brutais.', price: 800, icon: ImageIcon, category: 'COSMETIC', rarity: 'LEGENDARY' },
   { id: 'otaku_badge_gold', name: 'Selo do Imperador', description: 'Exiba a prestigiosa insígnia de ouro brilhante em seu perfil.', price: 1500, icon: Star, category: 'BADGE', rarity: 'EPIC' },
   { id: 'otaku_badge_legendary', name: 'Insígnia Sagrada Avalon', description: 'O selo supremo que consagra você como uma lenda viva do reino Avalon.', price: 3000, icon: Crown, category: 'BADGE', rarity: 'LEGENDARY' },
   { id: 'multiplier_2x', name: 'Boost de PO x2', description: 'Duplica absolutamente todos os seus ganhos de PO pelas próximas 24h.', price: 300, icon: Zap, category: 'BOOST', rarity: 'COMMON' },
@@ -161,7 +161,7 @@ export default function Shop() {
       } else if (item.category === 'COSMETIC') {
          const bannerUrls: Record<string, string> = {
             'premium_banner_pack': 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&q=80&w=1200',
-            'banner_vintage_future': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
+            'banner_vintage_future': 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=1200',
          };
          
          const newBanner = bannerUrls[item.id] || 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200';
@@ -465,7 +465,7 @@ export default function Shop() {
                         // determine if current equipped
                         const bannerUrls: Record<string, string> = {
                           'premium_banner_pack': 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&q=80&w=1200',
-                          'banner_vintage_future': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
+                          'banner_vintage_future': 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=1200',
                         };
                         const targetUrl = bannerUrls[item.id];
                         isCosmeticActive = profile.bannerURL === targetUrl;
