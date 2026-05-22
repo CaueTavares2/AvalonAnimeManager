@@ -541,7 +541,7 @@ export default function MyList() {
 
       {/* Suggestion Modal */}
       {suggestion && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/30 dark:bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
            <div className="bg-[var(--color-card)] w-full max-w-sm rounded-2xl shadow-3xl border border-[var(--color-border)] overflow-hidden animate-in zoom-in-95 duration-200">
              <div className="bg-brand h-24 flex items-center justify-center relative overflow-hidden">
                <motion.div 

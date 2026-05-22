@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useEffect } from 'react';
 import { BrowserRouter, Link, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import { cn } from './lib/utils';
@@ -13,13 +14,14 @@ import { AchievementNotification } from './components/shared/AchievementNotifica
 import { ChangelogModal } from './components/shared/ChangelogModal';
 import { WelcomeModal } from './components/shared/WelcomeModal';
 import { MultipleDeviceWarning } from './components/shared/MultipleDeviceWarning';
+import { FallingSakura } from './components/shared/FallingSakura';
 import TrackerSyncToast from './components/shared/TrackerSyncToast';
 import logoLight from './assets/images/logo-light.jpeg';
 import logoDark from './assets/images/logo-dark.jpeg';
 import AppRoutes from './routes/AppRoutes';
 
 import { ThemeProvider } from './context/ThemeContext';
-import { ProfileProvider } from './context/ProfileContext';
+import { ProfileProvider, useProfile } from './context/ProfileContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AnimeListProvider } from './context/AnimeListContext';
 import { FavoritesProvider } from './context/FavoritesContext';
@@ -57,8 +59,28 @@ function MobileNav() {
 }
 
 function MainLayout() {
+  const { profile } = useProfile();
+  
+  const isSakuraTheme = profile?.bannerURL === '/sakura-theme.png';
+  const isCyberpunkTheme = profile?.bannerURL === '/cyberpunk-theme.jpg';
+  
+  useEffect(() => {
+    document.documentElement.classList.remove('theme-sakura', 'theme-cyberpunk');
+    
+    if (isSakuraTheme) {
+      document.documentElement.classList.add('theme-sakura');
+    } else if (isCyberpunkTheme) {
+      document.documentElement.classList.add('theme-cyberpunk');
+    }
+    
+    return () => {
+      document.documentElement.classList.remove('theme-sakura', 'theme-cyberpunk');
+    };
+  }, [isSakuraTheme, isCyberpunkTheme]);
+
   return (
     <div className="min-h-screen">
+      {isSakuraTheme && <FallingSakura />}
       <GlobalAnnouncement />
       <Navbar />
       <UpdateNotification />

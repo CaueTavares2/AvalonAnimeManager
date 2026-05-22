@@ -18,11 +18,20 @@ interface ShopItem {
   icon: React.ComponentType<any>;
   category: 'COSMETIC' | 'BADGE' | 'BOOST' | 'PROTECTION';
   rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+  imageUrl?: string;
 }
 
 const SHOP_ITEMS: ShopItem[] = [
-  { id: 'premium_banner_pack', name: 'Santuário de Sakura', description: 'Um banner panorâmico das cerejeiras para o cabeçalho do seu perfil.', price: 500, icon: ImageIcon, category: 'COSMETIC', rarity: 'RARE' },
-  { id: 'banner_vintage_future', name: 'Hack Overlord Cyberpunk', description: 'O visual definitivo do submundo hacker de Neo-Tokyo. Néon cianeto, arquitetura brutalista industrial e códigos criptografados brutais.', price: 800, icon: ImageIcon, category: 'COSMETIC', rarity: 'LEGENDARY' },
+  { 
+    id: 'banner_sakura', 
+    name: 'Tema de Sakura', 
+    description: 'Um banner sereno da primavera com flores de cerejeira e arquitetura clássica.', 
+    price: 500, 
+    icon: ImageIcon, 
+    category: 'COSMETIC', 
+    rarity: 'RARE',
+    imageUrl: '/sakura-theme.png' 
+  },
   { id: 'otaku_badge_gold', name: 'Selo do Imperador', description: 'Exiba a prestigiosa insígnia de ouro brilhante em seu perfil.', price: 1500, icon: Star, category: 'BADGE', rarity: 'EPIC' },
   { id: 'otaku_badge_legendary', name: 'Insígnia Sagrada Avalon', description: 'O selo supremo que consagra você como uma lenda viva do reino Avalon.', price: 3000, icon: Crown, category: 'BADGE', rarity: 'LEGENDARY' },
   { id: 'multiplier_2x', name: 'Boost de PO x2', description: 'Duplica absolutamente todos os seus ganhos de PO pelas próximas 24h.', price: 300, icon: Zap, category: 'BOOST', rarity: 'COMMON' },
@@ -160,18 +169,17 @@ export default function Shop() {
         }
       } else if (item.category === 'COSMETIC') {
          const bannerUrls: Record<string, string> = {
-            'premium_banner_pack': 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&q=80&w=1200',
-            'banner_vintage_future': 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=1200',
+            'banner_sakura': '/sakura-theme.png'
          };
          
-         const newBanner = bannerUrls[item.id] || 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200';
+         const newBanner = bannerUrls[item.id] || '';
          
          if (profile.bannerURL === newBanner) {
-            await updateDoc(userRef, { bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200' });
-            showToast("Banner restaurado para o padrão.", "info");
+            await updateDoc(userRef, { bannerURL: '' });
+            showToast("Tema revertido ao padrão.", "info");
          } else {
             await updateDoc(userRef, { bannerURL: newBanner });
-            showToast("Incrível! Novo banner cósmico equipado.", "success");
+            showToast(`Tema visual "${item.name}" equipado em todo o aplicativo! 🌸`, "success");
          }
       } else if (item.category === 'BOOST') {
           let currentEnd = Date.now();
@@ -371,21 +379,33 @@ export default function Shop() {
                   </span>
                 </div>
 
-                {/* Main Icon & Glow Accent */}
-                <div className="flex items-center gap-4 mb-4 z-10">
-                  <div className={cn("p-3.5 rounded-2xl border bg-gradient-to-b relative shrink-0", style.border, style.bg)}>
-                    <div className="absolute inset-0 bg-white/20 rounded-2xl scale-75 opacity-0 group-hover:opacity-100 transition-opacity blur" />
-                    <item.icon className={cn("w-6 h-6", style.text)} />
+                {/* Main Icon & Glow Accent (or Banner Image) */}
+                {item.imageUrl ? (
+                  <div className="mb-4 z-10 w-full h-24 rounded-xl overflow-hidden border border-zinc-800 relative">
+                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                     {/* Overlay icon gently on top */}
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-3">
+                       <h3 className="font-black text-sm text-white tracking-tight drop-shadow-md">
+                         {item.name}
+                       </h3>
+                     </div>
                   </div>
-                  <div>
-                    <h3 className="font-black text-sm md:text-[15px] text-white tracking-tight group-hover:text-cyan-400 transition-colors font-sans">
-                      {item.name}
-                    </h3>
-                    <p className="text-[10px] text-gray-500 italic mt-0.5 font-mono">
-                      // AVALON_STX_CORE
-                    </p>
+                ) : (
+                  <div className="flex items-center gap-4 mb-4 z-10">
+                    <div className={cn("p-3.5 rounded-2xl border bg-gradient-to-b relative shrink-0", style.border, style.bg)}>
+                      <div className="absolute inset-0 bg-white/20 rounded-2xl scale-75 opacity-0 group-hover:opacity-100 transition-opacity blur" />
+                      <item.icon className={cn("w-6 h-6", style.text)} />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-sm md:text-[15px] text-white tracking-tight group-hover:text-cyan-400 transition-colors font-sans">
+                        {item.name}
+                      </h3>
+                      <p className="text-[10px] text-gray-500 italic mt-0.5 font-mono">
+                        // AVALON_STX_CORE
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Description Text */}
                 <p className="text-xs text-gray-400 font-medium leading-relaxed mb-6 flex-1 min-h-[44px] z-10">
@@ -471,11 +491,10 @@ export default function Shop() {
                       if (item.category === 'COSMETIC') {
                         // determine if current equipped
                         const bannerUrls: Record<string, string> = {
-                          'premium_banner_pack': 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&q=80&w=1200',
-                          'banner_vintage_future': 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=1200',
+                         'banner_sakura': '/sakura-theme.png'
                         };
-                        const targetUrl = bannerUrls[item.id];
-                        isCosmeticActive = profile.bannerURL === targetUrl;
+                        const targetUrl = bannerUrls[item.id] || '';
+                        isCosmeticActive = targetUrl !== '' && profile.bannerURL === targetUrl;
                         cosmeticActionText = isCosmeticActive ? "Restaurar Padrão" : "Equipar";
                       }
                       
