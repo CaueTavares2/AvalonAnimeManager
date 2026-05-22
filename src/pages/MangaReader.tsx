@@ -186,16 +186,29 @@ export default function MangaReader() {
             uniqueCandidates.push(c);
           }
         });
+
+        // Prioritize candidates that have a matching MAL ID in their links
+        uniqueCandidates.sort((a, b) => {
+          const malA = a.attributes?.links?.mal;
+          const malB = b.attributes?.links?.mal;
+          const aMatches = malA === id || String(malA) === id;
+          const bMatches = malB === id || String(malB) === id;
+          
+          if (aMatches && !bMatches) return -1;
+          if (!aMatches && bMatches) return 1;
+          return 0;
+        });
         
-        // Take top 5 candidates and check their feeds in parallel for speed
-        const topCandidates = uniqueCandidates.slice(0, 5);
+        // Take top 10 candidates and check their feeds in parallel for speed
+        const topCandidates = uniqueCandidates.slice(0, 10);
         const feedPromises = topCandidates.map(cand => 
           mangaService.getMangaFeed(cand.id)
-            .then(res => ({ id: cand.id, data: res?.data || [] }))
-            .catch(() => ({ id: cand.id, data: [] }))
+            .then(res => ({ id: cand.id, data: res?.data || [], title: cand.attributes?.title?.en || cand.attributes?.title?.['ja-ro'] }))
+            .catch(() => ({ id: cand.id, data: [], title: '' }))
         );
         
         const feedResults = await Promise.all(feedPromises);
+        // Find the one with most chapters or the first one with chapters that is relevant
         const validFeed = feedResults.find(f => f.data.length > 0);
 
         if (validFeed) {

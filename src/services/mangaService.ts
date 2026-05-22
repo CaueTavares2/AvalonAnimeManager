@@ -1,5 +1,31 @@
 const MANGADEX_API_URL = 'https://api.mangadex.org';
-const PROXY_URL = '/api/proxy?url=';
+const LOCAL_PROXY = '/api/proxy?url=';
+const PUBLIC_PROXY = 'https://api.allorigins.win/raw?url=';
+
+async function smartFetch(url: string) {
+  // 1. Try direct fetch (best)
+  try {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (res.ok) return res;
+  } catch (e) {
+    console.warn(`Direct fetch failed for ${url}, trying local proxy...`);
+  }
+
+  // 2. Try local server proxy (Avalon backend)
+  try {
+    const res = await fetch(`${LOCAL_PROXY}${encodeURIComponent(url)}`);
+    if (res.ok) return res;
+  } catch (e) {
+    console.warn(`Local proxy failed for ${url}, trying public fallback...`);
+  }
+
+  // 3. Try public proxy (Fallback for static hosts like GitHub Pages)
+  try {
+    return await fetch(`${PUBLIC_PROXY}${encodeURIComponent(url)}`);
+  } catch (e) {
+    throw new Error(`All fetch attempts failed for ${url}`);
+  }
+}
 
 export const mangaService = {
   searchManga: async (title: string) => {
@@ -9,17 +35,11 @@ export const mangaService = {
       url.searchParams.append('limit', '50');
       url.searchParams.append('includes[]', 'cover_art');
       
-      // We use brackets as MangaDex expects them for array parameters
       ['safe', 'suggestive', 'erotica', 'pornographic'].forEach(cr => {
         url.searchParams.append('contentRating[]', cr);
       });
       
-      ['pt-br', 'pt', 'en'].forEach(lang => {
-        url.searchParams.append('availableTranslatedLanguage[]', lang);
-      });
-      
-      const targetUrl = url.toString();
-      const response = await fetch(`${PROXY_URL}${encodeURIComponent(targetUrl)}`);
+      const response = await smartFetch(url.toString());
       if (!response.ok) throw new Error(`Status: ${response.status}`);
       return await response.json();
     } catch (error) {
@@ -43,13 +63,11 @@ export const mangaService = {
         url.searchParams.append('translatedLanguage[]', 'en');
         url.searchParams.append('order[chapter]', 'asc');
         
-        // Add content ratings to get all chapters
         ['safe', 'suggestive', 'erotica', 'pornographic'].forEach(cr => {
           url.searchParams.append('contentRating[]', cr);
         });
         
-        const targetUrl = url.toString();
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(targetUrl)}`);
+        const response = await smartFetch(url.toString());
         if (!response.ok) break;
         const data = await response.json();
         
@@ -59,8 +77,6 @@ export const mangaService = {
         
         total = data.total || 0;
         offset += 500;
-        
-        // Safety break
         if (offset > 5000) break;
       }
       
@@ -74,7 +90,7 @@ export const mangaService = {
   getChapterPages: async (chapterId: string, forceDataSaver = false) => {
     try {
       const url = `${MANGADEX_API_URL}/at-home/server/${chapterId}`;
-      const response = await fetch(`${PROXY_URL}${encodeURIComponent(url)}`);
+      const response = await smartFetch(url);
       if (!response.ok) throw new Error(`Status: ${response.status}`);
       const data = await response.json();
       
@@ -89,7 +105,14 @@ export const mangaService = {
         return {
           pages: images.map((file: string) => {
             const fullUrl = `${baseUrl}/${path}/${h}/${file}`;
-            return `${PROXY_URL}${encodeURIComponent(fullUrl)}`;
+            // If we are on a static host (like GitHub Pages), the local proxy will fail.
+            // We use a fallback logic here by detecting if we're on localhost or the deployed domain.
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname.includes('run.app');
+            if (!isLocal) {
+              // Fallback for static hosts (GitHub Pages)
+              return `https://images.weserv.nl/?url=${encodeURIComponent(fullUrl)}`;
+            }
+            return `${LOCAL_PROXY}${encodeURIComponent(fullUrl)}`;
           })
         };
       }
