@@ -38,15 +38,7 @@ export default function AnimePlayer() {
   const [episodeSearch, setEpisodeSearch] = useState('');
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [adShieldMode, setAdShieldMode] = useState<'smart' | 'strict' | 'off'>(() => {
-    const saved = localStorage.getItem('ad_shield_mode');
-    if (saved === 'smart' || saved === 'strict' || saved === 'off') {
-      return saved;
-    }
-    const legacy = localStorage.getItem('ad_shield_active');
-    if (legacy === 'false') return 'off';
-    return 'smart'; // Default to 'smart' to completely bypass 404 errors!
-  });
+  const [adShieldMode, setAdShieldMode] = useState<'smart' | 'strict' | 'off'>('off');
   const [clickShieldActive, setClickShieldActive] = useState(false);
   const [customEpisodesCount, setCustomEpisodesCount] = useState<number | null>(null);
   const [totalEpisodesCount, setTotalEpisodesCount] = useState(0);
@@ -454,28 +446,11 @@ export default function AnimePlayer() {
                   Servidores
                 </span>
                 
-                {/* Cycles Shield Mode elegantly on click */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdShieldMode(prev => {
-                      const next = prev === 'smart' ? 'off' : 'smart';
-                      localStorage.setItem("ad_shield_mode", next);
-                      localStorage.setItem("ad_shield_active", String(next !== 'off'));
-                      window.location.reload();
-                      return next;
-                    });
-                  }}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
-                    adShieldMode === 'smart' ? "bg-brand/10 border-brand/20 text-brand font-black" :
-                    "bg-white/5 border-white/5 text-gray-500 hover:text-white"
-                  )}
-                  title="Clique para alternar o nível do Escudo de Anúncios"
-                >
-                  <ShieldCheck size={10} />
-                  Escudo: {adShieldMode === 'smart' ? 'Smart Guard' : 'Off'}
-                </button>
+                {/* Emissor de status do player */}
+                <div className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse" />
+                  Servidores
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
