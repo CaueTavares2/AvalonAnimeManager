@@ -87,49 +87,14 @@ export const betterflixExtension: AnimeExtension = {
       episode = parts[2] || '1';
     }
     
-    // Betterflix Sources with dynamic season and episode values!
+    // Betterflix Sources - Reduced to only the most stable source
     const sources = [
       {
         url: type === 'movie' 
           ? `https://betterflix.click/api/player?id=${tmdbId}&type=movie`
           : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=${season}&episode=${episode}`,
         type: 'iframe' as const,
-        quality: 'Betterflix HD (S1)'
-      },
-      {
-        url: type === 'movie'
-          ? `https://betterflix.click/api/player?id=${tmdbId}&type=movie&server=2`
-          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=${season}&episode=${episode}&server=2`,
-        type: 'iframe' as const,
-        quality: 'Betterflix HD (S2)'
-      },
-      {
-        url: type === 'movie'
-          ? `https://betterflix.click/api/player?id=${tmdbId}&type=movie&server=3`
-          : `https://betterflix.click/api/player?id=${tmdbId}&type=tv&season=${season}&episode=${episode}&server=3`,
-        type: 'iframe' as const,
-        quality: 'Betterflix HD (S3)'
-      },
-      {
-        url: type === 'movie'
-          ? `https://betterflix.click/watch?id=${tmdbId}&type=movie`
-          : `https://betterflix.click/watch?id=${tmdbId}&type=tv&season=${season}&episode=${episode}`,
-        type: 'iframe' as const,
-        quality: 'Betterflix (Completo + Dub)'
-      },
-      {
-        url: type === 'tv'
-          ? `https://vidlink.pro/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=ff0000`
-          : `https://vidlink.pro/embed/movie/${tmdbId}?primaryColor=ff0000`,
-        type: 'iframe' as const,
-        quality: 'VidLink (Ultra HD)'
-      },
-      {
-        url: type === 'tv' 
-          ? `https://vidsrc.xyz/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
-          : `https://vidsrc.xyz/embed/movie?tmdb=${tmdbId}`,
-        type: 'iframe' as const,
-        quality: 'Global Multi-Source'
+        quality: 'Betterflix HD'
       }
     ];
 

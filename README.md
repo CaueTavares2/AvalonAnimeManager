@@ -8,9 +8,8 @@ Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o ras
 
 Nesta precisa atualização, priorizamos a pureza do banco de dados e refinamos a experiência estética do pacto cósmico, eliminando ruídos e de acordo com o feedback de fidelidade de RPG:
 
-- **🔇 Expurgo de Falas Genéricas ("Ouvir Voz")**: Removemos em definitivo a antiga funcionalidade de reprodução de voz ("Ouvir Voz") e seus respectivos cartões flutuantes de legenda, visto que era impossível garantir falas originais e autênticas em japonês para a totalidade dos milhares de personagens de animes e mangás do sistema.
-- **✨ Botões de Pacto Cósmico Otimizados**: Com a remoção do botão de audição, os cards de personagens agora possuem um botão unificado e refinado que se expande por toda a largura do slot, permitindo que você firme seu pacto cósmico com transições incrivelmente suaves e em um design impecável.
-- **🌌 Consagração Silenciosa**: O encerramento do Ritual do Pacto Celestial opera agora de forma solene e silenciosa, concluindo seu elo místico sem acionar ruídos ou áudios robóticos, focando exclusivamente na adjudicação do seu título exclusivo e prestigioso de aliança cósmica.
+- **🎥 Otimização de Servidores de Streaming**: Refinamos a seleção de servidores no Betterflix para manter apenas as fontes mais estáveis e funcionais, reduzindo drasticamente erros de carregamento e o tempo de busca por um sinal válido.
+- **🛡️ Escudo de Transmissão (Protetor de Cliques)**: Aprimoramos o escudo de proteção (click-shield) do player para garantir que a interação inicial com o iframe de vídeo seja capturada de forma infalível pelo nosso sistema, bloqueando popups intrusivos e estabilizando a reprodução.
 
 ---
 
