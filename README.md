@@ -10,6 +10,7 @@ Nesta precisa atualização, priorizamos a pureza do banco de dados e refinamos 
 
 - **🎥 Otimização de Servidores de Streaming**: Refinamos a seleção de servidores no Betterflix para manter apenas as fontes mais estáveis e funcionais, reduzindo drasticamente erros de carregamento e o tempo de busca por um sinal válido.
 - **🛡️ Escudo de Transmissão (Protetor de Cliques)**: Aprimoramos o escudo de proteção (click-shield) do player para garantir que a interação inicial com o iframe de vídeo seja capturada de forma infalível pelo nosso sistema, bloqueando popups intrusivos e estabilizando a reprodução.
+- **🏅 Novas Conquistas de Mangá**: Adicionamos o rastreamento e conquista para leitores de mangás, recompensando aqueles que completam 10 e 50 obras.
 
 ---
 
@@ -379,6 +380,11 @@ npm run build
 ---
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
+
+### [v4.8.1] - Mangá Achievements & Stream Stability
+- **Servidores Estáveis**: Redução dos servidores de streaming para fontes exclusivamente funcionais no Betterflix.
+- **Escudo Aprimorado**: Estabilização do modo Smart Guard no `AnimePlayer` para evitar erros de 404 em fontes sensíveis.
+- **Conquistas de Mangá**: Implementação oficial das conquistas "Leitor de Avião" e "Bibliotecário".
 
 ### [v4.7.1] - Sovereign Marketplace & Styled Badges (Atual)
 - **Loja & Inventário Soberanos**: Um novo visual com auras estilizadas e de alta fidelidade para as raridades da loja.

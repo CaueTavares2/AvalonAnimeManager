@@ -174,6 +174,22 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     points: 50,
     secret: true
   },
+  'LEITOR_AVIAO': {
+    id: 'LEITOR_AVIAO',
+    title: 'Leitor de Avião',
+    description: 'Ler 10 mangás até o fim.',
+    icon: 'BookOpen',
+    rarity: 'COMUM',
+    points: 100
+  },
+  'BIBLIOTECARIO': {
+    id: 'BIBLIOTECARIO',
+    title: 'Bibliotecário',
+    description: 'Ler 50 mangás até o fim.',
+    icon: 'Library',
+    rarity: 'RARO',
+    points: 250
+  },
 
   // Legendary (+1000 PO)
   'REI_PIRATAS': {
