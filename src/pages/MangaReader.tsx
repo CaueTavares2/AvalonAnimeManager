@@ -156,7 +156,7 @@ export default function MangaReader() {
         setMangaTitle(formatTitle(jikanData));
         setLoading(false);
 
-        // 2. Search on MangaDex
+        // 2. Search on MangaDex in parallel for efficiency
         const titlesToSearch = [
           jikanData.title,
           jikanData.title_english,
@@ -167,22 +167,40 @@ export default function MangaReader() {
         let feedData: any[] = [];
         let foundDexId = '';
 
-        for (const t of titlesToSearch) {
-          if (feedData.length > 0) break;
-          
-          const searchRes = await mangaService.searchManga(t).catch(() => null);
-          if (searchRes?.data?.length > 0) {
-            // Try top 3 results from search
-            const candidates = searchRes.data.slice(0, 3);
-            for (const cand of candidates) {
-              const feed = await mangaService.getMangaFeed(cand.id).catch(() => null);
-              if (feed?.data?.length > 0) {
-                feedData = feed.data;
-                foundDexId = cand.id;
-                break;
-              }
-            }
+        // Search for all titles in parallel
+        const searchPromises = titlesToSearch.map(t => mangaService.searchManga(t).catch(() => null));
+        const searchResults = await Promise.all(searchPromises);
+
+        // Flatten all candidates from all searches
+        const allCandidates: any[] = [];
+        searchResults.forEach(res => {
+          if (res?.data) allCandidates.push(...res.data);
+        });
+
+        // Deduplicate candidates by ID and keep original order (relevance)
+        const seenIds = new Set();
+        const uniqueCandidates: any[] = [];
+        allCandidates.forEach(c => {
+          if (!seenIds.has(c.id)) {
+            seenIds.add(c.id);
+            uniqueCandidates.push(c);
           }
+        });
+        
+        // Take top 5 candidates and check their feeds in parallel for speed
+        const topCandidates = uniqueCandidates.slice(0, 5);
+        const feedPromises = topCandidates.map(cand => 
+          mangaService.getMangaFeed(cand.id)
+            .then(res => ({ id: cand.id, data: res?.data || [] }))
+            .catch(() => ({ id: cand.id, data: [] }))
+        );
+        
+        const feedResults = await Promise.all(feedPromises);
+        const validFeed = feedResults.find(f => f.data.length > 0);
+
+        if (validFeed) {
+          feedData = validFeed.data;
+          foundDexId = validFeed.id;
         }
 
         if (feedData.length > 0) {
