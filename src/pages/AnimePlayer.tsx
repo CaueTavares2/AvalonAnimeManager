@@ -447,7 +447,7 @@ export default function AnimePlayer() {
                 </span>
                 
                 {/* Emissor de status do player */}
-                <div className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] flex items-center gap-1.5">
+                <div className="text-brand font-black text-[10px] uppercase tracking-tighter italic flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse" />
                   Servidores
                 </div>
