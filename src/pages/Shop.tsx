@@ -21,7 +21,28 @@ interface ShopItem {
   imageUrl?: string;
 }
 
-const SHOP_ITEMS: ShopItem[] = [];
+const SHOP_ITEMS: ShopItem[] = [
+  { 
+    id: 'banner_sakura', 
+    name: 'Tema de Sakura', 
+    description: 'Um banner sereno da primavera com flores de cerejeira e arquitetura clássica.', 
+    price: 500, 
+    icon: ImageIcon, 
+    category: 'COSMETIC', 
+    rarity: 'RARE',
+    imageUrl: '/sakura-theme.png' 
+  },
+  { 
+    id: 'banner_cyberpunk', 
+    name: 'Tema Cyberpunk', 
+    description: 'Um visual futurista de Neo-Tokyo em alta definição para o seu perfil.', 
+    price: 1500, 
+    icon: Zap, 
+    category: 'COSMETIC', 
+    rarity: 'EPIC',
+    imageUrl: '/cyberpunk-theme.jpg' 
+  }
+];
 
 const RARITY_STYLING = {
   COMMON: {
@@ -154,7 +175,8 @@ export default function Shop() {
         }
       } else if (item.category === 'COSMETIC') {
          const bannerUrls: Record<string, string> = {
-            'banner_sakura': '/sakura-theme.png'
+            'banner_sakura': '/sakura-theme.png',
+            'banner_cyberpunk': '/cyberpunk-theme.jpg'
          };
          
          const newBanner = bannerUrls[item.id] || '';
@@ -476,7 +498,8 @@ export default function Shop() {
                       if (item.category === 'COSMETIC') {
                         // determine if current equipped
                         const bannerUrls: Record<string, string> = {
-                         'banner_sakura': '/sakura-theme.png'
+                         'banner_sakura': '/sakura-theme.png',
+                         'banner_cyberpunk': '/cyberpunk-theme.jpg'
                         };
                         const targetUrl = bannerUrls[item.id] || '';
                         isCosmeticActive = targetUrl !== '' && profile.bannerURL === targetUrl;
