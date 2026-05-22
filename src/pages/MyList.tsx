@@ -1,6 +1,7 @@
 import { useAnimeList, AnimeStatus, UserAnime } from '../hooks/useAnimeList';
 import { LayoutGrid, List as ListIcon, Trash2, Edit2, TrendingUp, Star, Loader2, RefreshCw, Sparkles, Search, X, Zap, Crown, Compass, Shuffle } from 'lucide-react';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '../lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import CompletionModal from '../components/shared/CompletionModal';
@@ -539,8 +540,8 @@ export default function MyList() {
       />
 
       {/* Suggestion Modal */}
-      {suggestion && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+      {suggestion && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
            <div className="bg-[var(--color-card)] w-full max-w-sm rounded-2xl shadow-3xl border border-[var(--color-border)] overflow-hidden animate-in zoom-in-95 duration-200">
              <div className="bg-brand h-24 flex items-center justify-center relative overflow-hidden">
                <motion.div 
@@ -714,8 +715,7 @@ export default function MyList() {
              </div>
            </div>
         </div>
-
-      )}
+      , document.body)}
     </div>
   );
 }
