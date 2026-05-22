@@ -17,7 +17,6 @@ import TrackerSyncToast from './components/shared/TrackerSyncToast';
 import logoLight from './assets/images/logo-light.jpeg';
 import logoDark from './assets/images/logo-dark.jpeg';
 import AppRoutes from './routes/AppRoutes';
-import ConsoleCommandHook from './components/admin/ConsoleCommandHook';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { ProfileProvider } from './context/ProfileContext';
@@ -60,7 +59,6 @@ function MobileNav() {
 function MainLayout() {
   return (
     <div className="min-h-screen">
-      <ConsoleCommandHook />
       <GlobalAnnouncement />
       <Navbar />
       <UpdateNotification />

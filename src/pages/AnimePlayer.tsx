@@ -49,6 +49,7 @@ export default function AnimePlayer() {
   });
   const [clickShieldActive, setClickShieldActive] = useState(false);
   const [customEpisodesCount, setCustomEpisodesCount] = useState<number | null>(null);
+  const [totalEpisodesCount, setTotalEpisodesCount] = useState(0);
 
   // States for the unified Jikan/Anilist-to-TMDB ID translator & tuning console
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -136,6 +137,7 @@ export default function AnimePlayer() {
             const data = await jikanService.getDetails(Number(id));
             title = data.title;
             totalEpisodesCount = data.episodes || 0;
+            setTotalEpisodesCount(totalEpisodesCount);
             releaseYear = data.year || 0;
             setAnimeTitle(formatTitle(data));
             
@@ -851,10 +853,11 @@ export default function AnimePlayer() {
                      // setReloadTrigger will let the load hook re-run with customEpisodesCount!
                      setReloadTrigger(prev => prev + 1);
                    }}
-                   className="px-2 py-1 bg-brand/10 border border-brand/20 text-brand rounded-lg text-[8px] font-black uppercase tracking-wider transition-all hover:bg-brand hover:text-white"
+                   disabled={totalEpisodesCount > 0 && episodes.length >= totalEpisodesCount}
+                   className="px-2 py-1 bg-brand/10 border border-brand/20 text-brand rounded-lg text-[8px] font-black uppercase tracking-wider transition-all hover:bg-brand hover:text-white disabled:opacity-30 disabled:pointer-events-none"
                    title="Carrega mais episódios além do número de episódios oficial"
                  >
-                   + 12 Eps
+                   {totalEpisodesCount > 0 && episodes.length >= totalEpisodesCount ? 'Listados' : '+ 12 Eps'}
                  </button>
                  <button
                    type="button"
