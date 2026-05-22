@@ -293,6 +293,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let newStreak = userData.streak || 0;
     let needsHelp = userData.needsHelp || false;
     let helpExpireAt = userData.helpExpireAt || null;
+    let usedProtection = false;
+    let remainingProtections = userData.streakProtections || 0;
 
     if (!isToday) {
       if (isYesterday || (userData.streak === 0 && !needsHelp)) {
@@ -301,8 +303,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         helpExpireAt = null;
         setShowStreakPopUp(true);
       } else if (newStreak > 0) {
-        needsHelp = true;
-        helpExpireAt = new Date(now.getTime() + 86400000);
+        if (remainingProtections > 0) {
+           remainingProtections -= 1;
+           usedProtection = true;
+           needsHelp = false;
+           helpExpireAt = null;
+        } else {
+           needsHelp = true;
+           helpExpireAt = new Date(now.getTime() + 86400000);
+        }
       }
     }
 
@@ -332,18 +341,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     else if (totalPO >= 200) newRank = 'BRONZE';
 
     try {
-      await updateDoc(userRef, {
+      const updates: any = {
         status: 'ONLINE',
         lastOnlineAt: serverTimestamp(),
         streak: newStreak,
         streakMultiplier: multiplier,
-        lastStreakUpdate: isToday ? userData.lastStreakUpdate : serverTimestamp(),
+        lastStreakUpdate: isToday && !usedProtection ? userData.lastStreakUpdate : serverTimestamp(),
         needsHelp,
         helpExpireAt: helpExpireAt ? helpExpireAt : null,
         rank: newRank,
         updatedAt: serverTimestamp(),
         lastActivityAt: serverTimestamp()
-      });
+      };
+      
+      if (usedProtection) {
+        updates.streakProtections = remainingProtections;
+      }
+      
+      await updateDoc(userRef, updates);
 
       // Update Private Info
       if (authUser.emailVerified) {

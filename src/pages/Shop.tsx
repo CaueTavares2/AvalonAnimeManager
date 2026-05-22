@@ -37,45 +37,90 @@ export default function Shop() {
   const [tab, setTab] = useState<'SHOP' | 'INVENTORY'>('SHOP');
 
   const buyItem = async (item: ShopItem) => {
-    if (!user || profile.availablePoints < item.price) return;
+    if (!user || profile.availablePoints < item.price) {
+      alert("PO insuficiente!");
+      return;
+    }
     
     try {
       const userRef = doc(db, 'users', user.uid);
       const { icon, ...itemToStore } = item;
       await updateDoc(userRef, {
         availablePoints: increment(-item.price),
-        inventory: arrayUnion({ ...itemToStore, purchasedAt: new Date().toISOString() })
+        inventory: arrayUnion({ ...itemToStore, purchasedAt: new Date().toISOString(), instanceId: Date.now().toString() })
       });
+      alert(`Você comprou ${item.name}! Veja no seu inventário.`);
     } catch (e) {
       console.error("Compra falhou", e);
     }
   };
 
-  const equipItem = async (item: any) => {
+  const useOrEquipItem = async (item: any) => {
     if (!user) return;
     
     try {
       const userRef = doc(db, 'users', user.uid);
+      
       if (item.category === 'BADGE') {
         const currentBadges = profile.badges || [];
-        if (currentBadges.find((b: any) => b.id === item.id)) {
+        if (currentBadges.some((b: any) => b.id === item.id)) {
             // Unequip
             await updateDoc(userRef, {
                 badges: currentBadges.filter((b: any) => b.id !== item.id)
             });
+            alert("Emblema removido!");
         } else {
             // Equip (max 3 badges)
             const newBadges = [...currentBadges, item].slice(-3);
             await updateDoc(userRef, {
                 badges: newBadges
             });
+            alert("Emblema equipado!");
         }
       } else if (item.category === 'COSMETIC') {
          // handle banner or frame
-         alert("Cosmético equipado! Vá ao seu perfil para ver.");
+         // For example, if it's the premium banner pack, we can set a specific banner
+         const bannerUrls: Record<string, string> = {
+            'premium_banner_pack': 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&q=80&w=1200',
+            // define more if needed
+         };
+         
+         const newBanner = bannerUrls[item.id] || 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200';
+         
+         if (profile.bannerURL === newBanner) {
+            await updateDoc(userRef, { bannerURL: 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200' });
+            alert("Banner padrão restaurado.");
+         } else {
+            await updateDoc(userRef, { bannerURL: newBanner });
+            alert("Cosmético equipado! Vá ao seu perfil para ver.");
+         }
+      } else if (item.category === 'BOOST') {
+          // Consume the item
+          let currentEnd = Date.now();
+          if (profile.poMultiplierUntil) {
+             const existEnd = new Date(profile.poMultiplierUntil).getTime();
+             if (existEnd > currentEnd) currentEnd = existEnd;
+          }
+          
+          const multiplierEnd = new Date(currentEnd + 24 * 60 * 60 * 1000).toISOString();
+          
+          const newInventory = (profile.inventory || []).filter((i: any) => i.instanceId !== item.instanceId);
+          await updateDoc(userRef, {
+              poMultiplierUntil: multiplierEnd,
+              inventory: newInventory
+          });
+          alert(`Boost 2x de PO aplicado! Válido até ${new Date(multiplierEnd).toLocaleString('pt-BR')}.`);
+      } else if (item.category === 'PROTECTION') {
+          // Consume the item
+          const newInventory = (profile.inventory || []).filter((i: any) => i.instanceId !== item.instanceId);
+          await updateDoc(userRef, {
+              streakProtections: increment(1),
+              inventory: newInventory
+          });
+          alert("Pena da Imortalidade consumida! Seu streak está protegido.");
       }
     } catch (e) {
-      console.error("Erro ao equipar", e);
+      console.error("Erro ao equipar/usar", e);
     }
   };
 
@@ -131,15 +176,29 @@ export default function Shop() {
                              <p className="text-xs md:text-[10px] text-gray-500">{item.description}</p>
                            </div>
                          </div>
-                         {item.category === 'BADGE' && (
+                         {item.category === 'BADGE' ? (
                             <button 
-                              onClick={() => equipItem(item)}
+                              onClick={() => useOrEquipItem(item)}
                               className={cn(
                                 "w-full md:w-auto px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
-                                isEquipped ? "bg-red-500/20 text-red-500 hover:bg- hover:text-white" : "bg-brand/20 text-brand hover:bg- hover:text-white"
+                                isEquipped ? "bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white" : "bg-brand/20 text-brand hover:bg-brand hover:text-white"
                               )}
                             >
-                              {isEquipped ? "Remover" : "Equipar"}
+                              {isEquipped ? "Desequipar" : "Equipar"}
+                            </button>
+                         ) : (
+                            <button 
+                              onClick={() => useOrEquipItem(item)}
+                              className={cn(
+                                "w-full md:w-auto px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                                item.category === 'COSMETIC'
+                                  ? (profile.bannerURL !== 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200' ? "bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white" : "bg-brand/20 text-brand hover:bg-brand hover:text-white")
+                                  : "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white"
+                              )}
+                            >
+                              {item.category === 'COSMETIC' 
+                                ? (profile.bannerURL !== 'https://images.unsplash.com/photo-1578632738908-48b4850ee98d?auto=format&fit=crop&q=80&w=1200' ? "Desequipar" : "Equipar") 
+                                : "Usar"}
                             </button>
                          )}
                        </div>

@@ -24,6 +24,8 @@ interface ProfileData {
   lastAttendance: string | null;
   hasSeenWelcome?: boolean;
   createdAt?: any;
+  streakProtections?: number;
+  poMultiplierUntil?: string;
 }
 
 interface ProfileContextType {
@@ -86,6 +88,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           badges: data.badges || prev.badges || [],
           streak: data.streak || prev.streak || 0,
           lastAttendance: data.lastAttendance || prev.lastAttendance || null,
+          streakProtections: data.streakProtections || prev.streakProtections || 0,
+          poMultiplierUntil: data.poMultiplierUntil || prev.poMultiplierUntil || undefined,
           hasSeenWelcome: data.hasSeenWelcome !== undefined ? data.hasSeenWelcome : true // Default true for legacy users
         }));
       }

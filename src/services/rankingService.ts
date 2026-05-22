@@ -235,14 +235,25 @@ export const rankingService = {
   addPoints: async (userId: string, points: number, reason: string) => {
     const userRef = doc(db, 'users', userId);
     try {
+      const snap = await getDoc(userRef);
+      let multiplier = 1;
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.poMultiplierUntil) {
+           const poMUntil = new Date(data.poMultiplierUntil);
+           if (poMUntil > new Date()) multiplier = 2;
+        }
+      }
+      const finalPoints = points * multiplier;
+
       await updateDoc(userRef, {
-        otakuPoints: increment(points),
-        availablePoints: increment(points),
-        weeklyPoints: increment(points),
+        otakuPoints: increment(finalPoints),
+        availablePoints: increment(finalPoints),
+        weeklyPoints: increment(finalPoints),
         lastActivityAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      console.log(`User ${userId} earned ${points} PO: ${reason}`);
+      console.log(`User ${userId} earned ${finalPoints} PO (Multiplier x${multiplier}): ${reason}`);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
     }
@@ -279,10 +290,18 @@ export const rankingService = {
 
     if (pointsToAdd <= 0 && userData.mediaPoints !== undefined) return; 
 
+    let multiplier = 1;
+    if (userData.poMultiplierUntil) {
+       const poMUntil = new Date(userData.poMultiplierUntil);
+       if (poMUntil > new Date()) multiplier = 2;
+    }
+    
+    const finalPointsToAdd = pointsToAdd * multiplier;
+
     const currentTotalPO = userData.otakuPoints || 0;
-    const newTotalPO = currentTotalPO + pointsToAdd;
+    const newTotalPO = currentTotalPO + finalPointsToAdd;
     const availablePoints = userData.availablePoints || 0;
-    const newAvailablePoints = availablePoints + pointsToAdd;
+    const newAvailablePoints = availablePoints + finalPointsToAdd;
 
     // Rank evaluation logic
     let newRank = 'FERRO';
