@@ -166,9 +166,6 @@ export default function MyList() {
   const handleSuggestion = (forcedVibe?: 'any' | 'quick' | 'treasures' | 'marathon') => {
     const activeVibe = forcedVibe || vibeFilter;
 
-    console.log('handleSuggestion called with vibe:', activeVibe);
-    console.log('Total list size:', list.filter(a => a.type === mediaType).length);
-
     // Advanced Next-Season Auto-Detector & Smart Filtering logic
     // We group by anime/manga franchise root by stripping out common sequel suffixes or notations.
     const sanitizeTitle = (t: string) => {
@@ -298,6 +295,11 @@ export default function MyList() {
     // Fallback: If candidate list became completely empty because everything left is a sequel/season, 
     // fall back to showing original uncompleted list items without the sequel filter.
     let finalCandidates = candidateList.length > 0 ? candidateList : list.filter(a => a.type === mediaType && a.status !== 'COMPLETED' && a.status !== 'DROPPED');
+    
+    // Final fallback: If still empty (e.g. all completed), just use anything of that type
+    if (finalCandidates.length === 0) {
+      finalCandidates = list.filter(a => a.type === mediaType);
+    }
 
     // Apply interactive "Vibe Filter" on top of final candidates
     let vibeCandidates = [...finalCandidates];
@@ -324,7 +326,6 @@ export default function MyList() {
     }
 
     if (vibeCandidates.length === 0) {
-      alert("Nenhum anime disponível para sugerir! Verifique seus filtros.");
       return;
     }
 
