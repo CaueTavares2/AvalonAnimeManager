@@ -164,6 +164,10 @@ export default function MyList() {
   }, [list, updateAnime]);
 
   const handleSuggestion = (forcedVibe?: 'any' | 'quick' | 'treasures' | 'marathon') => {
+    if (!list || list.length === 0) {
+        console.error('List is empty, cannot suggest.');
+        return;
+    }
     const activeVibe = forcedVibe || vibeFilter;
 
     // Advanced Next-Season Auto-Detector & Smart Filtering logic
