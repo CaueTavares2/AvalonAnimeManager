@@ -376,10 +376,8 @@ export default function AnimePlayer() {
                 allowFullScreen 
                 allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
                 sandbox={
-                  adShieldMode === 'smart' 
-                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" 
-                    : adShieldMode === 'strict' 
-                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-top-navigation-by-user-activation" 
+                  adShieldMode === 'smart' || adShieldMode === 'strict'
+                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-presentation" 
                     : undefined
                 }
               />

@@ -292,17 +292,9 @@ export default function MyList() {
       }
     });
 
-    // Fallback: if candidate list became completely empty because everything left is a sequel/season, 
-    // fall back to showing original uncompleted list items without the sequel filter so the button doesn't stop working.
-    let finalCandidates = candidateList;
-    if (finalCandidates.length === 0) {
-      Object.values(groups).forEach(franchise => {
-        const uncompleted = franchise.filter(a => a.status !== 'COMPLETED' && a.status !== 'DROPPED');
-        if (uncompleted.length > 0) {
-          finalCandidates.push(uncompleted[0]);
-        }
-      });
-    }
+    // Fallback: If candidate list became completely empty because everything left is a sequel/season, 
+    // fall back to showing original uncompleted list items without the sequel filter.
+    let finalCandidates = candidateList.length > 0 ? candidateList : list.filter(a => a.type === mediaType && a.status !== 'COMPLETED' && a.status !== 'DROPPED');
 
     // Apply interactive "Vibe Filter" on top of final candidates
     let vibeCandidates = [...finalCandidates];
@@ -321,9 +313,6 @@ export default function MyList() {
       vibeCandidates = finalCandidates.filter(a => a.score && a.score >= 8);
       if (vibeCandidates.length === 0) {
         vibeCandidates = [...finalCandidates].filter(a => a.score && a.score > 0);
-      }
-      if (vibeCandidates.length === 0) {
-        vibeCandidates = [...finalCandidates];
       }
     }
 
