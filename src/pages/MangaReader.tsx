@@ -160,26 +160,33 @@ export default function MangaReader() {
         const titlesToSearch = [
           jikanData.title,
           jikanData.title_english,
+          jikanData.title_japanese,
           ...(jikanData.title_synonyms || [])
         ].filter(Boolean) as string[];
 
-        let dexId = '';
+        let feedData: any[] = [];
+        let foundDexId = '';
+
         for (const t of titlesToSearch) {
+          if (feedData.length > 0) break;
+          
           const searchRes = await mangaService.searchManga(t).catch(() => null);
           if (searchRes?.data?.length > 0) {
-            dexId = searchRes.data[0].id;
-            break;
+            // Try top 3 results from search
+            const candidates = searchRes.data.slice(0, 3);
+            for (const cand of candidates) {
+              const feed = await mangaService.getMangaFeed(cand.id).catch(() => null);
+              if (feed?.data?.length > 0) {
+                feedData = feed.data;
+                foundDexId = cand.id;
+                break;
+              }
+            }
           }
         }
 
-        if (!dexId) {
-          setStatus('error');
-          return;
-        }
-
-        const feed = await mangaService.getMangaFeed(dexId).catch(() => null);
-        if (feed?.data?.length > 0) {
-          const processed = feed.data.map((cap: any) => {
+        if (feedData.length > 0) {
+          const processed = feedData.map((cap: any) => {
             const rawCh = cap.attributes?.chapter || '';
             const match = String(rawCh).match(/(\d+(\.\d+)?)/);
             const numKey = match ? parseFloat(match[1]).toString() : String(rawCh).trim();

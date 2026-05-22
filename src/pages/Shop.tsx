@@ -216,6 +216,17 @@ export default function Shop() {
     }
   };
 
+  const groupedInventory = (profile?.inventory || []).reduce((acc: any, item: any) => {
+    const itemDef = SHOP_ITEMS.find(s => s.id === item.id);
+    if (!itemDef) return acc;
+    acc[item.category] = acc[item.category] || [];
+    const exist = acc[item.category].find((i: any) => i.id === item.id);
+    if (exist) { exist.quantity = (exist.quantity || 1) + 1; }
+    else { acc[item.category].push({ ...item, quantity: 1 }); }
+    return acc;
+  }, {});
+  const hasValidItems = Object.keys(groupedInventory).length > 0;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -472,12 +483,9 @@ export default function Shop() {
            </div>
 
            {/* Inventory grid render */}
-           {profile.inventory?.length ? (
+           {hasValidItems ? (
              <div className="space-y-8">
-              {Object.entries(profile.inventory.reduce((acc: any, item: any) => {
-                (acc[item.category] = acc[item.category] || []).push(item);
-                return acc;
-              }, {})).map(([category, items]: [string, any]) => (
+              {Object.entries(groupedInventory).map(([category, items]: [string, any]) => (
                 <div key={category} className="space-y-4">
                   <h4 className="text-cyan-400 font-black text-xs uppercase tracking-widest flex items-center gap-2 border-b border-zinc-800/60 pb-2 font-mono">
                     <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_6px_rgba(6,182,212,0.6)]" />
@@ -524,7 +532,10 @@ export default function Shop() {
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="font-black text-white text-sm tracking-tight">{item.name}</p>
+                                <p className="font-black text-white text-sm tracking-tight">
+                                  {item.name}
+                                  {item.quantity > 1 && <span className="ml-2 text-cyan-400">x{item.quantity}</span>}
+                                </p>
                                 {item.rarity && (
                                   <span className={cn("text-[7.5px] font-black px-1.5 py-0.5 rounded border leading-none", rarityStyle?.badgeBg)}>
                                     {item.rarity}

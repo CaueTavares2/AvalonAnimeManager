@@ -6,9 +6,20 @@ export const mangaService = {
     try {
       const url = new URL(`${MANGADEX_API_URL}/manga`);
       url.searchParams.append('title', title);
-      url.searchParams.append('limit', '10');
+      url.searchParams.append('limit', '20');
       url.searchParams.append('includes[]', 'cover_art');
       url.searchParams.append('order[relevance]', 'desc');
+      
+      // Add content ratings to get more results
+      url.searchParams.append('contentRating[]', 'safe');
+      url.searchParams.append('contentRating[]', 'suggestive');
+      url.searchParams.append('contentRating[]', 'erotica');
+      url.searchParams.append('contentRating[]', 'pornographic');
+      
+      // Filter by available languages to avoid finding entries with no chapters in PT/EN
+      url.searchParams.append('availableTranslatedLanguage[]', 'pt-br');
+      url.searchParams.append('availableTranslatedLanguage[]', 'pt');
+      url.searchParams.append('availableTranslatedLanguage[]', 'en');
       
       const response = await fetch(`${PROXY_URL}${encodeURIComponent(url.toString())}`);
       if (!response.ok) throw new Error(`Status: ${response.status}`);

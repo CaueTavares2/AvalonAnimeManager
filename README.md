@@ -10,6 +10,7 @@ Nesta sublime atualização, abraçamos o vazio para pavimentar o caminho do res
 
 - **🫧 Purificação Total da Loja**: Todos os itens da Loja de Avalon foram provisoriamente retirados do sistema. A vitrine e o inventário atual encontram-se em estado neutro, aguardando novas decisões e mecânicas gloriosas.
 - **🛡️ Clean Code Foundation**: A limpeza temporária servirá de fundação para novos protótipos de escalonamento em breve.
+- **📚 Manga Reader Fix**: Corrigido o problema onde mangás apareciam sem capítulos. Agora o sistema busca em múltiplos resultados do MangaDex, inclui conteúdos "suggestive" e "erotica" para garantir que títulos adultos/seinen sejam encontrados, e prioriza traduções PT-BR/PT de forma mais eficiente.
 
 ---
 
