@@ -1,9 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { UserAnime, AnimeStatus } from '../../hooks/useAnimeList';
 import { useLanguage } from '../../context/LanguageContext';
+import { aniListService } from '../../services/aniListService';
 
 interface AnimeListRowProps {
   anime: UserAnime;
@@ -21,6 +22,27 @@ const AnimeListRow = memo(({
   onProgressUpdate 
 }: AnimeListRowProps) => {
   const { formatTitle } = useLanguage();
+  const [displayTotal, setDisplayTotal] = useState<number | undefined>(anime.totalProgress);
+
+  useEffect(() => {
+    // If anime is airing/watching, try fetching current cap
+    let isMounted = true;
+    if (anime.status === 'WATCHING' && anime.type === 'ANIME') {
+      aniListService.getAiringScheduleByMalId(anime.id).then((schedule: any) => {
+        if (!isMounted) return;
+        if (schedule?.nextAiringEpisode) {
+          const cap = schedule.nextAiringEpisode.episode - 1;
+          setDisplayTotal(cap);
+        } else {
+          setDisplayTotal(anime.totalProgress);
+        }
+      });
+    } else {
+      setDisplayTotal(anime.totalProgress);
+    }
+    return () => { isMounted = false; };
+  }, [anime.id, anime.status, anime.type, anime.totalProgress]);
+
   return (
     <tr className="group hover:bg-[var(--color-card)]/30 transition-colors border-b border-[var(--color-border)] last:border-0">
       <td className="px-4 py-3">
@@ -89,10 +111,14 @@ const AnimeListRow = memo(({
             <div className="flex items-center gap-1.5 min-w-[60px] justify-center">
               <span className="font-black text-[var(--color-text-bright)] text-base italic">{anime.progress}</span>
               <span className="text-gray-400 font-bold text-xs">/</span>
-              <span className="text-gray-500 font-bold text-base">{anime.totalProgress || '?'}</span>
+              <span className="text-gray-500 font-bold text-base">{displayTotal || '?'}</span>
             </div>
             <button 
-              onClick={() => onProgressUpdate(anime.id, true)}
+              onClick={() => {
+                // Do not increment past currently aired episodes if bounded
+                if (displayTotal && anime.progress >= displayTotal) return;
+                onProgressUpdate(anime.id, true);
+              }}
               className="w-6 h-6 flex items-center justify-center rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] text-gray-400 hover:text-brand hover:border-brand transition-all active:scale-90"
             >
               +
@@ -101,7 +127,7 @@ const AnimeListRow = memo(({
           <div className="w-20 h-1 bg-[var(--color-bg)] rounded-full overflow-hidden mt-1">
             <div 
               className="h-full bg-brand transition-all duration-500"
-              style={{ width: `${anime.totalProgress ? (anime.progress / anime.totalProgress) * 100 : 0}%` }}
+              style={{ width: `${displayTotal ? (anime.progress / displayTotal) * 100 : 0}%` }}
             />
           </div>
         </div>

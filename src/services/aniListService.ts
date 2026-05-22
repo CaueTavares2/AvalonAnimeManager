@@ -1,6 +1,9 @@
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 
-export const aniListService = {
+  const scheduleCache = new Map<string, { data: any, timestamp: number }>();
+  
+  export const aniListService = {
+
   searchManga: async (title: string) => {
     const query = `
       query ($search: String) {
@@ -173,6 +176,15 @@ export const aniListService = {
   },
 
   getAiringScheduleByMalId: async (idMal: number, type: 'ANIME' | 'MANGA' = 'ANIME') => {
+    const cacheKey = `${type}-${idMal}`;
+    const cached = scheduleCache.get(cacheKey);
+    const now = Date.now();
+    
+    // Cache for 15 minutes (900000 ms)
+    if (cached && (now - cached.timestamp < 900000)) {
+      return cached.data;
+    }
+
     const query = `
       query ($idMal: Int, $type: MediaType) {
         Media (idMal: $idMal, type: $type) {
@@ -198,7 +210,11 @@ export const aniListService = {
         body: JSON.stringify({ query, variables })
       });
       const data = await response.json();
-      return data.data?.Media || null;
+      const result = data.data?.Media || null;
+      if (result) {
+        scheduleCache.set(cacheKey, { data: result, timestamp: now });
+      }
+      return result;
     } catch (error) {
       console.error("AniList Fetch Airing Schedule Error:", error);
       return null;
