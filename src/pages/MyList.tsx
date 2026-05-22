@@ -320,6 +320,11 @@ export default function MyList() {
       vibeCandidates = finalCandidates;
     }
 
+    if (vibeCandidates.length === 0) {
+      alert("Nenhum anime disponível para sugerir! Verifique seus filtros.");
+      return;
+    }
+
     // Sub-select candidates in PLANNING first if any are planning, within the vibe candidates
     let planningCandidates = vibeCandidates.filter(a => a.status === 'PLANNING');
     if (planningCandidates.length === 0) {

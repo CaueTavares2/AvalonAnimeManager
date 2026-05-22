@@ -377,7 +377,7 @@ export default function AnimePlayer() {
                 allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
                 sandbox={
                   adShieldMode === 'smart'
-                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation" 
+                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-top-navigation allow-presentation allow-popups-to-escape-sandbox"
                     : undefined
                 }
               />
