@@ -376,8 +376,8 @@ export default function AnimePlayer() {
                 allowFullScreen 
                 allow="autoplay; encrypted-media; picture-in-picture; clipboard-write; geolocation"
                 sandbox={
-                  adShieldMode === 'smart' || adShieldMode === 'strict'
-                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-presentation" 
+                  adShieldMode === 'smart'
+                    ? "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation" 
                     : undefined
                 }
               />
@@ -459,7 +459,7 @@ export default function AnimePlayer() {
                   type="button"
                   onClick={() => {
                     setAdShieldMode(prev => {
-                      const next = prev === 'smart' ? 'strict' : prev === 'strict' ? 'off' : 'smart';
+                      const next = prev === 'smart' ? 'off' : 'smart';
                       localStorage.setItem("ad_shield_mode", next);
                       localStorage.setItem("ad_shield_active", String(next !== 'off'));
                       return next;
@@ -468,13 +468,12 @@ export default function AnimePlayer() {
                   className={cn(
                     "flex items-center gap-1 px-2.5 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest transition-all",
                     adShieldMode === 'smart' ? "bg-brand/10 border-brand/20 text-brand font-black" :
-                    adShieldMode === 'strict' ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 font-bold" :
                     "bg-white/5 border-white/5 text-gray-500 hover:text-white"
                   )}
                   title="Clique para alternar o nível do Escudo de Anúncios"
                 >
                   <ShieldCheck size={10} />
-                  Escudo: {adShieldMode === 'smart' ? 'Smart Guard' : adShieldMode === 'strict' ? 'Estrito' : 'Off'}
+                  Escudo: {adShieldMode === 'smart' ? 'Smart Guard' : 'Off'}
                 </button>
               </div>
 
@@ -504,12 +503,7 @@ export default function AnimePlayer() {
                 ))}
               </div>
 
-              {adShieldMode === 'strict' && (
-                <div className="text-[8px] text-yellow-500 bg-yellow-500/5 px-2.5 py-1.5 rounded-xl border border-yellow-500/10 leading-snug">
-                  ⚠️ Algumas fontes (Betterflix, VidLink) requerem <strong>Smart Guard</strong> para evitar erros de 404.
-                </div>
-              )}
-            </div>
+              </div>
           )}
 
           {/* Universal Jikan/AniList to TMDB Translation Alignment Panel (Sintonia de IDs) */}
