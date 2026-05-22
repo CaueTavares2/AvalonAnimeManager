@@ -366,15 +366,42 @@ export default function Profile() {
           {/* Badges Section */}
           <div className="bg-[var(--color-card)] p-6 rounded-xl border border-[var(--color-border)] shadow-sm">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Badges Equipadas</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-3">
                   {profile.badges && profile.badges.length > 0 ? (
-                      profile.badges.map((badge, i) => (
-                          <div key={i} className="w-12 h-12 bg-[var(--color-bg)] rounded-lg flex items-center justify-center border border-[var(--color-border)]/50">
-                              <Trophy className="text-brand w-6 h-6" />
-                          </div>
-                      ))
+                      profile.badges.map((badge: any, i) => {
+                          const isLegendary = badge.rarity === 'LEGENDARY' || badge.id?.includes('legendary');
+                          const isEpic = badge.rarity === 'EPIC' || badge.id?.includes('gold');
+                          return (
+                            <div 
+                              key={i} 
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 bg-[var(--color-bg)] rounded-xl border relative group overflow-hidden transition-all duration-300 hover:scale-105",
+                                isLegendary 
+                                  ? "border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)] bg-amber-500/5 text-amber-400"
+                                  : isEpic 
+                                  ? "border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.12)] bg-purple-500/5 text-purple-400"
+                                  : "border-[var(--color-border)]/50 text-brand"
+                              )}
+                              title={badge.description || badge.name}
+                            >
+                              <div className="shrink-0 animate-pulse">
+                                {isLegendary ? (
+                                  <Crown className="w-5 h-5 text-amber-400" />
+                                ) : isEpic ? (
+                                  <Star className="w-5 h-5 text-purple-400" />
+                                ) : (
+                                  <Trophy className="w-5 h-5 text-brand" />
+                                )}
+                              </div>
+                              <div className="text-left select-none pr-1">
+                                <p className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-bright)]">{badge.name || 'Insígnia'}</p>
+                                <p className="text-[8px] text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">{badge.description || 'Prestígio do jogador'}</p>
+                              </div>
+                            </div>
+                          );
+                      })
                   ) : (
-                      <p className="text-[10px] text-zinc-500 italic">Nenhuma badge equipada.</p>
+                      <p className="text-[10px] text-zinc-500 italic pb-1">Nenhuma badge equipada. Visite a Loja para obter!</p>
                   )}
               </div>
           </div>

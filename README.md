@@ -1,6 +1,17 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.7.0 - Soul Pact & Character Vocalizations)
+# 🌌 Avalon - Anime Tracking Saga (v4.7.1 - Sovereign Marketplace & Styled Badges)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🔮 O que há de Novo na Versão v4.7.1 (Sovereign Marketplace & Styled Badges)
+
+Nesta fantástica atualização, elevamos o sistema de economia de RPG e personalização estética com um redesenho estético primoroso para a Loja e o Inventário:
+
+- **🎭 Loja & Inventário Soberanos**: Redesenhamos a experiência da loja com cards modernizados, auras radiantes de acordo com a raridade do item (Comum, Raro, Épico e Lendário) e separação visual premium das categorias de produtos (Cosméticos, Emblemas, Amplificadores e Blindagens).
+- **🪶 Toasts Robustos (Anti-iFrame Block)**: Eliminamos diálogos nativos (`window.alert`) que travavam o fluxo no iFrame do AI Studio. Desenvolvemos um HUD de Toasts integrado com Framer Motion (`AnimatePresence`) que desliza e confirma transações de forma limpa, moderna e elegante.
+- **🏷️ Badges do Perfil com Design Elevado**: As insígnias equipadas em sua página de perfil saíram do ícone genérico estático para se tornarem cartões místico-estéticos ricos. Agora mostram o nome da badge, descrição do feito alcançado, ícones dedicados (Coroa para badges Lendárias, Estrela para épicas, Troféu para comuns) e dezenas de sombras e gradientes reluzentes.
+- **⚡ Contador de Boosters e Imunidades**: Ativar um Boost de Pontos (PO x2) ou penas protetoras exibe lembretes dinâmicos e temporizadores ao vivo integrados nos cabeçalhos da loja, sintonizando você sobre quantas proteções ou horas de multiplicadores você dispõe.
 
 ---
 
@@ -346,7 +357,13 @@ npm run build
 
 ## 📈 Histórico de Atualizações (Changelog de Lançamentos)
 
-### [v4.6.0] - Universal Title Localization (Atual)
+### [v4.7.1] - Sovereign Marketplace & Styled Badges (Atual)
+- **Loja & Inventário Soberanos**: Um novo visual com auras estilizadas e de alta fidelidade para as raridades da loja.
+- **Toasts Anti-iFrame Block**: Substituição global de `window.alert` por um sistema flutuante de alertas com Framer Motion.
+- **Perfis Refinados**: Nova exibição de Badges com cartões ricamente formatados contendo ícones dinâmicos exclusivos (Coroas, Estrelas, Troféus) e mini-descrições.
+- **Temporizador de Boosts**: Painéis de feedback responsivos informando a duração restante de multiplicadores x2 de PO ativos.
+
+### [v4.6.0] - Universal Title Localization
 - **Localização de Títulos**: Lógica centralizada para formatação nos idiomas Romaji, Inglês e Nativo.
 - **Sincronia Estendida**: Aplicação dinâmica da tradução no banner principal, detalhes, resultados de buscas, leitor de mangá, roleta de sorteios, logs e players.
 
