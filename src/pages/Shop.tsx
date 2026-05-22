@@ -31,32 +31,32 @@ const SHOP_ITEMS: ShopItem[] = [
 
 const RARITY_STYLING = {
   COMMON: {
-    bg: "bg-emerald-500/5",
-    text: "text-emerald-400",
-    border: "border-emerald-500/10",
-    glow: "group-hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
-    badgeBg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+    bg: "bg-cyan-500/5",
+    text: "text-cyan-400",
+    border: "border-cyan-500/25",
+    glow: "hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.25)]",
+    badgeBg: "bg-cyan-950/40 border-cyan-500/35 text-cyan-400 font-mono"
   },
   RARE: {
     bg: "bg-blue-500/5",
     text: "text-blue-400",
-    border: "border-blue-500/10",
-    glow: "group-hover:shadow-[0_0_20px_rgba(59,130,246,0.18)]",
-    badgeBg: "bg-blue-500/10 border-blue-500/20 text-blue-400"
+    border: "border-blue-500/25",
+    glow: "hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]",
+    badgeBg: "bg-blue-950/40 border-blue-500/35 text-blue-400 font-mono"
   },
   EPIC: {
-    bg: "bg-purple-500/5",
-    text: "text-purple-400",
-    border: "border-purple-500/10",
-    glow: "group-hover:shadow-[0_0_20px_rgba(168,85,247,0.22)]",
-    badgeBg: "bg-purple-500/10 border-purple-500/20 text-purple-400"
+    bg: "bg-fuchsia-500/5",
+    text: "text-fuchsia-400",
+    border: "border-fuchsia-500/25",
+    glow: "hover:border-fuchsia-400 hover:shadow-[0_0_20px_rgba(217,70,239,0.3)]",
+    badgeBg: "bg-fuchsia-950/40 border-fuchsia-500/35 text-fuchsia-400 font-mono"
   },
   LEGENDARY: {
     bg: "bg-amber-500/5",
     text: "text-amber-400",
-    border: "border-amber-500/10",
-    glow: "group-hover:shadow-[0_0_25px_rgba(245,158,11,0.28)]",
-    badgeBg: "bg-amber-500/10 border-amber-500/20 text-amber-405 text-amber-400"
+    border: "border-amber-500/25",
+    glow: "hover:border-amber-400 hover:shadow-[0_0_25px_rgba(245,158,11,0.35)]",
+    badgeBg: "bg-amber-950/40 border-amber-500/35 text-amber-400 font-mono"
   }
 };
 
@@ -206,8 +206,12 @@ export default function Shop() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="max-w-6xl mx-auto space-y-8 px-4 md:px-0"
+      className="max-w-6xl mx-auto space-y-8 px-5 py-6 md:py-8 bg-[#07090e] border border-zinc-800 rounded-3xl relative overflow-hidden text-gray-300 font-sans shadow-2xl shadow-black/90"
     >
+      {/* Neo-Tokyo Holographic grid design pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(14,20,35,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(14,20,35,0.45)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+      <div className="absolute inset-0 bg-radial-at-t from-cyan-950/20 via-transparent to-transparent pointer-events-none" />
+
       {/* Dynamic Toast Feedback Overlay */}
       <AnimatePresence>
         {toast && (
@@ -216,12 +220,12 @@ export default function Shop() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             className={cn(
-              "fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border backdrop-blur-md max-w-sm font-semibold text-xs uppercase tracking-wider text-center",
+              "fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border backdrop-blur-md max-w-sm font-semibold text-xs tracking-wider text-center font-mono",
               toast.type === 'success' 
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.35)]"
                 : toast.type === 'error'
-                ? "bg-red-500/10 border-red-500/30 text-red-400"
-                : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                ? "bg-red-950/90 border-red-500/40 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.35)]"
+                : "bg-cyan-950/90 border-cyan-500/40 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.35)]"
             )}
           >
             {toast.type === 'success' ? (
@@ -229,79 +233,79 @@ export default function Shop() {
             ) : toast.type === 'error' ? (
               <Info className="w-4 h-4 text-red-400 shrink-0" />
             ) : (
-              <Clock className="w-4 h-4 text-blue-400 shrink-0" />
+              <Clock className="w-4 h-4 text-cyan-400 shrink-0" />
             )}
             <span>{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Header Panel with Stats & Balance */}
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-brand/5 rounded-full blur-3xl -mr-40 -mt-40 pointer-events-none" />
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-brand">
-            <ShoppingBag className="w-5 h-5" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/15 px-3 py-1 rounded-full border border-brand/20">
-              Mercado do Avalon Sagas
+      {/* Cyber Panel with Stats & Balance */}
+      <div className="bg-[#0b0f19]/80 border border-zinc-800/80 rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl -mr-40 -mt-40 pointer-events-none" />
+        <div className="space-y-3 z-10">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="w-4.5 h-4.5 text-cyan-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-950/40 px-3 py-1 rounded-md border border-cyan-500/30 font-mono">
+              [ AVALON_MARKET_v4.7 ]
             </span>
           </div>
-          <h1 className="text-2xl md:text-3.5xl font-black text-[var(--color-text-bright)] uppercase tracking-tight italic">
+          <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight italic font-mono flex items-center gap-2">
             Loja & Inventário
           </h1>
-          <p className="text-xs md:text-sm text-gray-500 font-medium max-w-xl">
-            Aprimore seu perfil com insígnias exclusivas, mude sua aparência ou compre proteção essencial para o seu streak de leitor.
+          <p className="text-xs md:text-[13px] text-gray-400 font-medium max-w-xl">
+            Aprimore seu perfil com insígnias de elite, mude sua aparência com skins panorâmicas de Neo-Tokyo ou compre proteção vital para o seu streak de atividades diárias.
           </p>
         </div>
 
         {/* PO Score Badge */}
-        <div className="flex flex-wrap md:flex-nowrap gap-4 items-stretch w-full md:w-auto relative z-10">
-          <div className="flex-1 md:flex-initial bg-[var(--color-bg)]/80 backdrop-blur-md px-6 py-4 rounded-xl border border-[var(--color-border)] flex items-center justify-between md:justify-start gap-4">
+        <div className="flex flex-wrap md:flex-nowrap gap-4 items-stretch w-full md:w-auto relative z-10 shrink-0">
+          <div className="flex-1 md:flex-initial bg-[#0e1322] px-6 py-4 rounded-xl border border-zinc-800 flex items-center justify-between md:justify-start gap-4 shadow-md shadow-black/50">
             <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
-              <Coins className="w-5 h-5 text-amber-500 animate-pulse" />
+              <Coins className="w-5 h-5 text-amber-400 animate-pulse" />
             </div>
             <div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-gray-500">Seu Saldo</p>
-              <p className="text-xl font-black text-[var(--color-text-bright)] italic">
-                {profile?.availablePoints ?? 0} <span className="text-brand text-sm tracking-tight">PO</span>
+              <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 font-mono">Saldo Disponível</p>
+              <p className="text-xl font-black text-white italic font-mono">
+                {profile?.availablePoints ?? 0} <span className="text-amber-400 text-sm tracking-tight font-sans">PO</span>
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Status Indicators (Active Boosts / Protections) */}
+      {/* Cyber Status Indicators (Active Boosts / Protections) */}
       {(timeText || (profile?.streakProtections ?? 0) > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
           {timeText && (
-            <div className="bg-gradient-to-r from-amber-500/10 to-brand/10 border border-amber-500/20 p-4 rounded-xl flex items-center justify-between">
+            <div className="bg-gradient-to-r from-amber-500/5 to-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
-                  <Zap className="w-5 h-5 animate-bounce" />
+                <div className="p-2 bg-amber-500/15 text-amber-400 rounded-lg border border-amber-500/20">
+                  <Zap className="w-4.5 h-4.5 animate-bounce" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-wide">Multiplicador x2 Ativo</h4>
-                  <p className="text-[10px] text-gray-400">Você está recebendo o dobro de recompensas em PO do sistema!</p>
+                  <h4 className="text-xs font-black text-white uppercase tracking-wide font-mono">Multiplicador PO x2 Ativo</h4>
+                  <p className="text-[10px] text-gray-400">Suas recompensas de leitura estão dobradas no Avalon!</p>
                 </div>
               </div>
-              <div className="bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 font-mono">
+              <div className="bg-amber-950/60 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 font-mono shadow-[0_0_8px_rgba(245,158,11,0.2)]">
                 {timeText}
               </div>
             </div>
           )}
 
           {profile?.streakProtections && profile.streakProtections > 0 ? (
-            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 p-4 rounded-xl flex items-center justify-between">
+            <div className="bg-gradient-to-r from-cyan-500/5 to-blue-500/10 border border-cyan-500/30 p-4 rounded-xl flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
-                  <ShieldCheck className="w-5 h-5" />
+                <div className="p-2 bg-cyan-500/15 text-cyan-400 rounded-lg border border-cyan-500/20">
+                  <Shield className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-wide">Streak Blindado</h4>
-                  <p className="text-[10px] text-gray-400">A Pena da Imortalidade previne quebras repentinas de atividade.</p>
+                  <h4 className="text-xs font-black text-white uppercase tracking-wide font-mono">Streak Blindado</h4>
+                  <p className="text-[10px] text-gray-400">Penas de Imortalidade prontas para precaver furos de leitura.</p>
                 </div>
               </div>
-              <div className="bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-black text-blue-400 flex items-center gap-1.5">
+              <div className="bg-cyan-950/60 border border-cyan-500/40 px-3 py-1.5 rounded-lg text-xs font-black text-cyan-400 flex items-center gap-1.5 font-mono shadow-[0_0_8px_rgba(34,211,238,0.2)]">
                 <Sparkles className="w-3.5 h-3.5 animate-spin" />
                 <span>{profile.streakProtections} {profile.streakProtections === 1 ? 'PENA' : 'PENAS'}</span>
               </div>
@@ -310,37 +314,37 @@ export default function Shop() {
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-[var(--color-border)] gap-6 pb-px">
+      {/* Cyberpunk Navigation Tabs */}
+      <div className="flex border-b border-zinc-800 gap-6 pb-px relative z-10">
         <button 
           onClick={() => setTab('SHOP')} 
           className={cn(
-            "pb-3 text-xs md:text-sm font-black uppercase tracking-wider relative transition-colors duration-200", 
-            tab === 'SHOP' ? "text-brand" : "text-gray-500 hover:text-gray-200"
+            "pb-3 text-xs md:text-sm font-black uppercase tracking-widest relative transition-colors duration-200 font-mono", 
+            tab === 'SHOP' ? "text-cyan-400" : "text-gray-500 hover:text-gray-300"
           )}
         >
           {tab === 'SHOP' && (
-            <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" />
+            <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.6)]" />
           )}
-          Loja de Itens
+          ⚡ LOJA DE ITENS
         </button>
         <button 
           onClick={() => setTab('INVENTORY')} 
           className={cn(
-            "pb-3 text-xs md:text-sm font-black uppercase tracking-wider relative transition-colors duration-200", 
-            tab === 'INVENTORY' ? "text-brand" : "text-gray-500 hover:text-gray-200"
+            "pb-3 text-xs md:text-sm font-black uppercase tracking-widest relative transition-colors duration-200 font-mono", 
+            tab === 'INVENTORY' ? "text-cyan-400" : "text-gray-500 hover:text-gray-300"
           )}
         >
           {tab === 'INVENTORY' && (
-            <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" />
+            <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.6)]" />
           )}
-          Seu Inventário
+          🎒 SEU INVENTÁRIO
         </button>
       </div>
 
       {/* Main Tab Render */}
       {tab === 'SHOP' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 relative z-10">
           {SHOP_ITEMS.map((item) => {
             const style = RARITY_STYLING[item.rarity];
             const pointsBalance = profile?.availablePoints ?? 0;
@@ -350,50 +354,53 @@ export default function Shop() {
               <div 
                 key={item.id} 
                 className={cn(
-                  "bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-6 transition-all duration-300 relative overflow-hidden flex flex-col justify-between group", 
+                  "bg-[#0b0e14] border border-zinc-800 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden flex flex-col justify-between group shadow-lg shadow-black/80 hover:scale-[1.02]", 
                   style.glow
                 )}
               >
+                {/* Visual Grid Scanline overlay on hover */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(244,244,244,0.01)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+
                 {/* Rarity & Category Header Tags */}
-                <div className="flex items-center justify-between mb-5">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-gray-500 px-2 py-1 bg-[var(--color-bg)] rounded-md">
+                <div className="flex items-center justify-between mb-5 z-10">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400 px-2 py-0.5 bg-cyan-950/40 rounded border border-cyan-500/20 font-mono">
                     {CATEGORY_NAMES[item.category]}
                   </span>
-                  <span className={cn("text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border", style.badgeBg)}>
+                  <span className={cn("text-[8px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border", style.badgeBg)}>
                     {item.rarity}
                   </span>
                 </div>
 
                 {/* Main Icon & Glow Accent */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={cn("p-3.5 rounded-2xl border bg-gradient-to-b relative", style.border, style.bg)}>
+                <div className="flex items-center gap-4 mb-4 z-10">
+                  <div className={cn("p-3.5 rounded-2xl border bg-gradient-to-b relative shrink-0", style.border, style.bg)}>
                     <div className="absolute inset-0 bg-white/20 rounded-2xl scale-75 opacity-0 group-hover:opacity-100 transition-opacity blur" />
                     <item.icon className={cn("w-6 h-6", style.text)} />
                   </div>
                   <div>
-                    <h3 className="font-black text-sm md:text-base text-[var(--color-text-bright)] tracking-tight">
+                    <h3 className="font-black text-sm md:text-[15px] text-white tracking-tight group-hover:text-cyan-400 transition-colors font-sans">
                       {item.name}
                     </h3>
-                    <p className="text-[10px] text-gray-500 italic mt-0.5">
-                      Avalon Premium Co.
+                    <p className="text-[10px] text-gray-500 italic mt-0.5 font-mono">
+                      // AVALON_STX_CORE
                     </p>
                   </div>
                 </div>
 
                 {/* Description Text */}
-                <p className="text-xs text-gray-400 font-medium leading-relaxed mb-6 flex-1 min-h-[40px]">
+                <p className="text-xs text-gray-400 font-medium leading-relaxed mb-6 flex-1 min-h-[44px] z-10">
                   {item.description}
                 </p>
 
-                {/* Horizontal Divider */}
-                <div className="h-px bg-[var(--color-border)] w-full mb-5" />
+                {/* Cyberpunk Dotted Divider */}
+                <div className="w-full h-[1px] bg-zinc-800/80 mb-5 relative" />
 
                 {/* Price tag & Interactive Buy Button */}
-                <div className="flex items-center justify-between gap-3 mt-auto">
+                <div className="flex items-center justify-between gap-3 mt-auto z-10">
                   <div>
-                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Preço</span>
-                    <span className="text-base font-black text-amber-500 italic flex items-center gap-1">
-                      <Coins className="w-4 h-4" /> {item.price} <span className="text-[10.5px] font-bold text-gray-500 uppercase italic">PO</span>
+                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block font-mono">Custo</span>
+                    <span className="text-base font-black text-amber-400 italic flex items-center gap-1 font-mono">
+                      <Coins className="w-4 h-4 text-amber-400 shrink-0" /> {item.price} <span className="text-[10px] font-bold text-gray-500 uppercase italic font-sans">PO</span>
                     </span>
                   </div>
 
@@ -401,10 +408,10 @@ export default function Shop() {
                     disabled={!canAfford}
                     onClick={() => buyItem(item)}
                     className={cn(
-                      "px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 relative border shadow-sm touch-manipulation group/btn",
+                      "px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 relative border shadow-sm touch-manipulation group/btn font-mono",
                       canAfford 
-                        ? "bg-brand/20 border-brand/30 text-brand hover:bg-brand hover:text-white" 
-                        : "bg-red-500/10 border-red-500/10 text-red-500/60 cursor-not-allowed"
+                        ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-400 hover:text-[#07090e] hover:shadow-[0_0_12px_rgba(34,211,238,0.4)]" 
+                        : "bg-red-500/5 border-red-500/10 text-red-500/40 cursor-not-allowed"
                     )}
                   >
                     {canAfford ? (
@@ -424,16 +431,16 @@ export default function Shop() {
           })}
         </div>
       ) : (
-        <div className="bg-[var(--color-card)] rounded-2xl p-6 md:p-8 border border-[var(--color-border)] shadow-xl">
-           <div className="flex items-center justify-between mb-8">
+        <div className="bg-[#0b0f19]/80 rounded-2xl p-6 md:p-8 border border-zinc-800/80 shadow-xl relative z-10">
+           <div className="flex items-center justify-between mb-8 pb-3 border-b border-zinc-800">
              <div>
-               <h2 className="text-lg md:text-xl font-black text-[var(--color-text-bright)] uppercase tracking-tight italic">
-                 Seus Itens Comprados
+               <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight italic font-mono flex items-center gap-2">
+                 🎒 BAÚ DE EQUIPAMENTOS
                </h2>
-               <p className="text-xs text-gray-500">Ative multiplicadores, mude o estilo do perfil ou prepare blindagens adquiridas.</p>
+               <p className="text-xs text-gray-400">Ative multiplicadores, mude o estilo de banner do perfil ou gerencie badges equipadas.</p>
              </div>
-             <span className="text-[9px] font-black uppercase tracking-widest text-[#cf7d1c] bg-[#cf7d1c]/10 px-3 py-1 rounded-full border border-[#cf7d1c]/20">
-               Ego Chest
+             <span className="text-[9px] font-black uppercase tracking-widest text-[#cf7d1c] bg-[#cf7d1c]/10 px-3 py-1 rounded-md border border-[#cf7d1c]/20 font-mono">
+               SYS//DECRYPTED
              </span>
            </div>
 
@@ -445,8 +452,8 @@ export default function Shop() {
                 return acc;
               }, {})).map(([category, items]: [string, any]) => (
                 <div key={category} className="space-y-4">
-                  <h4 className="text-brand font-black text-xs uppercase tracking-widest flex items-center gap-2 border-b border-[var(--color-border)] pb-2">
-                    <span className="w-1.5 h-1.5 bg-brand rounded-full animate-ping" />
+                  <h4 className="text-cyan-400 font-black text-xs uppercase tracking-widest flex items-center gap-2 border-b border-zinc-800/60 pb-2 font-mono">
+                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_6px_rgba(6,182,212,0.6)]" />
                     <span>{CATEGORY_NAMES[category]}s</span>
                     <span className="text-[9.5px] font-bold text-gray-500 font-mono">({items.length})</span>
                   </h4>
@@ -476,28 +483,28 @@ export default function Shop() {
                         <div 
                           key={item.instanceId || i} 
                           className={cn(
-                            "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-[var(--color-bg)]/60 rounded-xl relative overflow-hidden group border border-[var(--color-border)]/80 hover:border-[var(--color-border)]/10 transition-all",
-                            (isEquipped || isCosmeticActive) && "border-brand/40 bg-brand/5"
+                            "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-[#0e121c] rounded-xl relative overflow-hidden group border border-zinc-800/60 transition-all",
+                            (isEquipped || isCosmeticActive) && "border-cyan-500/30 bg-cyan-500/5 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
                           )}
                         >
                           <div className="flex items-center gap-4">
                             <div className={cn(
-                              "p-3 rounded-xl border", 
-                              rarityStyle ? rarityStyle.border : "border-[var(--color-border)]",
-                              rarityStyle ? rarityStyle.bg : "bg-[var(--color-card)]"
+                              "p-3 rounded-xl border relative shrink-0", 
+                              rarityStyle ? rarityStyle.border : "border-zinc-800",
+                              rarityStyle ? rarityStyle.bg : "bg-[#0b0e14]"
                             )}>
-                              <IconComponent className={cn("w-5 h-5", rarityStyle ? rarityStyle.text : "text-brand")} />
+                              <IconComponent className={cn("w-5 h-5", rarityStyle ? rarityStyle.text : "text-cyan-400")} />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="font-black text-[var(--color-text-bright)] text-sm">{item.name}</p>
+                                <p className="font-black text-white text-sm tracking-tight">{item.name}</p>
                                 {item.rarity && (
-                                  <span className={cn("text-[7.5px] font-black px-1.5 py-0.5 rounded uppercase border", rarityStyle?.badgeBg)}>
+                                  <span className={cn("text-[7.5px] font-black px-1.5 py-0.5 rounded border leading-none", rarityStyle?.badgeBg)}>
                                     {item.rarity}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[10px] text-gray-500 mt-0.5">{item.description}</p>
+                              <p className="text-[10px] text-gray-400 mt-1">{item.description}</p>
                             </div>
                           </div>
                           
@@ -506,10 +513,10 @@ export default function Shop() {
                             <button 
                               onClick={() => useOrEquipItem(item)}
                               className={cn(
-                                "w-full sm:w-auto px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm border",
+                                "w-full sm:w-auto px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm border font-mono",
                                 isEquipped 
-                                  ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white" 
-                                  : "bg-brand/20 border-brand/20 text-brand hover:bg-brand hover:text-white"
+                                  ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white hover:shadow-[0_0_10px_rgba(239,68,68,0.3)]" 
+                                  : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-400 hover:text-[#07090e] hover:shadow-[0_0_10px_rgba(34,211,238,0.3)]"
                               )}
                             >
                               {isEquipped ? "Desequipar" : "Equipar"}
@@ -518,15 +525,15 @@ export default function Shop() {
                             <button 
                               onClick={() => useOrEquipItem(item)}
                               className={cn(
-                                "w-full sm:w-auto px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm border",
+                                "w-full sm:w-auto px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm border font-mono",
                                 item.category === 'COSMETIC'
                                   ? (isCosmeticActive 
-                                      ? "bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white" 
-                                      : "bg-brand/20 border-brand/20 text-brand hover:bg-brand tracking-widest hover:text-white")
-                                  : "bg-emerald-500/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white"
+                                      ? "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white" 
+                                      : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-400 hover:text-[#07090e] hover:shadow-[0_0_10px_rgba(34,211,238,0.3)]")
+                                  : "bg-emerald-500/10 border-emerald-500/35 text-emerald-400 hover:bg-emerald-400 hover:text-[#07090e] hover:shadow-[0_0_10px_rgba(16,185,129,0.35)]"
                               )}
                             >
-                              {item.category === 'COSMETIC' ? cosmeticActionText : "Consumir / Usar"}
+                              {item.category === 'COSMETIC' ? cosmeticActionText : "Deflagrar Ampliador"}
                             </button>
                           )}
                         </div>
@@ -537,17 +544,17 @@ export default function Shop() {
               ))}
              </div>
            ) : (
-             <div className="py-16 flex flex-col items-center justify-center text-gray-500 gap-4 border border-dashed border-[var(--color-border)] rounded-2xl">
-               <div className="p-4 bg-[var(--color-bg)] rounded-full text-zinc-500">
+             <div className="py-16 flex flex-col items-center justify-center text-gray-500 gap-4 border border-dashed border-zinc-800 rounded-2xl">
+               <div className="p-4 bg-[#0a0d14] border border-zinc-800 rounded-full text-zinc-600">
                  <Trophy className="w-8 h-8 opacity-40 animate-pulse" />
                </div>
                <div className="text-center space-y-1">
-                 <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-bright)]">Baú de Equipamentos Vazio</p>
-                 <p className="text-[10px] text-gray-600 max-w-sm">Você ainda não adquiriu nenhum item de status lendário. Visite a nossa aba de ofertas!</p>
+                 <p className="text-xs font-black uppercase tracking-widest text-white font-mono">Baú de Equipamentos Vazio</p>
+                 <p className="text-[10px] text-gray-400 max-w-sm font-sans leading-relaxed">Você ainda não possui nenhum artefato ou modificador adquirido para ativação mística. Compre-os na aba de ofertas!</p>
                </div>
                <button 
                  onClick={() => setTab('SHOP')}
-                 className="mt-2 px-5 py-2.5 bg-brand/10 border border-brand/30 hover:bg-brand text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-md shadow-brand/10"
+                 className="mt-2 px-5 py-2.5 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-400 hover:text-[#07090e] text-cyan-400 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-md shadow-cyan-500/5 font-mono"
                >
                  Abrir Mercado de Ofertas
                </button>

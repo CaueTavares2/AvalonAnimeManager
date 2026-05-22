@@ -1,6 +1,30 @@
-# 🌌 Avalon - Anime Tracking Saga (v4.7.1 - Sovereign Marketplace & Styled Badges)
+# 🌌 Avalon - Anime Tracking Saga (v4.8.0 - Cosmic Cleanse & Purged Voices)
 
 Avalon é uma plataforma otaku completa e de altíssimo nível, combinando o rastreamento cinematográfico de animes com mecânicas de RPG social, gamificação (conquistas, badges equipáveis e patentes) e comunidade ativa, tudo envolto em uma interface moderna de alta fidelidade visual.
+
+---
+
+## 🔮 O que há de Novo na Versão v4.8.0 (Cosmic Cleanse & Purged Voices)
+
+Nesta precisa atualização, priorizamos a pureza do banco de dados e refinamos a experiência estética do pacto cósmico, eliminando ruídos e de acordo com o feedback de fidelidade de RPG:
+
+- **🔇 Expurgo de Falas Genéricas ("Ouvir Voz")**: Removemos em definitivo a antiga funcionalidade de reprodução de voz ("Ouvir Voz") e seus respectivos cartões flutuantes de legenda, visto que era impossível garantir falas originais e autênticas em japonês para a totalidade dos milhares de personagens de animes e mangás do sistema.
+- **✨ Botões de Pacto Cósmico Otimizados**: Com a remoção do botão de audição, os cards de personagens agora possuem um botão unificado e refinado que se expande por toda a largura do slot, permitindo que você firme seu pacto cósmico com transições incrivelmente suaves e em um design impecável.
+- **🌌 Consagração Silenciosa**: O encerramento do Ritual do Pacto Celestial opera agora de forma solene e silenciosa, concluindo seu elo místico sem acionar ruídos ou áudios robóticos, focando exclusivamente na adjudicação do seu título exclusivo e prestigioso de aliança cósmica.
+
+---
+
+## 🔮 O que há de Novo na Versão v4.7.2 (CodeShell Command & Retro Cyberpunk Shop Upgrade)
+
+Nesta lendária atualização, transformamos totalmente a interface da economia otaku e implementamos privilégios de alto nível imperceptíveis para sintonizar a administração com maestria:
+
+- **👾 Interface Retro Lo-Fi Cyberpunk na Loja**: Atendendo ao feedback de estética hacker subterrânea, substituímos as auras clássicas por um HUD holográfico inspirado no submundo cibernético de Neo-Tokyo (`[ AVALON_MARKET_v4.7 ]`). A loja agora conta com fundo obsidian profundo (`#07090e`), fendas coloridas com gradiente de raios néon cianeto, molduras com brackets monospace de depuração técnica (`[ // LOJA_NÉON ]`), e botões de compra que cintilam e acendem com hover-effects cibernéticos futuristas.
+- **🖥️ CodeShell Command (Console de Administrador)**: Um console invisível para os donos e administradores de elite do reino Avalon (`caue.nanda.tavares@gmail.com`). Através do inspetor web e console do navegador, digite `avalon.auth("avalonDev2026")` para destravar super-poderes divinos. Comandos suportados:
+  - `addPoints(qty)` e `setPoints(qty)`: Edite seus Otaku Points (PO) de forma mística.
+  - `setStreak(qty)` e `addProtection()`: Incremente suas penas da imortalidade ou alterne as fendas do streak.
+  - `addBadge(id)`, `setRank(p)` e `addBoost()`: Vista badges épicas, gerencie seu ranking ou aplique um multiplicador de 24h.
+  - `status()` e `clearInventory()`: Visualize metadados de diagnóstico ou expurgue o inventário de teste.
+- **🎒 Baú de Equipamentos Decifrado**: O inventário pessoal exibe marcas de decodificação `SYS//DECRYPTED`, separando badges, banners e boosters com luzes de pulso néon de energia e botões de re-equipagem instantâneos.
 
 ---
 

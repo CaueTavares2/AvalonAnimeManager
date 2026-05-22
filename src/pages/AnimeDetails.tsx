@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Plus, Star, Calendar, Play, BookOpen, Heart, User as UserIcon, Volume2, Zap, Sparkles, X, Flame, ShieldAlert, Award, Crown } from 'lucide-react';
+import { ChevronLeft, Plus, Star, Calendar, Play, BookOpen, Heart, User as UserIcon, Zap, Sparkles, X, Flame, ShieldAlert, Award, Crown } from 'lucide-react';
 import { useAnimeList } from '../hooks/useAnimeList';
 import { useFavorites } from '../context/FavoritesContext';
 import { useProfile } from '../context/ProfileContext';
@@ -12,7 +12,7 @@ import type { Media, AnimeStatus } from '../types';
 import { SPECIAL_ANIMES } from '../constants/specialAnimes';
 import { SpecialAnimeInteraction } from '../components/anime/SpecialAnimeInteraction';
 import { useLanguage } from '../context/LanguageContext';
-import { getCharacterData, playVoice } from '../utils/characterVoiceEngine';
+import { getCharacterData } from '../utils/characterVoiceEngine';
 
 interface MediaCharacter {
   character: {
@@ -62,13 +62,6 @@ export default function AnimeDetails() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const [activeSubtitle, setActiveSubtitle] = useState<{
-    name: string;
-    phraseJa: string;
-    phraseRomaji: string;
-    translation: string;
-  } | null>(null);
-
   const [pactCharacter, setPactCharacter] = useState<any | null>(null);
   const [pactStep, setPactStep] = useState<'idle' | 'aligning' | 'syncing' | 'weaving' | 'success'>('idle');
   const [pactProgress, setPactProgress] = useState(0);
@@ -83,20 +76,6 @@ export default function AnimeDetails() {
   };
 
   const handleAuraIncrease = () => {};
-
-  const handlePlayVoice = (charName: string, role?: string) => {
-    const vocalData = getCharacterData(charName, role, anime?.title);
-    setActiveSubtitle({
-      name: charName,
-      phraseJa: vocalData.phraseJa,
-      phraseRomaji: vocalData.phraseRomaji,
-      translation: vocalData.translation
-    });
-
-    playVoice(vocalData.audioUrl, vocalData.phraseJa, undefined, () => {
-      // Audio playback completed
-    });
-  };
 
   const startPactRitual = (char: any) => {
     setPactCharacter(char);
@@ -725,17 +704,7 @@ export default function AnimeDetails() {
                       </div>
 
                       {/* Interactive Controls Bar */}
-                      <div className="flex items-center justify-between border-t border-[var(--color-border)]/40 pt-2.5 mt-1 gap-2 relative z-10">
-                        {/* Audio Quote Button */}
-                        <button 
-                          onClick={() => handlePlayVoice(char.character.name, char.role)}
-                          className="flex-1 py-1 px-2 rounded-md bg-[var(--color-bg)] hover:bg-white/5 border border-[var(--color-border)]/40 transition-all text-gray-400 hover:text-white flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wider"
-                          title="Falar Catchphrase Original em Japonês"
-                        >
-                          <Volume2 className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                          <span>Ouvir Voz</span>
-                        </button>
-
+                      <div className="flex items-center justify-end border-t border-[var(--color-border)]/40 pt-2.5 mt-1 relative z-10 text-center w-full">
                         {/* Star Portal Alliance Contract Button */}
                         <button 
                           onClick={() => startPactRitual({
@@ -745,7 +714,7 @@ export default function AnimeDetails() {
                             role: char.role
                           })}
                           className={cn(
-                            "py-1 px-2.5 rounded-md transition-all flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wider",
+                            "w-full py-1.5 px-2.5 rounded-md transition-all flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-wider",
                             pact 
                               ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 cursor-default" 
                               : "bg-brand/10 hover:bg-brand/20 text-brand border border-brand/20 hover:border-brand/40"
@@ -753,7 +722,7 @@ export default function AnimeDetails() {
                           disabled={!!pact}
                         >
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span>{pact ? "Pactuado" : "Pacto"}</span>
+                          <span>{pact ? "Pacto Consagrado ✦" : "Firmar Pacto Cósmico"}</span>
                         </button>
                       </div>
                     </div>
@@ -772,40 +741,7 @@ export default function AnimeDetails() {
         </div>
       </div>
 
-      {/* Floating Original Subtitles Overlay widget */}
-      <AnimatePresence>
-        {activeSubtitle && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95, y: 40 }}
-            className="fixed bottom-6 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 md:w-[500px] bg-slate-950/95 border border-[var(--color-border)] rounded-2xl p-4 shadow-2xl backdrop-blur-md flex items-center justify-between gap-4 border-l-4 border-l-cyan-500"
-          >
-            <div className="flex-1">
-              <p className="text-[8px] font-black tracking-widest text-cyan-400 uppercase mb-1">
-                🗣️ {activeSubtitle.name.split(',').reverse().join(' ').trim()} • Voz em Japonês
-              </p>
-              <h4 className="text-sm font-bold text-white leading-normal tracking-wide mb-1" translate="no">
-                "{activeSubtitle.phraseJa}"
-              </h4>
-              <p className="text-[10px] text-gray-400 font-mono italic mb-2 leading-relaxed" translate="no">
-                {activeSubtitle.phraseRomaji}
-              </p>
-              <div className="h-px bg-zinc-800 w-full mb-1.5" />
-              <p className="text-[11px] font-bold text-gray-300 leading-normal">
-                "{activeSubtitle.translation}"
-              </p>
-            </div>
-            <button 
-              onClick={() => setActiveSubtitle(null)}
-              className="p-1 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white transition-all shrink-0 align-top"
-              title="Fechar legenda"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* 🔮 Sacred Astronomy Portal: Starry Constellation Ritual Modal */}
       <AnimatePresence>
@@ -984,8 +920,6 @@ export default function AnimeDetails() {
                 ) : pactStep === 'success' ? (
                   <button 
                     onClick={() => {
-                      // Trigger audio phrase as celebration!
-                      handlePlayVoice(pactCharacter.name, pactCharacter.role);
                       setPactCharacter(null);
                     }}
                     className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:brightness-110 text-slate-950 text-[10px] font-black uppercase tracking-widest transition-all shadow-md"
