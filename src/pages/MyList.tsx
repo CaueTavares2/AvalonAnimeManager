@@ -166,6 +166,9 @@ export default function MyList() {
   const handleSuggestion = (forcedVibe?: 'any' | 'quick' | 'treasures' | 'marathon') => {
     const activeVibe = forcedVibe || vibeFilter;
 
+    console.log('handleSuggestion called with vibe:', activeVibe);
+    console.log('Total list size:', list.filter(a => a.type === mediaType).length);
+
     // Advanced Next-Season Auto-Detector & Smart Filtering logic
     // We group by anime/manga franchise root by stripping out common sequel suffixes or notations.
     const sanitizeTitle = (t: string) => {
