@@ -111,30 +111,30 @@
 
 .theme-invincible {
   --color-brand: #ffee00;
-  --color-brand-dark: #eab308;
+  --color-brand-dark: #d4c600;
   --color-brand-muted: rgba(255, 238, 0, 0.15);
 }
 
 .theme-invincible.dark {
-  --color-bg: #000c1a;
-  --color-card: #001a33;
-  --color-text: #cbd5e1;
+  --color-bg: #002b4d;
+  --color-card: #003a66;
+  --color-text: #e2e8f0;
   --color-text-bright: #ffffff;
-  --color-border: rgba(0, 174, 239, 0.2);
+  --color-border: rgba(255, 238, 0, 0.2);
   --color-brand: #ffee00;
   --color-brand-dark: #00aeef;
-  --color-brand-muted: rgba(0, 174, 239, 0.1);
+  --color-brand-muted: rgba(0, 174, 239, 0.2);
 }
 
 .theme-invincible:not(.dark) {
-  --color-bg: #f0f9ff;
+  --color-bg: #00aeef;
   --color-card: #ffffff;
-  --color-text: #0369a1;
-  --color-text-bright: #0c4a6e;
-  --color-border: rgba(0, 174, 239, 0.1);
-  --color-brand: #00aeef;
-  --color-brand-dark: #0284c7;
-  --color-brand-muted: rgba(255, 238, 0, 0.15);
+  --color-text: #002b4d;
+  --color-text-bright: #001a33;
+  --color-border: rgba(255, 238, 0, 0.5);
+  --color-brand: #ffee00;
+  --color-brand-dark: #eab308;
+  --color-brand-muted: rgba(0, 43, 77, 0.1);
 }
 
 .theme-netflix {
@@ -176,10 +176,10 @@ body {
   }
 
   .theme-invincible body {
-    background-image: linear-gradient(rgba(240, 249, 255, 0.65), rgba(240, 249, 255, 0.65)), url('/invincible-theme.png');
+    background-image: linear-gradient(rgba(0, 174, 239, 0.85), rgba(0, 174, 239, 0.85)), url('/invincible-theme.png');
   }
   .dark.theme-invincible body {
-    background-image: linear-gradient(rgba(0, 12, 26, 0.96), rgba(0, 12, 26, 0.96)), url('/invincible-theme.png');
+    background-image: linear-gradient(rgba(0, 43, 77, 0.96), rgba(0, 43, 77, 0.96)), url('/invincible-theme.png');
   }
 }
 
