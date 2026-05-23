@@ -10,7 +10,8 @@ Nesta sublime atualização, abraçamos o vazio para pavimentar o caminho do res
 
 - **🫧 Purificação Total da Loja**: Todos os itens da Loja de Avalon foram provisoriamente retirados do sistema. A vitrine e o inventário atual encontram-se em estado neutro, aguardando novas decisões e mecânicas gloriosas.
 - **🛡️ Clean Code Foundation**: A limpeza temporária servirá de fundação para novos protótipos de escalonamento em breve.
-- **📚 Manga Reader Robustness**: Reformulado o sistema de busca do MangaDex. Agora o leitor realiza buscas paralelas para todos os títulos conhecidos do mangá (Inglês, Japonês, Sinônimos) e verifica os capítulos dos top 5 candidatos simultaneamente. Isso garante uma taxa de acerto muito maior em títulos populares como One-Punch Man e títulos com nomes ambíguos.
+- **📚 Manga Reader Robustness**: Reformulado o sistema de busca do MangaDex. Agora o leitor realiza buscas paralelas para todos os títulos conhecidos do mangá (Inglês, Japonês, Sinônimos) e verifica os capítulos dos top 10 candidatos simultaneamente.
+- **🖼️ Smart Image Loading**: Implementado sistema de fallback triplo para imagens. O leitor agora tenta carregar diretamente (via `no-referrer`) e, em caso de falha, alterna automaticamente entre múltiplos proxies públicos. Isso garante compatibilidade total com hospedagens estáticas como GitHub Pages.
 - **🛡️ Content Ratings**: Adicionado suporte total a classificações de conteúdo ("suggestive", "erotica") tanto na busca quanto no feed, permitindo a leitura de obras Seinen e adultas que antes eram filtradas pela API.
 
 ---

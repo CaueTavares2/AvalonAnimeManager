@@ -23,19 +23,48 @@ import {
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 
-const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }> = ({ url, index, isLongStrip }) => {
+const ReaderImage: React.FC<{ urlData: any; index: number; isLongStrip: boolean }> = ({ urlData, index, isLongStrip }) => {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [retryCount, setRetryCount] = useState(0);
+  const [urlIndex, setUrlIndex] = useState(0); // 0 = original, 1+ = proxies
+  const [urls, setUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof urlData === 'string') {
+      setUrls([urlData]);
+    } else {
+      setUrls([urlData.original, ...urlData.proxies]);
+    }
+  }, [urlData]);
 
   const handleRetry = () => {
     setStatus('loading');
-    setRetryCount(prev => prev + 1);
+    if (urlIndex < urls.length - 1) {
+      setUrlIndex(prev => prev + 1);
+    } else {
+      setUrlIndex(0); // Cycle back
+    }
   };
+
+  const handleError = () => {
+    if (urlIndex < urls.length - 1) {
+      // Auto-try next proxy
+      setUrlIndex(prev => prev + 1);
+    } else {
+      setStatus('error');
+    }
+  };
+
+  if (urls.length === 0) return null;
+
+  const currentUrl = urls[urlIndex];
+  const isExternal = typeof urlData === 'string' && urlData.startsWith('external:');
+
+  if (isExternal) return null; // Handled by parent
 
   return (
     <div className={cn(
-      "relative w-full overflow-hidden transition-all duration-500",
-      status === 'loading' ? "bg-[var(--color-card)] aspect-[3/4] animate-pulse rounded-2xl" : "",
+      "relative w-full overflow-hidden transition-all duration-500 min-h-[200px]",
+      status === 'loading' ? "bg-[var(--color-card)] animate-pulse rounded-2xl" : "",
       !isLongStrip ? "shadow-2xl rounded-2xl bg-[var(--color-card)] border border-white/5" : ""
     )}>
       {status === 'loading' && (
@@ -58,21 +87,22 @@ const ReaderImage: React.FC<{ url: string; index: number; isLongStrip: boolean }
       )}
 
       <motion.img 
-        src={status !== 'error' ? `${url}${retryCount > 0 ? `&retry=${retryCount}` : ''}` : undefined}
+        src={currentUrl}
         alt={`Pagina ${index + 1}`} 
         className={cn(
           "w-full h-auto block transition-opacity duration-700",
           status === 'loaded' ? "opacity-100" : "opacity-0 absolute pointer-events-none"
         )}
         onLoad={() => setStatus('loaded')}
-        onError={() => setStatus('error')}
+        onError={handleError}
         loading="lazy"
+        referrerPolicy="no-referrer"
         initial={{ opacity: 0, y: 10 }}
         animate={status === 'loaded' ? { opacity: 1, y: 0 } : {}}
       />
       
       <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md border border-white/5 text-[10px] font-mono text-[var(--color-text-bright)]/40 pointer-events-none">
-        P.{index + 1}
+        P.{index + 1} {urlIndex > 0 && `(Proxy ${urlIndex})`}
       </div>
     </div>
   );
@@ -93,7 +123,7 @@ export default function MangaReader() {
   const [selectedChapter, setSelectedChapter] = useState<any | null>(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
   
-  const [pages, setPages] = useState<string[]>([]);
+  const [pages, setPages] = useState<any[]>([]);
   const [loadingChapter, setLoadingChapter] = useState(false);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
@@ -675,8 +705,8 @@ export default function MangaReader() {
                 </div>
               ) : isLongStrip ? (
                 <div className="flex flex-col gap-4">
-                  {pages.map((url, i) => (
-                    <ReaderImage key={i} url={url} index={i} isLongStrip={true} />
+                  {pages.map((urlData, i) => (
+                    <ReaderImage key={i} urlData={urlData} index={i} isLongStrip={true} />
                   ))}
                 </div>
               ) : isDualPage ? (
@@ -684,11 +714,11 @@ export default function MangaReader() {
                   {Array.from({ length: Math.ceil(pages.length / 2) }).map((_, i) => (
                     <div key={i} className="flex gap-2 w-full justify-center max-w-7xl mx-auto">
                       <div className="w-1/2">
-                        <ReaderImage url={pages[i * 2]} index={i * 2} isLongStrip={false} />
+                        <ReaderImage urlData={pages[i * 2]} index={i * 2} isLongStrip={false} />
                       </div>
                       {pages[i * 2 + 1] && (
                         <div className="w-1/2">
-                          <ReaderImage url={pages[i * 2 + 1]} index={i * 2 + 1} isLongStrip={false} />
+                          <ReaderImage urlData={pages[i * 2 + 1]} index={i * 2 + 1} isLongStrip={false} />
                         </div>
                       )}
                     </div>
@@ -696,8 +726,8 @@ export default function MangaReader() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-12">
-                   {pages.map((url, i) => (
-                    <ReaderImage key={i} url={url} index={i} isLongStrip={false} />
+                   {pages.map((urlData, i) => (
+                    <ReaderImage key={i} urlData={urlData} index={i} isLongStrip={false} />
                   ))}
                 </div>
               )}

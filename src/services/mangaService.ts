@@ -105,14 +105,16 @@ export const mangaService = {
         return {
           pages: images.map((file: string) => {
             const fullUrl = `${baseUrl}/${path}/${h}/${file}`;
-            // If we are on a static host (like GitHub Pages), the local proxy will fail.
-            // We use a fallback logic here by detecting if we're on localhost or the deployed domain.
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname.includes('run.app');
-            if (!isLocal) {
-              // Fallback for static hosts (GitHub Pages)
-              return `https://images.weserv.nl/?url=${encodeURIComponent(fullUrl)}`;
-            }
-            return `${LOCAL_PROXY}${encodeURIComponent(fullUrl)}`;
+            
+            // Return multiple options for the reader to try
+            return {
+              original: fullUrl,
+              proxies: [
+                `${LOCAL_PROXY}${encodeURIComponent(fullUrl)}`,
+                `https://images.weserv.nl/?url=${encodeURIComponent(fullUrl)}&default=${encodeURIComponent(fullUrl)}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(fullUrl)}`
+              ]
+            };
           })
         };
       }
