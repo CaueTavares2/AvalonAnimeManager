@@ -64,20 +64,23 @@ function MainLayout() {
   
   const isSakuraTheme = profile?.bannerURL === '/sakura-theme.png';
   const isCyberpunkTheme = profile?.bannerURL === '/cyberpunk-theme.jpg';
+  const isInvincibleTheme = profile?.bannerURL === '/invincible-theme.png';
   
   useEffect(() => {
-    document.documentElement.classList.remove('theme-sakura', 'theme-cyberpunk');
+    document.documentElement.classList.remove('theme-sakura', 'theme-cyberpunk', 'theme-invincible');
     
     if (isSakuraTheme) {
       document.documentElement.classList.add('theme-sakura');
     } else if (isCyberpunkTheme) {
       document.documentElement.classList.add('theme-cyberpunk');
+    } else if (isInvincibleTheme) {
+      document.documentElement.classList.add('theme-invincible');
     }
     
     return () => {
-      document.documentElement.classList.remove('theme-sakura', 'theme-cyberpunk');
+      document.documentElement.classList.remove('theme-sakura', 'theme-cyberpunk', 'theme-invincible');
     };
-  }, [isSakuraTheme, isCyberpunkTheme]);
+  }, [isSakuraTheme, isCyberpunkTheme, isInvincibleTheme]);
 
   return (
     <div className="min-h-screen">

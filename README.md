@@ -12,6 +12,7 @@ Nesta sublime atualização, abraçamos o vazio para pavimentar o caminho do res
 - **🛡️ Clean Code Foundation**: A limpeza temporária servirá de fundação para novos protótipos de escalonamento em breve.
 - **📚 Manga Reader Robustness**: Reformulado o sistema de busca do MangaDex. Agora o leitor realiza buscas paralelas para todos os títulos conhecidos do mangá e verifica capítulos dos top 10 candidatos.
 - **🖼️ Definitive Image Loading**: Implementado sistema de auto-recuperação de imagens com quíntuplo fallback (Direto + Weserv + Jetpack + Proxy Local + AllOrigins). Corrigidos crashes de roteamento e otimizado o carregamento inicial (Eager Loading) para uma experiência instantânea.
+- **🦸 Novo Tema: Invencível**: Adicionado o lendário tema "Invincible" à loja de Avalon. O novo tema transforma a interface com cores vibrantes (Amarelo e Azul Celeste), tipografia brutalista e um banner panorâmico exclusivo estilo HQ.
 - **🛡️ Content Ratings**: Adicionado suporte total a classificações de conteúdo ("suggestive", "erotica") tanto na busca quanto no feed, permitindo a leitura de obras Seinen e adultas que antes eram filtradas pela API.
 
 ---

@@ -41,6 +41,16 @@ const SHOP_ITEMS: ShopItem[] = [
     category: 'COSMETIC', 
     rarity: 'EPIC',
     imageUrl: '/cyberpunk-theme.jpg' 
+  },
+  { 
+    id: 'banner_invincible', 
+    name: 'Tema Invencível', 
+    description: 'Um visual brutalista e heróico inspirado na saga Invincible. Cores vibrantes com um toque de HQ clássica.', 
+    price: 2500, 
+    icon: Shield, 
+    category: 'COSMETIC', 
+    rarity: 'LEGENDARY',
+    imageUrl: '/invincible-theme.png' 
   }
 ];
 
@@ -176,7 +186,8 @@ export default function Shop() {
       } else if (item.category === 'COSMETIC') {
          const bannerUrls: Record<string, string> = {
             'banner_sakura': '/sakura-theme.png',
-            'banner_cyberpunk': '/cyberpunk-theme.jpg'
+            'banner_cyberpunk': '/cyberpunk-theme.jpg',
+            'banner_invincible': '/invincible-theme.png'
          };
          
          const newBanner = bannerUrls[item.id] || '';
@@ -507,7 +518,8 @@ export default function Shop() {
                         // determine if current equipped
                         const bannerUrls: Record<string, string> = {
                          'banner_sakura': '/sakura-theme.png',
-                         'banner_cyberpunk': '/cyberpunk-theme.jpg'
+                         'banner_cyberpunk': '/cyberpunk-theme.jpg',
+                         'banner_invincible': '/invincible-theme.png'
                         };
                         const targetUrl = bannerUrls[item.id] || '';
                         isCosmeticActive = targetUrl !== '' && profile.bannerURL === targetUrl;

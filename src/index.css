@@ -109,6 +109,34 @@
   --color-brand-muted: rgba(6, 182, 212, 0.15);
 }
 
+.theme-invincible {
+  --color-brand: #ffee00;
+  --color-brand-dark: #eab308;
+  --color-brand-muted: rgba(255, 238, 0, 0.15);
+}
+
+.theme-invincible.dark {
+  --color-bg: #000c1a;
+  --color-card: #001a33;
+  --color-text: #cbd5e1;
+  --color-text-bright: #ffffff;
+  --color-border: rgba(0, 174, 239, 0.2);
+  --color-brand: #ffee00;
+  --color-brand-dark: #00aeef;
+  --color-brand-muted: rgba(0, 174, 239, 0.1);
+}
+
+.theme-invincible:not(.dark) {
+  --color-bg: #f0f9ff;
+  --color-card: #ffffff;
+  --color-text: #0369a1;
+  --color-text-bright: #0c4a6e;
+  --color-border: rgba(0, 174, 239, 0.1);
+  --color-brand: #00aeef;
+  --color-brand-dark: #0284c7;
+  --color-brand-muted: rgba(255, 238, 0, 0.15);
+}
+
 .theme-netflix {
   --color-brand: #e50914;
   --color-brand-dark: #b20710;
@@ -145,6 +173,13 @@ body {
   }
   .dark.theme-sakura body {
     background-image: linear-gradient(rgba(31, 17, 24, 0.94), rgba(31, 17, 24, 0.94)), url('/sakura-theme.png');
+  }
+
+  .theme-invincible body {
+    background-image: linear-gradient(rgba(240, 249, 255, 0.65), rgba(240, 249, 255, 0.65)), url('/invincible-theme.png');
+  }
+  .dark.theme-invincible body {
+    background-image: linear-gradient(rgba(0, 12, 26, 0.96), rgba(0, 12, 26, 0.96)), url('/invincible-theme.png');
   }
 }
 
