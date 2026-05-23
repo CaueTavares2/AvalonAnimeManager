@@ -107,11 +107,17 @@ export const mangaService = {
             const fullUrl = `${baseUrl}/${path}/${h}/${file}`;
             
             // Return multiple options for the reader to try
+            // 1. Direct URL (good if MangaDex nodes allow it with no-referrer)
+            // 2. Weserv.nl (excellent CDN/Proxy)
+            // 3. Photon/Jetpack (i0.wp.com) - very reliable fallback
+            // 4. Local Proxy (server-side bypass)
+            // 5. AllOrigins (last resort)
             return {
               original: fullUrl,
               proxies: [
+                `https://images.weserv.nl/?url=${encodeURIComponent(fullUrl)}&default=${encodeURIComponent(fullUrl)}&l=9&af`,
+                `https://i0.wp.com/${fullUrl.replace(/^https?:\/\//, '')}?quality=90`,
                 `${LOCAL_PROXY}${encodeURIComponent(fullUrl)}`,
-                `https://images.weserv.nl/?url=${encodeURIComponent(fullUrl)}&default=${encodeURIComponent(fullUrl)}`,
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(fullUrl)}`
               ]
             };

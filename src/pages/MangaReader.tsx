@@ -46,6 +46,7 @@ const ReaderImage: React.FC<{ urlData: any; index: number; isLongStrip: boolean 
   };
 
   const handleError = () => {
+    console.warn(`Página ${index + 1}: falha ao carregar com ${urls[urlIndex]}. Tentando próximo...`);
     if (urlIndex < urls.length - 1) {
       // Auto-try next proxy
       setUrlIndex(prev => prev + 1);
@@ -95,8 +96,9 @@ const ReaderImage: React.FC<{ urlData: any; index: number; isLongStrip: boolean 
         )}
         onLoad={() => setStatus('loaded')}
         onError={handleError}
-        loading="lazy"
+        loading={index < 3 ? "eager" : "lazy"}
         referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
         initial={{ opacity: 0, y: 10 }}
         animate={status === 'loaded' ? { opacity: 1, y: 0 } : {}}
       />
@@ -688,7 +690,7 @@ export default function MangaReader() {
             </div>
           ) : (
             <div className={cn("w-full transition-all", isLongStrip ? "flex flex-col gap-4" : "max-w-xl")}>
-              {pages.length > 0 && pages[0].startsWith('external:') ? (
+              {pages.length > 0 && typeof pages[0] === 'string' && pages[0].startsWith('external:') ? (
                 <div className="py-32 flex flex-col items-center justify-center gap-6 bg-[var(--color-card)] rounded-[32px] border border-[var(--color-border)] px-4 text-center">
                   <div className="w-20 h-20 bg-brand/20 flex items-center justify-center rounded-full text-brand">
                     <BookOpen size={40} />
@@ -714,7 +716,7 @@ export default function MangaReader() {
                   {Array.from({ length: Math.ceil(pages.length / 2) }).map((_, i) => (
                     <div key={i} className="flex gap-2 w-full justify-center max-w-7xl mx-auto">
                       <div className="w-1/2">
-                        <ReaderImage urlData={pages[i * 2]} index={i * 2} isLongStrip={false} />
+                        {pages[i * 2] && <ReaderImage urlData={pages[i * 2]} index={i * 2} isLongStrip={false} />}
                       </div>
                       {pages[i * 2 + 1] && (
                         <div className="w-1/2">
@@ -732,7 +734,7 @@ export default function MangaReader() {
                 </div>
               )}
 
-              {!pages[0]?.startsWith('external:') && (
+              {pages.length > 0 && (typeof pages[0] !== 'string' || !pages[0].startsWith('external:')) && (
                 <div className="w-full flex justify-between gap-4 mt-8 bg-[var(--color-card)] p-6 rounded-[32px] border border-[var(--color-border)] shadow-2xl">
                   <button 
                     onClick={goToPrevChapter}
