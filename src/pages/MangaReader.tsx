@@ -29,6 +29,8 @@ const ReaderImage: React.FC<{ urlData: any; index: number; isLongStrip: boolean 
   const [urls, setUrls] = useState<string[]>([]);
 
   useEffect(() => {
+    setStatus('loading');
+    setUrlIndex(0);
     if (typeof urlData === 'string') {
       setUrls([urlData]);
     } else {
@@ -98,12 +100,11 @@ const ReaderImage: React.FC<{ urlData: any; index: number; isLongStrip: boolean 
         onError={handleError}
         loading={index < 3 ? "eager" : "lazy"}
         referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
         initial={{ opacity: 0, y: 10 }}
         animate={status === 'loaded' ? { opacity: 1, y: 0 } : {}}
       />
       
-      <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md border border-white/5 text-[10px] font-mono text-[var(--color-text-bright)]/40 pointer-events-none">
+      <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md border border-white/5 text-[10px] font-mono text-[var(--color-text-bright)]/40 pointer-events-none shadow-lg">
         P.{index + 1} {urlIndex > 0 && `(Proxy ${urlIndex})`}
       </div>
     </div>

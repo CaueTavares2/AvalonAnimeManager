@@ -117,7 +117,7 @@ export const mangaService = {
               proxies: [
                 `https://images.weserv.nl/?url=${encodeURIComponent(fullUrl)}&default=${encodeURIComponent(fullUrl)}&l=9&af`,
                 `https://i0.wp.com/${fullUrl.replace(/^https?:\/\//, '')}?quality=90`,
-                `${LOCAL_PROXY}${encodeURIComponent(fullUrl)}`,
+                `https://corsproxy.io/?url=${encodeURIComponent(fullUrl)}`,
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(fullUrl)}`
               ]
             };
