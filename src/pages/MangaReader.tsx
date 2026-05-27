@@ -123,6 +123,7 @@ export default function MangaReader() {
   const [mangaTitle, setMangaTitle] = useState('');
   
   const [chapters, setChapters] = useState<any[]>([]);
+  const [selectedSource, setSelectedSource] = useState<string>('all');
   const [selectedChapter, setSelectedChapter] = useState<any | null>(null);
   const [currentChapterIndex, setCurrentChapterIndex] = useState<number>(-1);
   
@@ -171,134 +172,45 @@ export default function MangaReader() {
   }, [selectedChapter, chapters, currentChapterIndex]);
 
   useEffect(() => {
-    const init = async () => {
-      if (!id || searchInProgress.current) return;
-      searchInProgress.current = true;
-
-      try {
+    const fetchChapters = async () => {
+        if (!id) return;
+        
         setLoading(true);
         setError(null);
         setStatus('loading');
-        
-        // 1. Get basic info first to show Title
-        const jikanData = await jikanService.getDetails(Number(id), 'manga').catch(() => null);
-        if (!jikanData) {
-          throw new Error("Informações do mangá não encontradas.");
+
+        try {
+            const jikanData = await jikanService.getDetails(Number(id), 'manga').catch(() => null);
+            if (jikanData) setMangaTitle(formatTitle(jikanData));
+
+            let url = `/api/scraper/chapters?id=${id}`;
+            if (selectedSource !== 'all') {
+                url += `&source=${selectedSource}`;
+            }
+            
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            // Normalize
+            const normalized = (data.chapters || []).map((c: any) => ({
+                ...c,
+                id: c.id,
+                source: c.source || selectedSource,
+                attributes: { chapter: c.chapterNumber }
+            })).sort((a: any, b: any) => parseFloat(a.attributes.chapter) - parseFloat(b.attributes.chapter));
+            
+            setChapters(normalized);
+            setStatus('success');
+        } catch (e) {
+            setError('Erro ao carregar capítulos.');
+        } finally {
+            setLoading(false);
         }
-
-        setMangaTitle(formatTitle(jikanData));
-        setLoading(false);
-
-        // 2. Search on MangaDex in parallel for efficiency
-        const titlesToSearch = [
-          jikanData.title,
-          jikanData.title_english,
-          jikanData.title_japanese,
-          ...(jikanData.title_synonyms || [])
-        ].filter(Boolean) as string[];
-
-        let feedData: any[] = [];
-        let foundDexId = '';
-
-        // Search for all titles in parallel
-        const searchPromises = titlesToSearch.map(t => mangaService.searchManga(t).catch(() => null));
-        const searchResults = await Promise.all(searchPromises);
-
-        // Flatten all candidates from all searches
-        const allCandidates: any[] = [];
-        searchResults.forEach(res => {
-          if (res?.data) allCandidates.push(...res.data);
-        });
-
-        // Deduplicate candidates by ID and keep original order (relevance)
-        const seenIds = new Set();
-        const uniqueCandidates: any[] = [];
-        allCandidates.forEach(c => {
-          if (!seenIds.has(c.id)) {
-            seenIds.add(c.id);
-            uniqueCandidates.push(c);
-          }
-        });
-
-        // Prioritize candidates that have a matching MAL ID in their links
-        uniqueCandidates.sort((a, b) => {
-          const malA = a.attributes?.links?.mal;
-          const malB = b.attributes?.links?.mal;
-          const aMatches = malA === id || String(malA) === id;
-          const bMatches = malB === id || String(malB) === id;
-          
-          if (aMatches && !bMatches) return -1;
-          if (!aMatches && bMatches) return 1;
-          return 0;
-        });
-        
-        // Take top 10 candidates and check their feeds in parallel for speed
-        const topCandidates = uniqueCandidates.slice(0, 10);
-        const feedPromises = topCandidates.map(cand => 
-          mangaService.getMangaFeed(cand.id)
-            .then(res => ({ id: cand.id, data: res?.data || [], title: cand.attributes?.title?.en || cand.attributes?.title?.['ja-ro'] }))
-            .catch(() => ({ id: cand.id, data: [], title: '' }))
-        );
-        
-        const feedResults = await Promise.all(feedPromises);
-        // Find the one with most chapters or the first one with chapters that is relevant
-        const validFeed = feedResults.find(f => f.data.length > 0);
-
-        if (validFeed) {
-          feedData = validFeed.data;
-          foundDexId = validFeed.id;
-        }
-
-        if (feedData.length > 0) {
-          const processed = feedData.map((cap: any) => {
-            const rawCh = cap.attributes?.chapter || '';
-            const match = String(rawCh).match(/(\d+(\.\d+)?)/);
-            const numKey = match ? parseFloat(match[1]).toString() : String(rawCh).trim();
-            const lang = (cap.attributes?.translatedLanguage || '').toLowerCase();
-
-            return {
-              ...cap,
-              id: cap.id,
-              source: 'mangadex',
-              numKey,
-              attributes: {
-                ...cap.attributes,
-                chapter: rawCh,
-                translatedLanguage: lang
-              }
-            };
-          });
-
-          // Group by chapter number to select best language (PT-BR > Global)
-          const groups: Record<string, any[]> = {};
-          processed.forEach(c => {
-            if (!groups[c.numKey]) groups[c.numKey] = [];
-            groups[c.numKey].push(c);
-          });
-
-          const unique = Object.keys(groups).map(num => {
-            const items = groups[num];
-            const pt = items.find(i => i.attributes.translatedLanguage.startsWith('pt'));
-            return pt || items[0];
-          }).sort((a, b) => (parseFloat(a.numKey) || 0) - (parseFloat(b.numKey) || 0));
-
-          setChapters(unique);
-          setStatus('success');
-        } else {
-          setStatus('error');
-        }
-
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || 'Erro ao carregar capítulos.');
-        setLoading(false);
-      } finally {
-        searchInProgress.current = false;
-      }
     };
+    fetchChapters();
+  }, [id, selectedSource]);
 
-    init();
-  }, [id]);
+
 
   const loadChapter = async (chapter: any, index: number) => {
     setCurrentChapterIndex(index);
@@ -420,7 +332,7 @@ export default function MangaReader() {
               Leitor Experimental <span className="text-orange-400 text-[10px] bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-500/30">BETA</span>
             </h3>
             <p className="text-orange-200/70 text-xs lg:text-sm font-medium leading-relaxed max-w-3xl">
-              Sincronizando com <strong>MangaDex</strong> para garantir a melhor qualidade. Otimizado para PT-BR.
+              Sincronizando com <strong>MangaDex</strong>, <strong>MangaFire</strong> e <strong>NineManga</strong> para garantir a maior variedade de capítulos. Otimizado para PT-BR.
             </p>
           </div>
         </div>
@@ -574,6 +486,18 @@ export default function MangaReader() {
               <div className="flex items-center gap-4">
                 <p className="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">Via MangaDex • Priorizando PT-BR</p>
                 <div className="h-px bg-white/5 flex-1 max-w-[100px]" />
+                
+                <select 
+                    value={selectedSource}
+                    onChange={(e) => setSelectedSource(e.target.value)}
+                    className="bg-black text-[var(--color-text-bright)] border border-[var(--color-border)] rounded-lg px-3 py-1 text-[10px] font-black uppercase outline-none"
+                >
+                    <option value="all">Todas as Fontes</option>
+                    <option value="mangadex">MangaDex</option>
+                    <option value="mangafire">MangaFire</option>
+                    <option value="ninemanga">Nine Manga</option>
+                </select>
+
                 <span className="text-brand font-black text-[10px] uppercase tracking-widest">
                   {chapters.length} Capítulos Encontrados
                 </span>
@@ -647,8 +571,8 @@ export default function MangaReader() {
                 <ChevronLeft size={20} />
               </button>
               <div className="flex flex-col">
-                <span className="text-[10px] text-brand font-black uppercase tracking-[0.2em]">MangaDex (PT-BR)</span>
-                <h2 className="font-black text-[var(--color-text-bright)] uppercase text-sm">Capítulo {selectedChapter.attributes.chapter}</h2>
+                <span className="text-[10px] text-brand font-black uppercase tracking-[0.2em]">{selectedChapter.source || 'Manga Reader'}</span>
+                <h2 className="font-black text-[var(--color-text-bright)] uppercase text-sm">Capítulo {selectedChapter.attributes?.chapter || selectedChapter.chapterNumber}</h2>
               </div>
               <select 
                 value={currentChapterIndex}

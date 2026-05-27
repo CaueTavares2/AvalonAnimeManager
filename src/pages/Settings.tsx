@@ -141,7 +141,6 @@ export default function Settings() {
     { id: 'general', icon: Cog, label: t('settings.tab.general') },
     { id: 'appearance', icon: Palette, label: t('settings.tab.appearance') },
     { id: 'migration', icon: DownloadCloud, label: t('settings.tab.migration') },
-    { id: 'extensions', icon: Radio, label: t('settings.tab.extensions') },
     { id: 'language', icon: Globe, label: t('settings.tab.language') },
     { id: 'diagnostics', icon: AlertTriangle, label: t('settings.tab.diagnostics') },
   ];
@@ -265,103 +264,6 @@ export default function Settings() {
                       </button>
                     ))}
                   </div>
-                </div>
-              </div>
-            ) : activeTab === 'extensions' ? (
-              <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="space-y-2">
-                  <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-brand" /> {t('settings.extensions.title')}
-                  </h3>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('settings.extensions.subtitle')}</p>
-                    <button 
-                      onClick={testAllExtensions}
-                      className="text-[9px] font-black uppercase text-brand flex items-center gap-1.5 hover:underline"
-                    >
-                      <Shield className="w-3 h-3" /> {t('settings.extensions.test_all')}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Custom Manifest Input */}
-                <div className="p-6 bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] font-black text-[var(--color-text-bright)] uppercase tracking-widest">Adicionar Addon do Stremio</h4>
-                    <span className="text-[8px] bg-brand/10 text-brand px-2 py-0.5 rounded-full font-black">STREMIO PROTO</span>
-                  </div>
-                  <div className="flex gap-3">
-                    <input 
-                      type="text" 
-                      placeholder="https://.../manifest.json"
-                      value={newManifestUrl}
-                      onChange={(e) => setNewManifestUrl(e.target.value)}
-                      className="flex-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-5 py-3 text-xs font-bold text-[var(--color-text-bright)] focus:outline-none focus:border-brand"
-                    />
-                    <button 
-                      onClick={() => {
-                        if (newManifestUrl.trim().endsWith('manifest.json')) {
-                          addManifest(newManifestUrl.trim());
-                          setNewManifestUrl('');
-                        }
-                      }}
-                      className="bg-brand text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand/20"
-                    >
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {AVAILABLE_EXTENSIONS.map((ext) => {
-                    const isInstalled = installed.includes(ext.id);
-                    const manifestUrl = manifests.find(m => `stremio-${btoa(m).slice(0, 10)}` === ext.id);
-
-                    return (
-                      <div key={ext.id} className="p-5 bg-[var(--color-bg)] rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
-                        <div className="flex items-center gap-4">
-                          <div className={cn("w-12 h-12 bg-[var(--color-card)] rounded-xl flex items-center justify-center text-2xl shadow-sm", isInstalled && "border border-brand/50")}>
-                            {ext.icon}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{ext.name}</span>
-                              <span className="text-[8px] bg-gray-500/10 text-gray-500 px-1.5 py-0.5 rounded font-black uppercase">v{ext.version}</span>
-                              {manifestUrl && <span className="text-[8px] text-brand font-black uppercase tracking-widest bg-brand/5 px-2 py-0.5 rounded border border-brand/10">Custom</span>}
-                              {testingStatus[ext.id] === 'pending' && <Loader2 className="w-3 h-3 animate-spin text-brand" />}
-                              {testingStatus[ext.id] === 'success' && <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50 animate-pulse" />}
-                              {testingStatus[ext.id] === 'error' && <div className="w-2 h-2 rounded-full bg-red-500 shadow-md shadow-red-500/50" />}
-                            </div>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{ext.description}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {manifestUrl && (
-                            <button 
-                              onClick={() => {
-                                uninstall(ext.id);
-                                removeManifest(manifestUrl);
-                              }}
-                              className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                            >
-                              <Check className="w-4 h-4 rotate-45" />
-                            </button>
-                          )}
-                          <button 
-                            onClick={() => isInstalled ? uninstall(ext.id) : install(ext.id)}
-                            className={cn(
-                              "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-                              isInstalled 
-                                ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white" 
-                                : "bg-brand text-white hover:scale-105 shadow-lg shadow-brand/20"
-                            )}
-                          >
-                            {isInstalled ? 'Desativar' : 'Ativar'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
             ) : activeTab === 'language' ? (

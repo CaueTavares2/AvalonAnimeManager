@@ -120,5 +120,12 @@ service cloud.firestore {
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
       allow update, delete: if isStaff();
     }
+
+    match /comments/{commentId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn();
+      allow delete: if isStaff() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
   }
 }

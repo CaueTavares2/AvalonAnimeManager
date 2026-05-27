@@ -127,11 +127,7 @@ export const getStableVideosForEpisode = (epId: string): StreamSource[] => {
 };
 
 export const AVAILABLE_EXTENSIONS: AnimeExtension[] = [
-  betterflixExtension,
-  createStremioExtension(
-    'https://torrentio.strem.fun/providers=rutor,comando,bludv,micoleaodublado|language=portuguese|qualityfilter=unknown,cam,scr,other,480p/manifest.json',
-    'Torrentio (P2P)'
-  )
+  betterflixExtension
 ];
 
 interface ExtensionStore {

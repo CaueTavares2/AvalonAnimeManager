@@ -127,8 +127,16 @@ export const jikanService = {
   },
 
   getDetails: async (id: number, type: 'anime' | 'manga' = 'anime') => {
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}/${id}/full`);
-    return data.data;
+    try {
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}/${id}/full`);
+      if (data && data.data) return data.data;
+    } catch (e) {
+      console.warn(`Jikan full details failed for ${type} ${id}, trying basic details fallback...`, e);
+    }
+    
+    // Fallback to basic details without /full
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}/${id}`);
+    return data?.data || null;
   },
 
   search: async (query: string, type: 'anime' | 'manga' = 'anime') => {

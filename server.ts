@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { Readable } from 'stream';
+import { scraperManager } from './server/scraper';
 
 async function startServer() {
   const app = express();
@@ -235,6 +236,52 @@ async function startServer() {
           res.status(500).json({ error: 'Failed to fetch target URL' });
         }
       }
+    }
+  });
+
+  // Scraper API routes
+  app.get('/api/scraper/search', async (req, res) => {
+    const { q } = req.query;
+    console.log(`[API] Scraper Search Request: ${q}`);
+    if (!q) return res.status(400).json({ error: 'Query required' });
+    const results = await scraperManager.searchAll(q as string);
+    console.log(`[API] Scraper Search Results: ${results.length} found`);
+    res.json(results);
+  });
+
+  app.get('/api/scraper/chapters', async (req, res) => {
+    const { source, id } = req.query;
+    console.log(`[API] Scraper Chapters Request: source=${source}, id=${id}`);
+    if (!id) return res.status(400).json({ error: 'ID required' });
+    
+    if (source) {
+      const provider = scraperManager.getProvider(source as string);
+      if (!provider) return res.status(404).json({ error: 'Source not found' });
+      const chapters = await provider.getChapters(id as string);
+      console.log(`[API] Scraper Chapters for ${source}: ${chapters.length} found`);
+      res.json({ chapters });
+    } else {
+      const chapters = await scraperManager.getChapters(id as string);
+      console.log(`[API] Scraper All Chapters: ${chapters.length} found`);
+      res.json({ chapters });
+    }
+  });
+
+  app.get('/api/scraper/pages', async (req, res) => {
+    const { source, id } = req.query;
+    console.log(`[API] Scraper Pages Request: source=${source}, id=${id}`);
+    if (!id) return res.status(400).json({ error: 'ID required' });
+    
+    if (source) {
+      const provider = scraperManager.getProvider(source as string);
+      if (!provider) return res.status(404).json({ error: 'Source not found' });
+      const pages = await provider.getPages(id as string);
+      console.log(`[API] Scraper Pages for ${source}: ${pages.length} found`);
+      res.json({ pages });
+    } else {
+      const pages = await scraperManager.getPages(id as string);
+      console.log(`[API] Scraper All Pages: ${pages.length} found`);
+      res.json({ pages });
     }
   });
 

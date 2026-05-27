@@ -14,6 +14,8 @@ import { SpecialAnimeInteraction } from '../components/anime/SpecialAnimeInterac
 import { useLanguage } from '../context/LanguageContext';
 import { getCharacterData } from '../utils/characterVoiceEngine';
 
+import { Comments } from '../components/Comments';
+
 interface MediaCharacter {
   character: {
     mal_id: number;
@@ -180,24 +182,24 @@ export default function AnimeDetails() {
 
         setAnime({
           id: data.mal_id,
-          title: data.title,
+          title: data.title || 'Untitled',
           title_english: data.title_english,
           title_japanese: data.title_japanese,
-          image: data.images.webp.large_image_url,
+          image: data.images?.webp?.large_image_url || data.images?.webp?.image_url || '',
           type: finalType,
           status: data.status || 'Finished Airing',
-          genres: data.genres.map((g: any) => g.name),
-          score: Math.round(data.score * 10),
-          format: data.type,
+          genres: (data.genres || []).map((g: any) => g.name).filter(Boolean),
+          score: data.score ? Math.round(data.score * 10) : 0,
+          format: data.type || '',
           episodes: data.episodes,
           chapters: data.chapters,
           volumes: data.volumes,
           season: data.season,
-          year: data.year || data.published?.prop?.from?.year,
-          banner: data.images.webp.large_image_url,
-          synopsis: data.synopsis,
+          year: data.year || data.published?.prop?.from?.year || null,
+          banner: data.images?.webp?.large_image_url || data.images?.webp?.image_url || '',
+          synopsis: data.synopsis || '',
           rank: data.rank,
-          members: data.members
+          members: data.members || 0
         });
 
         // Fetch airing schedule from AniList
@@ -320,7 +322,7 @@ export default function AnimeDetails() {
               animate={{ opacity: 1, y: 0 }}
               className="aspect-[2/3] rounded-lg overflow-hidden shadow-xl border-2 border-[var(--color-border)]"
             >
-              <img src={anime.image} alt={formatTitle(anime)} className="w-full h-full object-cover" />
+              <img src={anime.image} alt={formatTitle(anime)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </motion.div>
 
             {anime.type === 'MANGA' ? (
@@ -613,6 +615,7 @@ export default function AnimeDetails() {
                           src={rel.node.coverImage.large} 
                           alt={rel.node.title.romaji || rel.node.title.english} 
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
+                          referrerPolicy="no-referrer"
                         />
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 text-center z-10 pt-6">
                           <p className="text-[9px] font-bold text-gray-200 capitalize tracking-wider truncate">
@@ -656,7 +659,7 @@ export default function AnimeDetails() {
                       <div className="flex items-start gap-3 relative z-10">
                         {/* Avatar Column */}
                         <div className="w-14 h-14 rounded-lg overflow-hidden relative shrink-0 border border-[var(--color-border)]/60">
-                          <img src={char.character.images.webp.image_url} alt={char.character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <img src={char.character.images.webp.image_url} alt={char.character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
                           <button 
                             onClick={() => {
                               if (fav) {
@@ -737,6 +740,8 @@ export default function AnimeDetails() {
                 <p className="text-gray-500 italic text-center text-xs">Review detalhado em breve na próxima atualização da saga Avalon.</p>
               </div>
             </div>
+
+            <Comments mediaId={id} mediaType={anime.type} />
           </div>
         </div>
       </div>
@@ -826,7 +831,7 @@ export default function AnimeDetails() {
                 {/* Node 2 - Character Avatar - Sould Bonded */}
                 <div className="absolute right-[8%] md:right-[15%] z-10 flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] overflow-hidden p-0.5">
-                    <img src={pactCharacter.image} className="w-full h-full object-cover rounded-full" alt={pactCharacter.name} />
+                    <img src={pactCharacter.image} className="w-full h-full object-cover rounded-full" alt={pactCharacter.name} referrerPolicy="no-referrer" />
                   </div>
                   <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest mt-2">
                     {pactCharacter.name.split(',').reverse().join(' ').trim()}
