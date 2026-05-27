@@ -15,7 +15,7 @@ import { useFavorites, FavoriteCharacter } from '../context/FavoritesContext';
 import { calculateCharacterStats } from '../utils/powerEngine';
 import React, { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
-import { doc, updateDoc, collection, query, getDocs, where, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, getDocs, where, getDoc, serverTimestamp, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { ACHIEVEMENTS } from '../services/rankingService';
 import { Link } from 'react-router-dom';
@@ -28,7 +28,23 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState(profile);
   const [achievements, setAchievements] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<'ANIME' | 'CHARACTERS'>('ANIME');
+  const [viewMode, setViewMode] = useState<'ANIME' | 'CHARACTERS' | 'COMMENTS'>('ANIME');
+  const [userComments, setUserComments] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (viewMode === 'COMMENTS' && user) {
+      const q = query(
+        collection(db, 'comments'),
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setUserComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      return () => unsubscribe();
+    }
+  }, [viewMode, user]);
 
   const [editedPhotoURL, setEditedPhotoURL] = useState(profile.photoURL || user?.photoURL || '');
   const [editedBannerURL, setEditedBannerURL] = useState(profile.bannerURL || '');
@@ -286,6 +302,15 @@ export default function Profile() {
                 >
                   Equipe de Batalha
                 </button>
+                <button 
+                  onClick={() => setViewMode('COMMENTS')}
+                  className={cn(
+                    "px-4 py-1.5 rounded-md text-[8px] font-black uppercase tracking-widest transition-all",
+                    viewMode === 'COMMENTS' ? "bg-brand text-white shadow-md" : "text-gray-500 hover:text-gray-300"
+                  )}
+                >
+                  Meus Comentários
+                </button>
               </div>
             </div>
 
@@ -312,7 +337,7 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : viewMode === 'CHARACTERS' ? (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 {favoriteCharacters.length > 0 ? favoriteCharacters.map(char => {
                   const stats = calculateCharacterStats(char, profile.otakuPoints || 0);
@@ -359,7 +384,33 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-            )}
+            ) : viewMode === 'COMMENTS' ? (
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                {userComments.length > 0 ? (
+                  userComments.map(comment => (
+                    <div key={comment.id} className="bg-[var(--color-bg)] rounded-xl border border-[var(--color-border)] p-4 shadow-sm flex flex-col gap-2 relative group hover:border-brand/40 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                          {comment.createdAt?.toDate ? new Date(comment.createdAt.toDate()).toLocaleDateString('pt-BR') : 'Recente'}
+                        </p>
+                        <span className="text-[10px] flex items-center gap-1 text-gray-500 bg-black/20 px-2 py-0.5 rounded border border-[var(--color-border)]">
+                           {comment.likes || 0} Likes
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-12 flex flex-col items-center justify-center text-gray-500 gap-4 bg-[var(--color-card)]/30 rounded-2xl border border-[var(--color-border)] border-dashed">
+                    <Edit3 className="w-12 h-12 opacity-20" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-center">
+                      Nenhum comentário realizado.<br/>
+                      <span className="text-[8px] text-gray-600 mt-2 block">Explore animes e faça comentários para ganhar PO!</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
 
 
