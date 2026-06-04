@@ -21,7 +21,7 @@ export class NineMangaProvider extends BaseScraperProvider {
         results.push({
           id,
           title,
-          sourceId: this.sourceId
+          source: this.sourceId
         });
       });
       console.log(`[NineManga] Search found ${results.length} results`);

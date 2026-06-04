@@ -14,7 +14,7 @@ export class MangaDexProvider extends BaseScraperProvider {
       const results: ScrapedManga[] = response.data.data.map((m: any) => ({
         id: m.id,
         title: m.attributes.title.en || m.attributes.title['ja-ro'],
-        sourceId: this.sourceId
+        source: this.sourceId
       }));
       return results;
     } catch (e) {

@@ -22,7 +22,7 @@ export class MangaFireProvider extends BaseScraperProvider {
         results.push({
           id,
           title,
-          sourceId: this.sourceId
+          source: this.sourceId
         });
       });
       console.log(`[MangaFire] Search found ${results.length} results`);

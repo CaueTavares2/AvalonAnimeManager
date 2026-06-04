@@ -1,4 +1,4 @@
-import { User as UserIcon, Calendar, MapPin, Edit3, Save, X, LogOut, ShieldCheck, TrendingUp, Heart, Trophy, Medal, Star, Ghost, HeartPulse, Wind, Eye, Moon, Compass, Edit2, Trash2, Search, Flame, ShieldPlus, SunDim, Coffee, UserPlus, Users, Image as ImageIcon, Crown, Link as LinkIcon, Sparkles, Hourglass, ShieldCheck as ShieldCheckIcon, Zap } from 'lucide-react';
+import { User as UserIcon, Calendar, MapPin, Edit3, Save, X, Check, LogOut, ShieldCheck, TrendingUp, Heart, Trophy, Medal, Star, Ghost, HeartPulse, Wind, Eye, Moon, Compass, Edit2, Trash2, Search, Flame, ShieldPlus, SunDim, Coffee, UserPlus, Users, Image as ImageIcon, Crown, Link as LinkIcon, Sparkles, Hourglass, ShieldCheck as ShieldCheckIcon, Zap } from 'lucide-react';
 
 // Add a helper component to render the icon based on the icon name
 const AchievementIcon = ({ name, className, size }: { name: string, className?: string, size?: number }) => {
@@ -30,6 +30,7 @@ export default function Profile() {
   const [achievements, setAchievements] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'ANIME' | 'CHARACTERS' | 'COMMENTS'>('ANIME');
   const [userComments, setUserComments] = useState<any[]>([]);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     if (viewMode === 'COMMENTS' && user) {
@@ -95,6 +96,7 @@ export default function Profile() {
   const handleSave = async () => {
     if (user) {
       try {
+        setSaveStatus('saving');
         const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         const userData = userSnap.exists() ? userSnap.data() : {};
@@ -120,13 +122,19 @@ export default function Profile() {
           const { rankingService } = await import('../services/rankingService');
           await rankingService.grantAchievement(user.uid, 'DESIGNER_INTERIOR');
         }
+        setSaveStatus('success');
+        updateProfile({ ...editedProfile, photoURL: editedPhotoURL, bannerURL: editedBannerURL });
+        setTimeout(() => setIsEditing(false), 600);
       } catch (err) {
         console.error("Failed to update profile", err);
-        alert("Erro ao salvar perfil. Tente novamente.");
+        setSaveStatus('error');
+      } finally {
+        setTimeout(() => setSaveStatus('idle'), 2000);
       }
+    } else {
+       updateProfile({ ...editedProfile, photoURL: editedPhotoURL, bannerURL: editedBannerURL });
+       setIsEditing(false);
     }
-    updateProfile({ ...editedProfile, photoURL: editedPhotoURL, bannerURL: editedBannerURL });
-    setIsEditing(false);
   };
 
   const memberSince = profile.createdAt?.seconds 
@@ -685,9 +693,31 @@ export default function Profile() {
               </button>
               <button 
                 onClick={handleSave}
-                className="flex-1 px-4 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                disabled={saveStatus === 'saving'}
+                className={cn(
+                  "flex-1 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2",
+                  saveStatus === 'success' ? "bg-emerald-500 text-white" : 
+                  saveStatus === 'error' ? "bg-red-500 text-white" : "bg-brand text-white"
+                )}
               >
-                <Save className="w-4 h-4" /> Salvar Alterações
+                {saveStatus === 'saving' ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Salvando...
+                  </span>
+                ) : saveStatus === 'success' ? (
+                  <span className="flex items-center gap-2">
+                    <Check className="w-4 h-4" /> Salvo!
+                  </span>
+                ) : saveStatus === 'error' ? (
+                  <span className="flex items-center gap-2">
+                    <X className="w-4 h-4" /> Erro ao Salvar
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Save className="w-4 h-4" /> Salvar Alterações
+                  </span>
+                )}
               </button>
             </div>
           </div>

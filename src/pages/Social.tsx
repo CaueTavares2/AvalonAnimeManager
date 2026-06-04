@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { 
   Users, 
   Search, 
@@ -21,6 +21,66 @@ import { Link, useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+
+const FriendCard = memo(({ friend, handleOpenChat, removeFriend }: { friend: Friend, handleOpenChat: (id: string) => void, removeFriend: (id: string) => void }) => (
+  <div className="bg-[var(--color-card)] p-4 rounded-xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all shadow-none">
+    <div className="flex items-center gap-4">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-xl overflow-hidden border border-[var(--color-border)]">
+            <img src={friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.username}`} className="w-full h-full object-cover" loading="lazy" />
+          </div>
+          <div className={cn(
+            "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[var(--color-card)]",
+            friend.status === 'ONLINE' ? "bg-emerald-500" : friend.status === 'MARATONANDO' ? "bg-brand animate-pulse" : "bg-gray-500"
+          )} />
+        </div>
+        <div>
+          <Link to={`/profile/${friend.uid}`} className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-tight italic hover:text-brand transition-colors flex items-center gap-1.5">
+            {friend.username} 
+            {['caue.nanda.tavares@gmail.com'].includes((friend as any).email) && (
+              <ShieldCheck className="w-3 h-3 text-brand fill-brand/20" />
+            )}
+            <span className="text-brand not-italic ml-1 opacity-60">#{friend.numericId || '??'}</span>
+          </Link>
+          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+            {friend.status === 'MARATONANDO' ? `Maratonando ${friend.currentActivity}` : friend.status.toLowerCase()}
+          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[8px] font-black px-1.5 py-0.5 bg-brand/10 text-brand rounded uppercase">{friend.rank}</span>
+            <span className="text-[8px] font-black text-gray-500 italic">{friend.otakuPoints || 0} PO</span>
+          </div>
+          {(friend as any).lastMessage && (
+            <p className="text-[9px] text-gray-400 mt-1 line-clamp-1 italic max-w-[150px]">
+              {(friend as any).lastMessage}
+            </p>
+          )}
+        </div>
+    </div>
+    <div className="flex flex-col items-center gap-2">
+      <button 
+        onClick={() => handleOpenChat(friend.uid)}
+        className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-500 hover:text-brand hover:bg-brand/5 transition-all relative shadow-none"
+        title="Chat"
+      >
+        <MessageSquare className="w-4 h-4" />
+        {(friend as any).hasUnread && (
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand rounded-full border-2 border-[var(--color-card)]" />
+        )}
+      </button>
+      <button 
+        onClick={() => {
+          if (window.confirm(`Remover ${friend.username} da lista de amigos?`)) {
+            removeFriend(friend.uid);
+          }
+        }}
+        className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-500/5 transition-all shadow-none"
+        title="Remover Amigo"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+));
 
 export default function Social() {
   const { user } = useAuth();
@@ -91,10 +151,10 @@ export default function Social() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Left Column: Search & Profile */}
-        <div className="space-y-8">
-          <div className="bg-[var(--color-card)] p-6 rounded-3xl border border-[var(--color-border)] shadow-xl space-y-6">
+        <div className="w-full lg:w-1/3 order-first space-y-8">
+          <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm space-y-6">
             <h3 className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-widest flex items-center gap-2">
               <UserPlus className="w-4 h-4 text-brand" /> Adicionar Amigo
             </h3>
@@ -112,18 +172,19 @@ export default function Social() {
               </div>
               <button 
                 type="submit"
-                className="w-full bg-brand text-white h-10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand/20"
+                className="w-full bg-brand text-white h-10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-brand/20"
               >
                 Enviar Pedido
               </button>
-              {error && <p className="text-[9px] text-red-500 font-bold uppercase text-center">{error}</p>}
-              {success && <p className="text-[9px] text-emerald-500 font-bold uppercase text-center">{success}</p>}
+              {error && <p className="text-[9px] text-red-500 font-bold uppercase text-center bg-red-500/10 p-2 rounded-lg">{error}</p>}
+              {success && <p className="text-[9px] text-emerald-500 font-bold uppercase text-center bg-emerald-500/10 p-2 rounded-lg">{success}</p>}
             </form>
 
             <div className="pt-4 border-t border-[var(--color-border)]">
               <button 
                 onClick={() => setShowQR(!showQR)}
                 className="w-full flex items-center justify-center gap-2 text-[9px] font-black text-gray-500 uppercase tracking-widest hover:text-[var(--color-text-bright)] transition-colors"
+                title="Mostrar/Ocultar QR Code"
               >
                 <QrCode className="w-4 h-4" /> 
                 {showQR ? "Ocultar meu QR Code" : "Mostrar meu QR Code"}
@@ -131,7 +192,7 @@ export default function Social() {
               
               {showQR && (
                 <div className="mt-6 flex flex-col items-center space-y-4 animate-in zoom-in-95 duration-300">
-                  <div className="p-3 bg-white rounded-2xl shadow-2xl">
+                  <div className="p-3 bg-white rounded-2xl shadow-lg">
                     <QRCode value={profile.numericId?.toString() || profile.customId || "AVALON"} size={120} />
                   </div>
                   <p className="text-[10px] font-black text-[var(--color-text-bright)] tracking-widest uppercase">
@@ -144,11 +205,11 @@ export default function Social() {
         </div>
 
         {/* Right Column: Main Content */}
-        <div className="lg:col-span-3">
+        <div className="w-full lg:w-2/3">
           {activeTab === 'FRIENDS' && (
             <div className="space-y-6">
               {friends.length === 0 ? (
-                <div className="bg-[var(--color-card)] p-20 rounded-3xl border border-[var(--color-border)] text-center space-y-4">
+                <div className="bg-[var(--color-card)] p-20 rounded-3xl border border-[var(--color-border)] text-center space-y-4 shadow-sm">
                   <Users className="w-12 h-12 text-gray-700 mx-auto opacity-20" />
                   <p className="text-gray-500 font-bold text-xs uppercase tracking-widest">Sua lista de amigos está vazia.</p>
                   <p className="text-gray-600 text-[10px] italic">"O real tesouro são os nakamas que fazemos no caminho."</p>
@@ -156,63 +217,12 @@ export default function Social() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {friends.map(friend => (
-                    <div key={friend.uid} className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] flex items-center justify-between group hover:border-brand/30 transition-all">
-                      <div className="flex items-center gap-4">
-                         <div className="relative">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden border border-[var(--color-border)]">
-                              <img src={friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.username}`} className="w-full h-full object-cover" />
-                            </div>
-                            <div className={cn(
-                              "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[var(--color-card)] shadow-sm",
-                              friend.status === 'ONLINE' ? "bg-emerald-500" : friend.status === 'MARATONANDO' ? "bg-brand animate-pulse" : "bg-gray-500"
-                            )} />
-                         </div>
-                         <div>
-                            <Link to={`/profile/${friend.uid}`} className="text-xs font-black text-[var(--color-text-bright)] uppercase tracking-tight italic hover:text-brand transition-colors flex items-center gap-1.5">
-                              {friend.username} 
-                              {['caue.nanda.tavares@gmail.com'].includes((friend as any).email) && (
-                                <ShieldCheck className="w-3 h-3 text-brand fill-brand/20" />
-                              )}
-                              <span className="text-brand not-italic ml-1 opacity-60">#{friend.numericId || '??'}</span>
-                            </Link>
-                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
-                              {friend.status === 'MARATONANDO' ? `Maratonando ${friend.currentActivity}` : friend.status.toLowerCase()}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[8px] font-black px-1.5 py-0.5 bg-brand/10 text-brand rounded uppercase">{friend.rank}</span>
-                              <span className="text-[8px] font-black text-gray-500 italic">{friend.otakuPoints} PO</span>
-                            </div>
-                            {(friend as any).lastMessage && (
-                              <p className="text-[9px] text-gray-400 mt-1 line-clamp-1 italic max-w-[150px]">
-                                {(friend as any).lastMessage}
-                              </p>
-                            )}
-                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => handleOpenChat(friend.uid)}
-                          className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-500 hover:text-brand hover:bg-brand/5 transition-all relative"
-                          title="Chat"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                          {(friend as any).hasUnread && (
-                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand rounded-full border-2 border-[var(--color-card)]" />
-                          )}
-                        </button>
-                        <button 
-                          onClick={() => {
-                            if (window.confirm(`Remover ${friend.username} da lista de amigos?`)) {
-                              removeFriend(friend.uid);
-                            }
-                          }}
-                          className="p-2 bg-[var(--color-bg)] rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-500/5 transition-all"
-                          title="Remover Amigo"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                     <FriendCard 
+                        key={friend.uid} 
+                        friend={friend} 
+                        handleOpenChat={handleOpenChat} 
+                        removeFriend={removeFriend} 
+                     />
                   ))}
                 </div>
               )}
