@@ -115,9 +115,9 @@ export default function Navbar() {
 
         {/* Search Section - Hidden on List View */}
         {!isListView && (
-          <div className="flex-1 max-w-sm relative hidden sm:block">
+          <div className="flex-1 max-w-sm relative">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 group-focus-within:text-brand transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 group-focus-within:text-brand transition-colors" />
               <input 
                 type="text"
                 value={search}
@@ -128,16 +128,15 @@ export default function Navbar() {
                     setSearch('');
                   }
                 }}
-                placeholder={t('nav.search')}
-                className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-10 pr-4 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-bright)] focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all placeholder:text-gray-500/50"
+                placeholder="Pesquisar obras..."
+                className="w-full h-9 bg-[var(--color-bg)]/50 border border-[var(--color-border)] rounded-xl pl-8 pr-4 text-[10px] sm:text-xs font-black uppercase tracking-widest text-[var(--color-text-bright)] focus:outline-none focus:border-brand transition-all placeholder:text-gray-500/50"
               />
             </div>
           </div>
         )}
 
-        {/* Gap filler when search is hidden or on small screens */}
-        {isListView && <div className="flex-1 hidden sm:block" />}
-        {!isListView && <div className="flex-1 sm:hidden" />}
+        {/* Gap filler when search is hidden */}
+        {isListView && <div className="flex-1" />}
 
         {/* User Section */}
         <div className="flex items-center gap-2">
