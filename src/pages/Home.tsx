@@ -14,6 +14,9 @@ import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useLanguage } from '../context/LanguageContext';
 
+import { ActivityFeed } from '../components/home/ActivityFeed';
+import { GachaRecommendation } from '../components/home/GachaRecommendation';
+
 export default function Home() {
   const { t } = useLanguage();
   const { mediaType, setMediaType, streakInfo, showStreakPopUp, setShowStreakPopUp } = useAuth();
@@ -354,71 +357,82 @@ export default function Home() {
         </div>
       ) : (
         <div className="space-y-20">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.trending')}</span>
+          {/* Gacha Recommendation Section */}
+          <GachaRecommendation />
+
+          {/* Quick Stats & Activity Feed */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3 space-y-20">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+                  <div className="flex items-center gap-2 md:gap-4 mb-2">
+                    <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-brand" />
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.trending')}</span>
+                  </div>
+                  <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topTrending}</p>
+                </div>
+                
+                <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+                  <div className="flex items-center gap-2 md:gap-4 mb-2">
+                    <Award className="w-4 h-4 md:w-5 md:h-5 text-brand" />
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.popular')}</span>
+                  </div>
+                  <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topPopular}</p>
+                </div>
+
+                <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+                  <div className="flex items-center gap-2 md:gap-4 mb-2">
+                    <Calendar className="w-4 h-4 md:w-5 md:h-5 text-brand" />
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.upcoming')}</span>
+                  </div>
+                  <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topUpcoming}</p>
+                </div>
+
+                <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
+                  <div className="flex items-center gap-2 md:gap-4 mb-2">
+                    <Heart className="w-4 h-4 md:w-5 md:h-5 text-brand" />
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.favorites')}</span>
+                  </div>
+                  <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topRated}</p>
+                </div>
               </div>
-              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topTrending}</p>
+
+               {/* Banner Year */}
+              <Link to="/animes-by-year" className="block relative h-[220px] rounded-[32px] overflow-hidden group shadow-2xl border border-[var(--color-border)] hover:border-brand/50 transition-all duration-500">
+                 <img src="https://images.unsplash.com/photo-1541560052-773aece0563b?auto=format&fit=crop&q=80&w=1200" alt="Viagem no Tempo" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100" />
+                 
+                 {/* Gradient Overlays */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent z-10" />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
+                 <div className="absolute inset-0 bg-brand/20 mix-blend-color z-10" />
+                 <div className="absolute inset-0 bg-[var(--color-bg)]/20 z-10" />
+                 
+                 <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-12 z-20">
+                     <div className="flex items-center gap-2 mb-3">
+                       <Calendar className="w-5 h-5 text-brand drop-shadow-[0_0_10px_rgba(var(--color-brand-rgb),0.5)]" />
+                       <span className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/20 backdrop-blur-md px-3 py-1 rounded-full border border-brand/30">
+                         {t('home.year.subtitle')}
+                       </span>
+                     </div>
+                     <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter drop-shadow-xl group-hover:text-brand transition-colors duration-300">
+                        {t('home.year.title')}
+                     </h2>
+                     <p className="text-gray-300 font-medium text-xs md:text-sm mt-3 max-w-sm leading-relaxed drop-shadow-md">
+                        {t('home.year.desc')}
+                     </p>
+                 </div>
+                 
+                 {/* Decorative Elements */}
+                 <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-brand blur-[80px] opacity-30 z-10 group-hover:opacity-60 transition-opacity duration-700" />
+                 <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-500 blur-[60px] opacity-10 z-10 group-hover:opacity-20 transition-opacity duration-700" />
+              </Link>
             </div>
             
-            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <Award className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.popular')}</span>
-              </div>
-              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topPopular}</p>
-            </div>
-
-            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.upcoming')}</span>
-              </div>
-              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topUpcoming}</p>
-            </div>
-
-            <div className="bg-[var(--color-card)] p-4 border border-[var(--color-border)] md:p-6 rounded-2xl md:rounded-3xl shadow-xl hover:translate-y-[-4px] transition-all">
-              <div className="flex items-center gap-2 md:gap-4 mb-2">
-                <Heart className="w-4 h-4 md:w-5 md:h-5 text-brand" />
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500">{t('home.favorites')}</span>
-              </div>
-              <p className="text-xs md:text-sm font-black text-[var(--color-text-bright)] line-clamp-1">{stats.topRated}</p>
+            <div className="lg:col-span-1">
+              <ActivityFeed />
             </div>
           </div>
-
-           
-           {/* Banner Year */}
-          <Link to="/animes-by-year" className="block relative h-[220px] rounded-[32px] overflow-hidden group shadow-2xl border border-[var(--color-border)] hover:border-brand/50 transition-all duration-500">
-             <img src="https://images.unsplash.com/photo-1541560052-773aece0563b?auto=format&fit=crop&q=80&w=1200" alt="Viagem no Tempo" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100" />
-             
-             {/* Gradient Overlays */}
-             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent z-10" />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
-             <div className="absolute inset-0 bg-brand/20 mix-blend-color z-10" />
-             <div className="absolute inset-0 bg-[var(--color-bg)]/20 z-10" />
-             
-             <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-12 z-20">
-                 <div className="flex items-center gap-2 mb-3">
-                   <Calendar className="w-5 h-5 text-brand drop-shadow-[0_0_10px_rgba(var(--color-brand-rgb),0.5)]" />
-                   <span className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/20 backdrop-blur-md px-3 py-1 rounded-full border border-brand/30">
-                     {t('home.year.subtitle')}
-                   </span>
-                 </div>
-                 <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter drop-shadow-xl group-hover:text-brand transition-colors duration-300">
-                    {t('home.year.title')}
-                 </h2>
-                 <p className="text-gray-300 font-medium text-xs md:text-sm mt-3 max-w-sm leading-relaxed drop-shadow-md">
-                    {t('home.year.desc')}
-                 </p>
-             </div>
-             
-             {/* Decorative Elements */}
-             <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-brand blur-[80px] opacity-30 z-10 group-hover:opacity-60 transition-opacity duration-700" />
-             <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-500 blur-[60px] opacity-10 z-10 group-hover:opacity-20 transition-opacity duration-700" />
-          </Link>
 
           <MediaGrid title={`${t('home.trending')}: ${mediaType === 'anime' ? t('home.anime') : t('home.manga')}`} items={trending} />
           <MediaGrid title={`${t('home.popular')}: ${mediaType === 'anime' ? t('home.anime') : t('home.manga')}`} items={popular} />

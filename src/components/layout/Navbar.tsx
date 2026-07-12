@@ -8,6 +8,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocial } from '../../context/SocialContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { NotificationsDropdown } from './NotificationsDropdown';
 
 export default function Navbar() {
   const { t } = useLanguage();
@@ -140,6 +141,8 @@ export default function Navbar() {
 
         {/* User Section */}
         <div className="flex items-center gap-2">
+          {user && <NotificationsDropdown />}
+          
           {user ? (
             <div className="flex items-center gap-1 bg-[var(--color-bg)]/50 p-1 rounded-xl border border-[var(--color-border)]/50">
                <Link to="/profile" className="p-1 hover:bg-brand/10 rounded-lg transition-colors group">
