@@ -216,9 +216,7 @@ export default function AnimeDetails() {
 
         // Fetch characters
         try {
-          const charResp = await fetch(`https://api.jikan.moe/v4/${finalType.toLowerCase()}/${id}/characters`);
-          const charData = await charResp.json();
-          const allChars = charData.data || [];
+          const allChars = await jikanService.getMediaCharacters(Number(id), finalType.toLowerCase() as 'anime' | 'manga');
           
           allChars.sort((a: any, b: any) => {
             // Priority 1: Main characters first

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Terminal as TerminalIcon, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { jikanService } from '../../services/jikanService';
 
 interface GoAnimeTerminalProps {
   onClose: () => void;
@@ -61,8 +62,7 @@ export default function GoAnimeTerminal({ onClose }: GoAnimeTerminalProps) {
         }
         setHistory(prev => [...prev, `Searching for "${args}"...`]);
         try {
-          const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(args)}&limit=5`);
-          const data = await res.json();
+          const data = await jikanService.search(args, 'anime', 1);
           if (data.data?.length > 0) {
             setHistory(prev => [...prev, 'Results:']);
             data.data.forEach((anime: any, i: number) => {

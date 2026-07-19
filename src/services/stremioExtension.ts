@@ -51,7 +51,7 @@ export const createStremioExtension = (manifestUrl: string, customName?: string)
     
     search: async (query: string) => {
       const items = await jikanService.search(query);
-      return items.map((item: any) => ({
+      return items.data.map((item: any) => ({
         id: item.mal_id.toString(),
         title: item.title,
         image: item.images.webp.large_image_url

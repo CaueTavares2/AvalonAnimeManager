@@ -89,6 +89,7 @@ export interface JikanAnime {
   episodes?: number;
   chapters?: number;
   volumes?: number;
+  popularity?: number;
   synopsis: string;
   genres: { name: string }[];
   year?: number;
@@ -112,6 +113,7 @@ async function fetchAnilistList(type: 'anime' | 'manga', sort: string, limit: nu
         episodes
         chapters
         volumes
+          popularity
         description
         genres
         seasonYear
@@ -138,14 +140,15 @@ async function fetchAnilistList(type: 'anime' | 'manga', sort: string, limit: nu
       score: m.averageScore ? m.averageScore / 10 : 0,
       episodes: m.episodes,
       chapters: m.chapters,
-      volumes: m.volumes,
-      synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+      volumes: m.volumes, 
+          members: m.popularity || 0,
+      synopsis: m.description?.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>?/gm, '') || '',
       genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
       year: m.seasonYear,
       season: m.season?.toLowerCase(),
       status: m.status,
       rank: 0,
-      members: 0,
+      
       type: m.format === 'TV_SHORT' ? 'TV' : m.format
     }));
   } catch (err) {
@@ -232,6 +235,7 @@ export const jikanService = {
           episodes
           chapters
           volumes
+          popularity
           description
           genres
           seasonYear
@@ -257,14 +261,15 @@ export const jikanService = {
           score: m.averageScore ? m.averageScore / 10 : 0,
           episodes: m.episodes,
           chapters: m.chapters,
-          volumes: m.volumes,
-          synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+          volumes: m.volumes, 
+          members: m.popularity || 0,
+          synopsis: m.description?.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>?/gm, '') || '',
           genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
           year: m.seasonYear,
           season: m.season?.toLowerCase(),
           status: m.status,
           rank: 0,
-          members: 0,
+          
           type: m.format === 'TV_SHORT' ? 'TV' : m.format
         };
       } catch (err) {
@@ -306,6 +311,7 @@ export const jikanService = {
             episodes
             chapters
             volumes
+          popularity
             description
             genres
             seasonYear
@@ -331,14 +337,15 @@ export const jikanService = {
           score: m.averageScore ? m.averageScore / 10 : 0,
           episodes: m.episodes,
           chapters: m.chapters,
-          volumes: m.volumes,
-          synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+          volumes: m.volumes, 
+          members: m.popularity || 0,
+          synopsis: m.description?.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>?/gm, '') || '',
           genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
           year: m.seasonYear,
           season: m.season?.toLowerCase(),
           status: m.status,
           rank: 0,
-          members: 0,
+          
           type: m.format === 'TV_SHORT' ? 'TV' : m.format
         }));
         
@@ -374,6 +381,7 @@ export const jikanService = {
             episodes
             chapters
             volumes
+          popularity
             description
             genres
             seasonYear
@@ -399,14 +407,15 @@ export const jikanService = {
           score: m.averageScore ? m.averageScore / 10 : 0,
           episodes: m.episodes,
           chapters: m.chapters,
-          volumes: m.volumes,
-          synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+          volumes: m.volumes, 
+          members: m.popularity || 0,
+          synopsis: m.description?.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>?/gm, '') || '',
           genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
           year: m.seasonYear,
           season: m.season?.toLowerCase(),
           status: m.status,
           rank: 0,
-          members: 0,
+          
           type: m.format === 'TV_SHORT' ? 'TV' : m.format
         }));
         
@@ -421,6 +430,53 @@ export const jikanService = {
     }
   },
   
+  getMediaCharacters: async (id: number, type: 'anime' | 'manga' = 'anime') => {
+    try {
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}/${id}/characters`);
+      if (!data || !data.data) throw new Error("Empty characters");
+      return data.data;
+    } catch (e) {
+      console.warn(`Jikan characters failed for ${type} ${id}, falling back to AniList...`, e);
+      const anilistQuery = `
+      query ($idMal: Int, $type: MediaType) {
+        Media (idMal: $idMal, type: $type) {
+          characters(sort: [ROLE, RELEVANCE, ID], page: 1, perPage: 25) {
+            edges {
+              role
+              node {
+                id
+                name { full }
+                image { large }
+              }
+            }
+          }
+        }
+      }`;
+      try {
+        const response = await axios.post('https://graphql.anilist.co', {
+          query: anilistQuery,
+          variables: { idMal: id, type: type.toUpperCase() },
+          timeout: 8000
+        });
+        const chars = response.data.data.Media.characters.edges;
+        return chars.map((c: any) => ({
+          character: {
+            mal_id: c.node.id,
+            url: '',
+            images: {
+              webp: { image_url: c.node.image.large }
+            },
+            name: c.node.name.full
+          },
+          role: c.role === 'MAIN' ? 'Main' : 'Supporting'
+        }));
+      } catch (err) {
+        console.error("AniList characters fallback also failed", err);
+        return [];
+      }
+    }
+  },
+
   searchCharacters: async (query: string) => {
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/characters?q=${query}&limit=12`);
     return data.data;

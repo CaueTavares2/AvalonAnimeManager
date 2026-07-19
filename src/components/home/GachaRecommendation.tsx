@@ -31,7 +31,7 @@ export function GachaRecommendation() {
 
       // Get random recommendation (Random page from Jikan Top Anime)
       const randomPage = Math.floor(Math.random() * 10) + 1;
-      const data = await jikanService.getTopRated('anime', randomPage);
+      const data = await jikanService.getTopRated('anime');
       
       const randomAnime = data[Math.floor(Math.random() * data.length)];
 
