@@ -104,26 +104,26 @@ export const jikanService = {
     const filter = type === 'anime' ? 'airing' : 'publishing';
     const typeFilter = type === 'anime' ? '&type=tv' : ''; // Prioritize TV for trending animes
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
-    return data.data;
+    return data?.data || [];
   },
 
   getPopular: async (type: 'anime' | 'manga' = 'anime') => {
     const typeFilter = type === 'anime' ? '&type=tv' : '';
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=bypopularity${typeFilter}&limit=18`);
-    return data.data;
+    return data?.data || [];
   },
 
   getUpcoming: async (type: 'anime' | 'manga' = 'anime') => {
     const filter = type === 'anime' ? 'upcoming' : 'upcoming';
     const typeFilter = type === 'anime' ? '&type=tv' : '';
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
-    return data.data;
+    return data?.data || [];
   },
 
   getTopRated: async (type: 'anime' | 'manga' = 'anime') => {
     const typeFilter = type === 'anime' ? '&type=tv' : '';
     const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?limit=10${typeFilter}`);
-    return data.data;
+    return data?.data || [];
   },
 
   getDetails: async (id: number, type: 'anime' | 'manga' = 'anime') => {
@@ -145,12 +145,13 @@ export const jikanService = {
     
     // Client-side quality filter: exclude music and minor types if it's anime
     if (type === 'anime') {
-      const filtered = data.data.filter((item: any) => 
+      const items = data?.data || [];
+      const filtered = items.filter((item: any) => 
         ['tv', 'movie', 'ova', 'ona'].includes(item.type?.toLowerCase())
       );
-      return { data: filtered, pagination: data.pagination };
+      return { data: filtered, pagination: data?.pagination };
     }
-    return { data: data.data, pagination: data.pagination };
+    return { data: data?.data || [], pagination: data?.pagination };
   },
 
   getByYear: async (year: number, page: number = 1) => {

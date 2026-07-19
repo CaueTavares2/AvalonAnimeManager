@@ -108,13 +108,20 @@ export default function Home() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Parallel fetch with auto-retry logic from service
-        const [trendingData, popularData, upcomingData, topRatedData] = await Promise.all([
-          jikanService.getTrending(mediaType),
-          jikanService.getPopular(mediaType),
-          jikanService.getUpcoming(mediaType),
-          jikanService.getTopRated(mediaType)
-        ]);
+        const getWithFallback = async (fetcher: () => Promise<any>) => {
+            try { return await fetcher(); } catch (e) { return null; }
+        };
+
+        const trendingData = await getWithFallback(() => jikanService.getTrending(mediaType));
+        await new Promise(r => setTimeout(r, 400));
+        
+        const popularData = await getWithFallback(() => jikanService.getPopular(mediaType));
+        await new Promise(r => setTimeout(r, 400));
+        
+        const upcomingData = await getWithFallback(() => jikanService.getUpcoming(mediaType));
+        await new Promise(r => setTimeout(r, 400));
+        
+        const topRatedData = await getWithFallback(() => jikanService.getTopRated(mediaType));
 
         if (!isMounted) return;
 
@@ -400,7 +407,7 @@ export default function Home() {
 
                {/* Banner Year */}
               <Link to="/animes-by-year" className="block relative h-[220px] rounded-[32px] overflow-hidden group shadow-2xl border border-[var(--color-border)] hover:border-brand/50 transition-all duration-500">
-                 <img src="https://images.unsplash.com/photo-1541560052-773aece0563b?auto=format&fit=crop&q=80&w=1200" alt="Viagem no Tempo" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100" />
+                 <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=1200" alt="Viagem no Tempo" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100" />
                  
                  {/* Gradient Overlays */}
                  <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent z-10" />
