@@ -140,7 +140,7 @@ async function fetchAnilistList(type: 'anime' | 'manga', sort: string, limit: nu
       chapters: m.chapters,
       volumes: m.volumes,
       synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
-      genres: m.genres.map((g: string) => ({ name: g })),
+      genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
       year: m.seasonYear,
       season: m.season?.toLowerCase(),
       status: m.status,
@@ -160,6 +160,7 @@ export const jikanService = {
       const filter = type === 'anime' ? 'airing' : 'publishing';
       const typeFilter = type === 'anime' ? '&type=tv' : ''; // Prioritize TV for trending animes
       const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
+      if (!data || !data.data || data.data.length === 0) throw new Error("Empty");
       return data?.data || [];
     } catch (e) {
       console.warn("Jikan getTrending failed, falling back to AniList...");
@@ -171,6 +172,7 @@ export const jikanService = {
     try {
       const typeFilter = type === 'anime' ? '&type=tv' : '';
       const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=bypopularity${typeFilter}&limit=18`);
+      if (!data || !data.data || data.data.length === 0) throw new Error("Empty");
       return data?.data || [];
     } catch (e) {
       console.warn("Jikan getPopular failed, falling back to AniList...");
@@ -183,6 +185,7 @@ export const jikanService = {
       const filter = type === 'anime' ? 'upcoming' : 'upcoming';
       const typeFilter = type === 'anime' ? '&type=tv' : '';
       const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
+      if (!data || !data.data || data.data.length === 0) throw new Error("Empty");
       return data?.data || [];
     } catch (e) {
       console.warn("Jikan getUpcoming failed, falling back to AniList...");
@@ -197,6 +200,7 @@ export const jikanService = {
     try {
       const typeFilter = type === 'anime' ? '&type=tv' : '';
       const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?limit=10${typeFilter}`);
+      if (!data || !data.data || data.data.length === 0) throw new Error("Empty");
       return data?.data || [];
     } catch (e) {
       console.warn("Jikan getTopRated failed, falling back to AniList...");
@@ -255,7 +259,7 @@ export const jikanService = {
           chapters: m.chapters,
           volumes: m.volumes,
           synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
-          genres: m.genres.map((g: string) => ({ name: g })),
+          genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
           year: m.seasonYear,
           season: m.season?.toLowerCase(),
           status: m.status,
@@ -274,6 +278,9 @@ export const jikanService = {
   search: async (query: string, type: 'anime' | 'manga' = 'anime', page: number = 1) => {
     try {
       const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&page=${page}&limit=20&order_by=popularity&sort=desc&sfw=true`);
+      if (!data || !data.data || data.data.length === 0) {
+        throw new Error("Empty Jikan search result");
+      }
       if (type === 'anime') {
         const items = data?.data || [];
         const filtered = items.filter((item: any) => 
@@ -326,7 +333,7 @@ export const jikanService = {
           chapters: m.chapters,
           volumes: m.volumes,
           synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
-          genres: m.genres.map((g: string) => ({ name: g })),
+          genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
           year: m.seasonYear,
           season: m.season?.toLowerCase(),
           status: m.status,
@@ -349,6 +356,7 @@ export const jikanService = {
   getByYear: async (year: number, page: number = 1) => {
     try {
       const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=25&page=${page}&type=tv`);
+      if (!data || !data.data || data.data.length === 0) throw new Error("Empty");
       return data; 
     } catch (e) {
       console.warn("Jikan getByYear failed, falling back to AniList...", e);
@@ -393,7 +401,7 @@ export const jikanService = {
           chapters: m.chapters,
           volumes: m.volumes,
           synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
-          genres: m.genres.map((g: string) => ({ name: g })),
+          genres: m.genres ? m.genres.map((g: string) => ({ name: g })) : [],
           year: m.seasonYear,
           season: m.season?.toLowerCase(),
           status: m.status,

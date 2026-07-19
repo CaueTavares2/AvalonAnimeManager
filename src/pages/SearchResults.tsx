@@ -35,7 +35,9 @@ export default function SearchResults() {
         // Filter locally if user changed filter, though we only search anime endpoint.
         let data = json.data || [];
         if (filterType !== 'anime' && filterType !== 'manga') {
-           data = data.filter((a: any) => filterType === 'movie' ? a.type === 'Movie' : a.type === 'TV');
+           data = data.filter((a: any) => filterType === 'movie' 
+             ? a.type?.toLowerCase() === 'movie' 
+             : a.type?.toLowerCase() === 'tv');
          }
 
         // Deduplicate results by mal_id to prevent key collisions
@@ -138,7 +140,7 @@ export default function SearchResults() {
                   <Link to={`/${detailType}/${anime.mal_id}`} className="group flex flex-col gap-3">
                     <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-[var(--color-border)]/50">
                       <img 
-                        src={anime.images.webp.large_image_url || anime.images.webp.image_url} 
+                        src={anime.images?.webp?.large_image_url || anime.images?.webp?.image_url || 'https://via.placeholder.com/225x350'} 
                         alt={formatTitle(anime)}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
