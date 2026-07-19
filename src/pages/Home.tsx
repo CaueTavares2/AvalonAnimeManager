@@ -108,20 +108,19 @@ export default function Home() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const getWithFallback = async (fetcher: () => Promise<any>) => {
-            try { return await fetcher(); } catch (e) { return null; }
-        };
-
-        const trendingData = await getWithFallback(() => jikanService.getTrending(mediaType));
-        await new Promise(r => setTimeout(r, 400));
+        const fetchers = [
+          jikanService.getTrending(mediaType),
+          jikanService.getPopular(mediaType),
+          jikanService.getUpcoming(mediaType),
+          jikanService.getTopRated(mediaType)
+        ];
         
-        const popularData = await getWithFallback(() => jikanService.getPopular(mediaType));
-        await new Promise(r => setTimeout(r, 400));
+        const results = await Promise.allSettled(fetchers);
         
-        const upcomingData = await getWithFallback(() => jikanService.getUpcoming(mediaType));
-        await new Promise(r => setTimeout(r, 400));
-        
-        const topRatedData = await getWithFallback(() => jikanService.getTopRated(mediaType));
+        const trendingData = results[0].status === 'fulfilled' ? results[0].value : null;
+        const popularData = results[1].status === 'fulfilled' ? results[1].value : null;
+        const upcomingData = results[2].status === 'fulfilled' ? results[2].value : null;
+        const topRatedData = results[3].status === 'fulfilled' ? results[3].value : null;
 
         if (!isMounted) return;
 

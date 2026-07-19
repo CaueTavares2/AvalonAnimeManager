@@ -59,7 +59,7 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<a
   if (cached) return cached;
 
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, { timeout: 8000 });
     const data = response.data;
     setCachedData(url, data);
     return data;
@@ -99,31 +99,109 @@ export interface JikanAnime {
   type?: string;
 }
 
+// Helper to fetch lists from AniList when Jikan is down
+async function fetchAnilistList(type: 'anime' | 'manga', sort: string, limit: number): Promise<JikanAnime[]> {
+  const anilistQuery = `
+  query ($type: MediaType, $sort: [MediaSort], $perPage: Int) {
+    Page (page: 1, perPage: $perPage) {
+      media (type: $type, sort: $sort) {
+        idMal
+        title { romaji, english, native }
+        coverImage { large }
+        averageScore
+        episodes
+        chapters
+        volumes
+        description
+        genres
+        seasonYear
+        season
+        status
+        format
+      }
+    }
+  }`;
+  
+  try {
+    const response = await axios.post('https://graphql.anilist.co', {
+      query: anilistQuery,
+      variables: { type: type.toUpperCase(), sort: [sort], perPage: limit },
+      timeout: 8000
+    });
+    
+    return response.data.data.Page.media.filter((m: any) => m.idMal).map((m: any) => ({
+      mal_id: m.idMal,
+      title: m.title.romaji || m.title.english || m.title.native,
+      title_english: m.title.english,
+      title_japanese: m.title.native,
+      images: { webp: { image_url: m.coverImage.large, large_image_url: m.coverImage.large } },
+      score: m.averageScore ? m.averageScore / 10 : 0,
+      episodes: m.episodes,
+      chapters: m.chapters,
+      volumes: m.volumes,
+      synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+      genres: m.genres.map((g: string) => ({ name: g })),
+      year: m.seasonYear,
+      season: m.season?.toLowerCase(),
+      status: m.status,
+      rank: 0,
+      members: 0,
+      type: m.format === 'TV_SHORT' ? 'TV' : m.format
+    }));
+  } catch (err) {
+    console.error("AniList list fallback failed", err);
+    return [];
+  }
+}
+
 export const jikanService = {
   getTrending: async (type: 'anime' | 'manga' = 'anime') => {
-    const filter = type === 'anime' ? 'airing' : 'publishing';
-    const typeFilter = type === 'anime' ? '&type=tv' : ''; // Prioritize TV for trending animes
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
-    return data?.data || [];
+    try {
+      const filter = type === 'anime' ? 'airing' : 'publishing';
+      const typeFilter = type === 'anime' ? '&type=tv' : ''; // Prioritize TV for trending animes
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
+      return data?.data || [];
+    } catch (e) {
+      console.warn("Jikan getTrending failed, falling back to AniList...");
+      return fetchAnilistList(type, 'TRENDING_DESC', 12);
+    }
   },
 
   getPopular: async (type: 'anime' | 'manga' = 'anime') => {
-    const typeFilter = type === 'anime' ? '&type=tv' : '';
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=bypopularity${typeFilter}&limit=18`);
-    return data?.data || [];
+    try {
+      const typeFilter = type === 'anime' ? '&type=tv' : '';
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=bypopularity${typeFilter}&limit=18`);
+      return data?.data || [];
+    } catch (e) {
+      console.warn("Jikan getPopular failed, falling back to AniList...");
+      return fetchAnilistList(type, 'POPULARITY_DESC', 18);
+    }
   },
 
   getUpcoming: async (type: 'anime' | 'manga' = 'anime') => {
-    const filter = type === 'anime' ? 'upcoming' : 'upcoming';
-    const typeFilter = type === 'anime' ? '&type=tv' : '';
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
-    return data?.data || [];
+    try {
+      const filter = type === 'anime' ? 'upcoming' : 'upcoming';
+      const typeFilter = type === 'anime' ? '&type=tv' : '';
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?filter=${filter}${typeFilter}&limit=12`);
+      return data?.data || [];
+    } catch (e) {
+      console.warn("Jikan getUpcoming failed, falling back to AniList...");
+      // For upcoming, we sort by POPULARITY_DESC but we'd need to filter by status NOT_YET_RELEASED, 
+      // however TRENDING_DESC / POPULARITY_DESC works alright as a simple fallback if we can't do complex filters.
+      // Let's use POPULARITY_DESC as fallback just so it doesn't break.
+      return fetchAnilistList(type, 'POPULARITY_DESC', 12);
+    }
   },
 
   getTopRated: async (type: 'anime' | 'manga' = 'anime') => {
-    const typeFilter = type === 'anime' ? '&type=tv' : '';
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?limit=10${typeFilter}`);
-    return data?.data || [];
+    try {
+      const typeFilter = type === 'anime' ? '&type=tv' : '';
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/top/${type}?limit=10${typeFilter}`);
+      return data?.data || [];
+    } catch (e) {
+      console.warn("Jikan getTopRated failed, falling back to AniList...");
+      return fetchAnilistList(type, 'SCORE_DESC', 10);
+    }
   },
 
   getDetails: async (id: number, type: 'anime' | 'manga' = 'anime') => {
@@ -134,30 +212,205 @@ export const jikanService = {
       console.warn(`Jikan full details failed for ${type} ${id}, trying basic details fallback...`, e);
     }
     
-    // Fallback to basic details without /full
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}/${id}`);
-    return data?.data || null;
+    try {
+      // Fallback to basic details without /full
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}/${id}`);
+      if (data && data.data) return data.data;
+    } catch (e) {
+      console.warn("Jikan basic details also failed, falling back to AniList...", e);
+      const anilistQuery = `
+      query ($idMal: Int, $type: MediaType) {
+        Media (idMal: $idMal, type: $type) {
+          idMal
+          title { romaji, english, native }
+          coverImage { large }
+          averageScore
+          episodes
+          chapters
+          volumes
+          description
+          genres
+          seasonYear
+          season
+          status
+          format
+        }
+      }`;
+      try {
+        const response = await axios.post('https://graphql.anilist.co', {
+          query: anilistQuery,
+          variables: { idMal: id, type: type.toUpperCase() },
+          timeout: 8000
+        });
+        const m = response.data.data.Media;
+        if (!m) return null;
+        return {
+          mal_id: m.idMal || id,
+          title: m.title.romaji || m.title.english || m.title.native,
+          title_english: m.title.english,
+          title_japanese: m.title.native,
+          images: { webp: { image_url: m.coverImage.large, large_image_url: m.coverImage.large } },
+          score: m.averageScore ? m.averageScore / 10 : 0,
+          episodes: m.episodes,
+          chapters: m.chapters,
+          volumes: m.volumes,
+          synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+          genres: m.genres.map((g: string) => ({ name: g })),
+          year: m.seasonYear,
+          season: m.season?.toLowerCase(),
+          status: m.status,
+          rank: 0,
+          members: 0,
+          type: m.format === 'TV_SHORT' ? 'TV' : m.format
+        };
+      } catch (err) {
+        console.error("AniList details fallback also failed", err);
+        return null;
+      }
+    }
+    return null;
   },
 
   search: async (query: string, type: 'anime' | 'manga' = 'anime', page: number = 1) => {
-    // For search, we still allow more variety but prioritize popularity
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&page=${page}&limit=20&order_by=popularity&sort=desc&sfw=true`);
-    
-    // Client-side quality filter: exclude music and minor types if it's anime
-    if (type === 'anime') {
-      const items = data?.data || [];
-      const filtered = items.filter((item: any) => 
-        ['tv', 'movie', 'ova', 'ona'].includes(item.type?.toLowerCase())
-      );
-      return { data: filtered, pagination: data?.pagination };
+    try {
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&page=${page}&limit=20&order_by=popularity&sort=desc&sfw=true`);
+      if (type === 'anime') {
+        const items = data?.data || [];
+        const filtered = items.filter((item: any) => 
+          ['tv', 'movie', 'ova', 'ona'].includes(item.type?.toLowerCase())
+        );
+        return { data: filtered, pagination: data?.pagination };
+      }
+      return { data: data?.data || [], pagination: data?.pagination };
+    } catch (e) {
+      console.warn("Jikan search failed, falling back to AniList...", e);
+      // Fallback to Anilist
+      const anilistQuery = `
+      query ($search: String, $page: Int, $type: MediaType) {
+        Page (page: $page, perPage: 20) {
+          pageInfo {
+            lastPage
+          }
+          media (search: $search, type: $type, sort: POPULARITY_DESC) {
+            idMal
+            title { romaji, english, native }
+            coverImage { large }
+            averageScore
+            episodes
+            chapters
+            volumes
+            description
+            genres
+            seasonYear
+            season
+            status
+            format
+          }
+        }
+      }`;
+      try {
+        const response = await axios.post('https://graphql.anilist.co', {
+          query: anilistQuery,
+          variables: { search: query, page: page, type: type.toUpperCase() }
+        });
+        const anilistData = response.data.data.Page;
+        // Map Anilist format to JikanAnime format
+        const mappedData = anilistData.media.filter((m: any) => m.idMal).map((m: any) => ({
+          mal_id: m.idMal,
+          title: m.title.romaji || m.title.english || m.title.native,
+          title_english: m.title.english,
+          title_japanese: m.title.native,
+          images: { webp: { image_url: m.coverImage.large, large_image_url: m.coverImage.large } },
+          score: m.averageScore ? m.averageScore / 10 : 0,
+          episodes: m.episodes,
+          chapters: m.chapters,
+          volumes: m.volumes,
+          synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+          genres: m.genres.map((g: string) => ({ name: g })),
+          year: m.seasonYear,
+          season: m.season?.toLowerCase(),
+          status: m.status,
+          rank: 0,
+          members: 0,
+          type: m.format === 'TV_SHORT' ? 'TV' : m.format
+        }));
+        
+        return { 
+          data: mappedData, 
+          pagination: { last_visible_page: anilistData.pageInfo.lastPage } 
+        };
+      } catch (err) {
+        console.error("AniList fallback also failed", err);
+        return { data: [], pagination: { last_visible_page: 1 } };
+      }
     }
-    return { data: data?.data || [], pagination: data?.pagination };
   },
 
   getByYear: async (year: number, page: number = 1) => {
-    // Only fetch TV and Movie to ensure "Quality over Quantity"
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=25&page=${page}&type=tv`);
-    return data; 
+    try {
+      const data = await fetchWithRetry(`${JIKAN_API_BASE}/anime?start_date=${year}-01-01&end_date=${year}-12-31&order_by=popularity&sort=desc&limit=25&page=${page}&type=tv`);
+      return data; 
+    } catch (e) {
+      console.warn("Jikan getByYear failed, falling back to AniList...", e);
+      const anilistQuery = `
+      query ($year: Int, $page: Int) {
+        Page (page: $page, perPage: 25) {
+          pageInfo {
+            lastPage
+          }
+          media (type: ANIME, seasonYear: $year, sort: POPULARITY_DESC) {
+            idMal
+            title { romaji, english, native }
+            coverImage { large }
+            averageScore
+            episodes
+            chapters
+            volumes
+            description
+            genres
+            seasonYear
+            season
+            status
+            format
+          }
+        }
+      }`;
+      try {
+        const response = await axios.post('https://graphql.anilist.co', {
+          query: anilistQuery,
+          variables: { year, page },
+          timeout: 8000
+        });
+        const anilistData = response.data.data.Page;
+        const mappedData = anilistData.media.filter((m: any) => m.idMal).map((m: any) => ({
+          mal_id: m.idMal,
+          title: m.title.romaji || m.title.english || m.title.native,
+          title_english: m.title.english,
+          title_japanese: m.title.native,
+          images: { webp: { image_url: m.coverImage.large, large_image_url: m.coverImage.large } },
+          score: m.averageScore ? m.averageScore / 10 : 0,
+          episodes: m.episodes,
+          chapters: m.chapters,
+          volumes: m.volumes,
+          synopsis: m.description?.replace(/<[^>]*>?/gm, '') || '',
+          genres: m.genres.map((g: string) => ({ name: g })),
+          year: m.seasonYear,
+          season: m.season?.toLowerCase(),
+          status: m.status,
+          rank: 0,
+          members: 0,
+          type: m.format === 'TV_SHORT' ? 'TV' : m.format
+        }));
+        
+        return { 
+          data: mappedData, 
+          pagination: { last_visible_page: anilistData.pageInfo.lastPage } 
+        };
+      } catch (err) {
+        console.error("AniList fallback also failed", err);
+        return { data: [], pagination: { last_visible_page: 1 } };
+      }
+    }
   },
   
   searchCharacters: async (query: string) => {
