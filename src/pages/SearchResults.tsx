@@ -28,9 +28,9 @@ export default function SearchResults() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
         const apiPath = filterType === 'manga' ? 'manga' : 'anime';
-        const res = await fetch(`https://api.jikan.moe/v4/${apiPath}?q=${encodeURIComponent(query)}&page=${pageParam}&sfw=true`);
-        if (!res.ok) throw new Error('API Error');
-        const json = await res.json();
+        
+        // Ensure to fetch correctly using the service that has retry/cache
+        const json = await jikanService.search(query, apiPath as 'anime' | 'manga', pageParam);
         
         // Filter locally if user changed filter, though we only search anime endpoint.
         let data = json.data || [];

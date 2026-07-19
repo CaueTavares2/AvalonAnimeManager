@@ -139,17 +139,18 @@ export const jikanService = {
     return data?.data || null;
   },
 
-  search: async (query: string, type: 'anime' | 'manga' = 'anime') => {
+  search: async (query: string, type: 'anime' | 'manga' = 'anime', page: number = 1) => {
     // For search, we still allow more variety but prioritize popularity
-    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&limit=15&order_by=popularity&sort=desc&sfw=true`);
+    const data = await fetchWithRetry(`${JIKAN_API_BASE}/${type}?q=${encodeURIComponent(query)}&page=${page}&limit=20&order_by=popularity&sort=desc&sfw=true`);
     
     // Client-side quality filter: exclude music and minor types if it's anime
     if (type === 'anime') {
-      return data.data.filter((item: any) => 
+      const filtered = data.data.filter((item: any) => 
         ['tv', 'movie', 'ova', 'ona'].includes(item.type?.toLowerCase())
       );
+      return { data: filtered, pagination: data.pagination };
     }
-    return data.data;
+    return { data: data.data, pagination: data.pagination };
   },
 
   getByYear: async (year: number, page: number = 1) => {

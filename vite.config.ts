@@ -7,12 +7,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: '/AvalonAnimeManager/',
+    base: process.env.GITHUB_ACTIONS ? '/AvalonAnimeManager/' : '/',
     plugins: [react(), tailwindcss(), VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      base: '/AvalonAnimeManager/',
-      scope: '/AvalonAnimeManager/',
+      base: process.env.GITHUB_ACTIONS ? '/AvalonAnimeManager/' : '/',
+      scope: process.env.GITHUB_ACTIONS ? '/AvalonAnimeManager/' : '/',
       manifest: {
         name: 'Avalon',
         short_name: 'Avalon',
