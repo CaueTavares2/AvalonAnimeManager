@@ -214,8 +214,9 @@ export const mappingService = {
       if (title) {
         const cleanTitle = title.replace(/\(.*\)/g, '').replace(/Final Season/gi, '').trim();
         const yearParam = year ? `&first_air_date_year=${year}&primary_release_year=${year}` : '';
+        const tmdbApiKey = import.meta.env.VITE_TMDB_API_KEY || '3f3debb8f744f97bf0774d7e7fbe0157';
         const searchResp = await fetch(
-          `https://api.themoviedb.org/3/search/multi?api_key=3f3debb8f744f97bf0774d7e7fbe0157&query=${encodeURIComponent(cleanTitle)}&language=pt-BR${yearParam}`
+          `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodeURIComponent(cleanTitle)}&language=pt-BR${yearParam}`
         );
         
         if (searchResp.ok) {

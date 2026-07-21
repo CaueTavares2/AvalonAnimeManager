@@ -62,15 +62,6 @@ interface AuthContextType {
   isAdmin: boolean;
   mediaType: 'anime' | 'manga';
   setMediaType: (type: 'anime' | 'manga') => void;
-  streakInfo: {
-    count: number;
-    multiplier: number;
-    phase: 1 | 2 | 3 | 4 | 5;
-    needsHelp: boolean;
-    helpExpireAt: any;
-  } | null;
-  showStreakPopUp: boolean;
-  setShowStreakPopUp: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,8 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mediaType, setMediaType] = useState<'anime' | 'manga'>('anime');
-  const [streakInfo, setStreakInfo] = useState<AuthContextType['streakInfo']>(null);
-  const [showStreakPopUp, setShowStreakPopUp] = useState(false);
 
   useEffect(() => {
     // Set persistence to local (survives tab close)
@@ -184,7 +173,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setUser(null);
           setIsAdmin(false);
-          setStreakInfo(null);
           setLoading(false);
         }
       } catch (err) {
@@ -277,86 +265,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatedAt: serverTimestamp()
       });
     });
-    setStreakInfo({ count: 1, multiplier: 1.0, phase: 1, needsHelp: false, helpExpireAt: null });
-    setShowStreakPopUp(true);
-  };
+    };
 
   const processBackgroundTasks = async (userData: any, authUser: User) => {
     const userRef = doc(db, 'users', authUser.uid);
-    const now = new Date();
     
-    // Streak Logic
-    const lastUpdate = userData.lastStreakUpdate ? (userData.lastStreakUpdate.toDate?.() || new Date(userData.lastStreakUpdate)) : new Date(0);
-    const isToday = lastUpdate.toDateString() === now.toDateString();
-    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === lastUpdate.toDateString();
-    
-    let newStreak = userData.streak || 0;
-    let needsHelp = userData.needsHelp || false;
-    let helpExpireAt = userData.helpExpireAt || null;
-    let usedProtection = false;
-    let remainingProtections = userData.streakProtections || 0;
-
-    if (!isToday) {
-      if (isYesterday || (userData.streak === 0 && !needsHelp)) {
-        newStreak += 1;
-        needsHelp = false;
-        helpExpireAt = null;
-        setShowStreakPopUp(true);
-      } else if (newStreak > 0) {
-        if (remainingProtections > 0) {
-           remainingProtections -= 1;
-           usedProtection = true;
-           needsHelp = false;
-           helpExpireAt = null;
-        } else {
-           needsHelp = true;
-           helpExpireAt = new Date(now.getTime() + 86400000);
-        }
-      }
-    }
-
-    let phase: 1 | 2 | 3 | 4 | 5 = 1;
-    let multiplier = 1.0;
-    if (newStreak >= 31) { phase = 5; multiplier = 2.0; }
-    else if (newStreak >= 15) { phase = 4; multiplier = 1.8; }
-    else if (newStreak >= 8) { phase = 3; multiplier = 1.5; }
-    else if (newStreak >= 4) { phase = 2; multiplier = 1.2; }
-
-    setStreakInfo({ count: newStreak, multiplier, phase, needsHelp, helpExpireAt });
-
-    if (newStreak === 100) {
-      import('../services/rankingService').then(({ rankingService }) => {
-        rankingService.grantAchievement(authUser.uid, 'SAITAMA_TRAINING');
-      });
-    }
-
-    // Rank Sync
-    let newRank = 'FERRO';
-    const totalPO = userData.otakuPoints || 0;
-    if (totalPO >= 10000) newRank = 'DESAFIANTE';
-    else if (totalPO >= 5000) newRank = 'DIAMANTE';
-    else if (totalPO >= 2500) newRank = 'PLATINA';
-    else if (totalPO >= 1000) newRank = 'OURO';
-    else if (totalPO >= 500) newRank = 'PRATA';
-    else if (totalPO >= 200) newRank = 'BRONZE';
-
     try {
       const updates: any = {
         status: 'ONLINE',
         lastOnlineAt: serverTimestamp(),
-        streak: newStreak,
-        streakMultiplier: multiplier,
-        lastStreakUpdate: isToday && !usedProtection ? userData.lastStreakUpdate : serverTimestamp(),
-        needsHelp,
-        helpExpireAt: helpExpireAt ? helpExpireAt : null,
-        rank: newRank,
         updatedAt: serverTimestamp(),
         lastActivityAt: serverTimestamp()
       };
-      
-      if (usedProtection) {
-        updates.streakProtections = remainingProtections;
-      }
       
       await updateDoc(userRef, updates);
 
@@ -390,8 +310,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, loading, loginWithGoogle, logout, isAdmin, mediaType, setMediaType, 
-      streakInfo, showStreakPopUp, setShowStreakPopUp 
+      user, loading, loginWithGoogle, logout, isAdmin, mediaType, setMediaType
     }}>
       {children}
     </AuthContext.Provider>

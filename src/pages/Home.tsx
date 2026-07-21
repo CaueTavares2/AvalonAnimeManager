@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { jikanService, JikanAnime } from '../services/jikanService';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useStreak } from '../context/StreakContext';
 import type { Media } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -19,7 +20,8 @@ import { GachaRecommendation } from '../components/home/GachaRecommendation';
 
 export default function Home() {
   const { t } = useLanguage();
-  const { mediaType, setMediaType, streakInfo, showStreakPopUp, setShowStreakPopUp } = useAuth();
+  const { mediaType, setMediaType } = useAuth();
+  const { streakInfo, showStreakPopUp, setShowStreakPopUp } = useStreak();
   const { profile } = useProfile();
   const { user } = useAuth();
   const [trending, setTrending] = useState<Media[]>([]);
