@@ -23,17 +23,18 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_DATABASE_ID: ai-studio-0f1c0323-dd3f-49a3-be98-0c8592fe2a86
           GIT_SHA: ${{ github.sha }}
           GIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/service-account.json
           node -e "
-          const admin = require('firebase-admin');
-          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-          admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            databaseURL: 'https://' + process.env.FIREBASE_PROJECT_ID + '.firebaseio.com'
+          const {Firestore} = require('@google-cloud/firestore');
+          const db = new Firestore({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            databaseId: process.env.FIREBASE_DATABASE_ID
           });
-          const db = admin.firestore();
           db.doc('updates/latest').set({
             sha: process.env.GIT_SHA,
             message: process.env.GIT_MESSAGE,
