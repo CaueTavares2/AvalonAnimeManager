@@ -1,6 +1,41 @@
-import { doc, getDoc, updateDoc, increment, serverTimestamp, collection, setDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, serverTimestamp, setDoc, DocumentData } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../context/AuthContext';
+
+interface ListItem {
+  status: string;
+  episodes?: number;
+  score?: number;
+  progress: number;
+}
+
+interface AchievementStats {
+  completedIds?: number[];
+  hasAchievement_REI_PIRATAS?: boolean;
+  genresCount?: number;
+  minAnimePerGenre?: number;
+  hasAchievement_EXPLORADOR?: boolean;
+}
+
+function calculateMultiplier(userData: DocumentData): number {
+  const poMUntil = userData.poMultiplierUntil;
+  if (!poMUntil) return 1;
+  try {
+    return new Date(poMUntil) > new Date() ? 2 : 1;
+  } catch {
+    return 1;
+  }
+}
+
+function calculateRank(totalPoints: number): string {
+  if (totalPoints >= 10000) return 'DESAFIANTE';
+  if (totalPoints >= 5000) return 'DIAMANTE';
+  if (totalPoints >= 2500) return 'PLATINA';
+  if (totalPoints >= 1000) return 'OURO';
+  if (totalPoints >= 500) return 'PRATA';
+  if (totalPoints >= 200) return 'BRONZE';
+  return 'FERRO';
+}
 
 export interface Achievement {
   id: string;
@@ -247,19 +282,35 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
   }
 };
 
+function calculateMediaPoints(list: ListItem[]): number {
+  let total = 0;
+
+  for (const item of list) {
+    if (item.status === 'COMPLETED') {
+      const episodes = item.episodes || 1;
+      const score = item.score || 0;
+
+      const scoreBonus = score > 5 ? (score - 5) * 10 : 0;
+      const basePO = 50 + (episodes * 2) + scoreBonus;
+      const bonus = episodes > 100 ? 150 : episodes > 50 ? 75 : 0;
+
+      total += (basePO + bonus);
+    } else if (item.progress > 0) {
+      total += (item.progress * 2);
+    }
+  }
+
+  return total;
+}
+
 export const rankingService = {
   addPoints: async (userId: string, points: number, reason: string) => {
+    if (!userId) return;
+
     const userRef = doc(db, 'users', userId);
     try {
       const snap = await getDoc(userRef);
-      let multiplier = 1;
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.poMultiplierUntil) {
-           const poMUntil = new Date(data.poMultiplierUntil);
-           if (poMUntil > new Date()) multiplier = 2;
-        }
-      }
+      const multiplier = snap.exists() ? calculateMultiplier(snap.data()) : 1;
       const finalPoints = points * multiplier;
 
       await updateDoc(userRef, {
@@ -275,60 +326,33 @@ export const rankingService = {
     }
   },
 
-  syncListPoints: async (userId: string, list: any[]) => {
+  syncListPoints: async (userId: string, list: ListItem[]) => {
+    if (!userId) return;
+
     const userRef = doc(db, 'users', userId);
     const snap = await getDoc(userRef);
     if (!snap.exists()) return;
-    
-    const userData = snap.data();
-    let totalMediaPO = 0;
-    
-    list.forEach(item => {
-      if (item.status === 'COMPLETED') {
-        const episodes = item.episodes || 1;
-        const score = item.score || 0;
-        
-        const scoreBonus = score > 5 ? (score - 5) * 10 : 0;
-        const basePO = 50 + (episodes * 2) + scoreBonus;
-        const bonus = episodes > 100 ? 150 : episodes > 50 ? 75 : 0;
-        
-        totalMediaPO += (basePO + bonus);
-      } else if (item.progress > 0) {
-        totalMediaPO += (item.progress * 2);
-      }
-    });
 
-    const oldMediaPO = userData.mediaPoints || 0;
+    const userData = snap.data();
+    const totalMediaPO = calculateMediaPoints(list);
+
+    const oldMediaPO = Number(userData.mediaPoints) || 0;
     const diff = totalMediaPO - oldMediaPO;
-    
-    // If it's the first sync (mediaPoints undefined), we add the full amount to otakuPoints
+
     const pointsToAdd = userData.mediaPoints === undefined ? totalMediaPO : Math.max(0, diff);
 
-    if (pointsToAdd <= 0 && userData.mediaPoints !== undefined) return; 
+    if (pointsToAdd <= 0 && userData.mediaPoints !== undefined) return;
 
-    let multiplier = 1;
-    if (userData.poMultiplierUntil) {
-       const poMUntil = new Date(userData.poMultiplierUntil);
-       if (poMUntil > new Date()) multiplier = 2;
-    }
-    
+    const multiplier = calculateMultiplier(userData);
     const finalPointsToAdd = pointsToAdd * multiplier;
 
-    const currentTotalPO = userData.otakuPoints || 0;
+    const currentTotalPO = Number(userData.otakuPoints) || 0;
+    const currentAvailablePoints = Number(userData.availablePoints) || 0;
     const newTotalPO = currentTotalPO + finalPointsToAdd;
-    const availablePoints = userData.availablePoints || 0;
-    const newAvailablePoints = availablePoints + finalPointsToAdd;
+    const newAvailablePoints = currentAvailablePoints + finalPointsToAdd;
 
-    // Rank evaluation logic
-    let newRank = 'FERRO';
-    if (newTotalPO >= 10000) newRank = 'DESAFIANTE';
-    else if (newTotalPO >= 5000) newRank = 'DIAMANTE';
-    else if (newTotalPO >= 2500) newRank = 'PLATINA';
-    else if (newTotalPO >= 1000) newRank = 'OURO';
-    else if (newTotalPO >= 500) newRank = 'PRATA';
-    else if (newTotalPO >= 200) newRank = 'BRONZE';
+    const newRank = calculateRank(newTotalPO);
 
-    // Update total PO, media PO, rank AND available points
     try {
       await updateDoc(userRef, {
         otakuPoints: newTotalPO,
@@ -342,40 +366,41 @@ export const rankingService = {
     }
   },
 
-  checkAchievements: async (userId: string, stats: any) => {
-    // This would ideally be a cloud function, but here we check client-side
-    // For "O Rei dos Piratas" (One Piece ID: 21)
+  checkAchievements: async (userId: string, stats: AchievementStats) => {
     if (stats.completedIds?.includes(21) && !stats.hasAchievement_REI_PIRATAS) {
       await rankingService.grantAchievement(userId, 'REI_PIRATAS');
     }
-    
-    // Genre Explorer
-    if (stats.genresCount >= 5 && stats.minAnimePerGenre >= 3 && !stats.hasAchievement_EXPLORADOR) {
+
+    if (
+      typeof stats.genresCount === 'number' &&
+      stats.genresCount >= 5 &&
+      typeof stats.minAnimePerGenre === 'number' &&
+      stats.minAnimePerGenre >= 3 &&
+      !stats.hasAchievement_EXPLORADOR
+    ) {
       await rankingService.grantAchievement(userId, 'EXPLORADOR');
     }
   },
 
-  grantAchievement: async (userId: string, achievementId: string) => {
+  grantAchievement: async (userId: string, achievementId: string): Promise<boolean | undefined> => {
     const achievement = ACHIEVEMENTS[achievementId];
     if (!achievement) return;
 
     const achRef = doc(db, 'users', userId, 'achievements', achievementId);
     const snap = await getDoc(achRef);
-    
-    if (!snap.exists()) {
-      await setDoc(achRef, {
-        ...achievement,
-        unlockedAt: serverTimestamp()
-      });
-      await rankingService.addPoints(userId, achievement.points, `Conquista: ${achievement.title}`);
-      
-      // Dispatch event for UI Notification
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('ACHIEVEMENT_UNLOCKED', { detail: achievement }));
-      }
-      
-      return true;
+
+    if (snap.exists()) return false;
+
+    await setDoc(achRef, {
+      ...achievement,
+      unlockedAt: serverTimestamp()
+    });
+    await rankingService.addPoints(userId, achievement.points, `Conquista: ${achievement.title}`);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ACHIEVEMENT_UNLOCKED', { detail: achievement }));
     }
-    return false;
+
+    return true;
   }
 };

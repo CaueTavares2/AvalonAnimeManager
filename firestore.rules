@@ -22,8 +22,8 @@ service cloud.firestore {
 
     match /counters/{counterId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (incoming().get('count', 0) >= existing().get('count', 0)) || isStaff();
+      allow create: if isStaff();
+      allow update: if isStaff();
     }
 
     match /users/{userId} {
@@ -68,9 +68,9 @@ service cloud.firestore {
     }
 
     match /friendships/{friendshipId} {
-      allow read, list: if isSignedIn() && ((resource.data.get('users', null) != null && request.auth.uid in resource.data.users) || friendshipId.matches('.*' + request.auth.uid + '.*') || isStaff());
-      allow create: if isSignedIn() && ((incoming().get('users', null) != null && request.auth.uid in incoming().users) || friendshipId.matches('.*' + request.auth.uid + '.*'));
-      allow delete: if isSignedIn() && ((resource.data.get('users', null) != null && request.auth.uid in resource.data.users) || friendshipId.matches('.*' + request.auth.uid + '.*') || isStaff());
+      allow read, list: if isSignedIn() && resource.data.users != null && request.auth.uid in resource.data.users;
+      allow create: if isSignedIn() && incoming().users != null && request.auth.uid in incoming().users;
+      allow delete: if isSignedIn() && resource.data.users != null && request.auth.uid in resource.data.users;
     }
 
     match /activityFeed/{eventId} {
@@ -80,28 +80,21 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      allow read, update, list: if isSignedIn() && ((resource.data.get('participants', null) != null && request.auth.uid in resource.data.participants) || chatId.matches('.*' + request.auth.uid + '.*') || isStaff());
-      allow create: if isSignedIn() && ((incoming().get('participants', null) != null && request.auth.uid in incoming().participants) || chatId.matches('.*' + request.auth.uid + '.*'));
-      allow delete: if isSignedIn() && ((resource.data.get('participants', null) != null && request.auth.uid in resource.data.participants) || chatId.matches('.*' + request.auth.uid + '.*') || isStaff());
+      allow read, update, list: if isSignedIn() && resource.data.participants != null && request.auth.uid in resource.data.participants || isStaff();
+      allow create: if isSignedIn() && incoming().participants != null && request.auth.uid in incoming().participants || isStaff();
+      allow delete: if isSignedIn() && resource.data.participants != null && request.auth.uid in resource.data.participants || isStaff();
       
       match /messages/{messageId} {
-        allow read, list: if isSignedIn() && (
-          (get(/databases/$(database)/documents/chats/$(chatId)).data.get('participants', null) != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants) || 
-          chatId.matches('.*' + request.auth.uid + '.*') || 
-          isStaff()
-        );
-        allow create: if isSignedIn() && (incoming().senderId == request.auth.uid);
-        allow delete: if isSignedIn() && (
-          (get(/databases/$(database)/documents/chats/$(chatId)).data.get('participants', null) != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants) || 
-          chatId.matches('.*' + request.auth.uid + '.*') || 
-          isStaff()
-        );
+        allow read, list: if isSignedIn() && (get(/databases/$(database)/documents/chats/$(chatId)).data.participants != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isStaff());
+        allow create: if isSignedIn() && incoming().senderId == request.auth.uid;
+        allow delete: if isSignedIn() && (get(/databases/$(database)/documents/chats/$(chatId)).data.participants != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isStaff());
       }
     }
 
     match /global_media_stats/{animeId} {
       allow read, list: if isSignedIn();
-      allow create, update: if isSignedIn();
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     match /broadcasts/{broadcastId} {
@@ -124,7 +117,7 @@ service cloud.firestore {
     match /comments/{commentId} {
       allow read, list: if isSignedIn();
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow update: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow delete: if isStaff() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
   }

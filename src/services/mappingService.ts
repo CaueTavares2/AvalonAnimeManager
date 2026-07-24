@@ -210,41 +210,43 @@ export const mappingService = {
         }
       }
 
-      // 5. Fallback: Search TMDB search endpoint directly by cleaned title with high-precision rating logic
+      // 5. Fallback: Search TMDB via server proxy (keeps API key server-side)
       if (title) {
         const cleanTitle = title.replace(/\(.*\)/g, '').replace(/Final Season/gi, '').trim();
-        const yearParam = year ? `&first_air_date_year=${year}&primary_release_year=${year}` : '';
-        const tmdbApiKey = import.meta.env.VITE_TMDB_API_KEY || '3f3debb8f744f97bf0774d7e7fbe0157';
-        const searchResp = await fetch(
-          `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodeURIComponent(cleanTitle)}&language=pt-BR${yearParam}`
-        );
+        const yearParam = year ? `&year=${year}` : '';
         
-        if (searchResp.ok) {
-          const searchData = await searchResp.json();
-          // Filter strictly for Animation AND Japanese original audio to catch animes accurately
-          const animeMatches = searchData.results?.filter((item: any) => {
-            const isAnimation = item.genre_ids?.includes(16);
-            const isJapanese = item.original_language === 'ja';
-            const releaseYear = (item.first_air_date || item.release_date || '').split('-')[0];
-            const yearMatch = year && releaseYear === year.toString();
-            
-            return isAnimation && (isJapanese || yearMatch);
-          }) || [];
+        try {
+          const searchResp = await fetch(`/api/tmdb/search?query=${encodeURIComponent(cleanTitle)}${yearParam}`);
+          
+          if (searchResp.ok) {
+            const searchData = await searchResp.json();
+            // Filter strictly for Animation AND Japanese original audio to catch animes accurately
+            const animeMatches = searchData.results?.filter((item: any) => {
+              const isAnimation = item.genre_ids?.includes(16);
+              const isJapanese = item.original_language === 'ja';
+              const releaseYear = (item.first_air_date || item.release_date || '').split('-')[0];
+              const yearMatch = year && releaseYear === year.toString();
+              
+              return isAnimation && (isJapanese || yearMatch);
+            }) || [];
 
-          const bestMatch = animeMatches[0] || searchData.results?.[0];
+            const bestMatch = animeMatches[0] || searchData.results?.[0];
 
-          if (bestMatch && (bestMatch.genre_ids?.includes(16) || bestMatch.original_language === 'ja')) {
-            const result: IDMapping = {
-              mal_id: malId,
-              tmdb_id: bestMatch.id,
-              type: bestMatch.media_type === 'movie' || bestMatch.first_air_date === undefined ? 'movie' : 'tv',
-              season: 1,
-              episode_offset: 0,
-              source: 'search'
-            };
-            localStorage.setItem(cacheKey, JSON.stringify(result));
-            return result;
+            if (bestMatch && (bestMatch.genre_ids?.includes(16) || bestMatch.original_language === 'ja')) {
+              const result: IDMapping = {
+                mal_id: malId,
+                tmdb_id: bestMatch.id,
+                type: bestMatch.media_type === 'movie' || bestMatch.first_air_date === undefined ? 'movie' : 'tv',
+                season: 1,
+                episode_offset: 0,
+                source: 'search'
+              };
+              localStorage.setItem(cacheKey, JSON.stringify(result));
+              return result;
+            }
           }
+        } catch (e) {
+          console.warn('[TMDB] Search via proxy failed:', e);
         }
       }
       
