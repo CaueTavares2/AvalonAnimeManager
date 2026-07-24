@@ -121,13 +121,6 @@ async function startServer() {
 
     console.log(`[Proxy] Requesting: ${targetUrl}${rangeHeader ? ` with Range: ${rangeHeader}` : ''}`);
 
-    let urlObj: URL;
-    try {
-      urlObj = new URL(targetUrl);
-    } catch {
-      return res.status(400).json({ error: 'Invalid URL provided' });
-    }
-
     // Abort controller linked to both time limits and client disconnect
     const controller = new AbortController();
     
