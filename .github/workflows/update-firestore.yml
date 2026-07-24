@@ -20,6 +20,7 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_DATABASE_ID: ai-studio-0f1c0323-dd3f-49a3-be98-0c8592fe2a86
           GIT_SHA: ${{ github.sha }}
           GIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
@@ -49,8 +50,8 @@ jobs:
             body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + assertion
           }).then(r => r.json()).then(tok => {
             const acc = tok.access_token;
-            const db = 'projects/' + process.env.FIREBASE_PROJECT_ID + '/databases/(default)/documents/updates/latest';
-            return fetch('https://firestore.googleapis.com/v1/' + db + '?updateMask.fieldPaths=sha&updateMask.fieldPaths=message&updateMask.fieldPaths=date', {
+            const dbPath = 'projects/' + process.env.FIREBASE_PROJECT_ID + '/databases/' + process.env.FIREBASE_DATABASE_ID + '/documents/updates/latest';
+            return fetch('https://firestore.googleapis.com/v1/' + dbPath, {
               method: 'PATCH',
               headers: {
                 'Authorization': 'Bearer ' + acc,
