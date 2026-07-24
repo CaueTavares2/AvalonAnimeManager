@@ -102,6 +102,11 @@ service cloud.firestore {
       allow write: if isStaff();
     }
 
+    match /updates/latest {
+      allow read: if isSignedIn();
+      allow write: if isStaff();
+    }
+
     match /auditLogs/{logId} {
       allow read, list: if isStaff();
       allow create: if isSignedIn();

@@ -88,8 +88,8 @@ function MainLayout() {
     <div className="min-h-screen">
       {isSakuraTheme && <FallingSakura />}
       <GlobalAnnouncement />
-      <Navbar />
-      <UpdateNotification />
+       <Navbar />
+       <UpdateNotification />
       <AchievementNotification />
       <ChangelogModal />
       <WelcomeModal />

@@ -1,0 +1,45 @@
+name: Update Firestore on Commit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-firestore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Update Firestore document
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          GIT_SHA: ${{ github.sha }}
+          GIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          node -e "
+          const admin = require('firebase-admin');
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: 'https://' + process.env.FIREBASE_PROJECT_ID + '.firebaseio.com'
+          });
+          const db = admin.firestore();
+          db.doc('updates/latest').set({
+            sha: process.env.GIT_SHA,
+            message: process.env.GIT_MESSAGE,
+            date: new Date().toISOString()
+          }).then(() => {
+            console.log('Firestore updated successfully');
+            process.exit(0);
+          }).catch((err) => {
+            console.error('Error updating Firestore:', err);
+            process.exit(1);
+          });
+          "

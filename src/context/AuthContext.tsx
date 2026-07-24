@@ -3,7 +3,7 @@ import {
   onAuthStateChanged, 
   User, 
   GoogleAuthProvider, 
-  signInWithPopup, 
+  signInWithRedirect, 
   signOut,
   setPersistence,
   browserLocalPersistence
@@ -17,7 +17,7 @@ export { handleFirestoreError, OperationType };
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => void;
   logout: () => Promise<void>;
   isAdmin: boolean;
   mediaType: 'anime' | 'manga';
@@ -253,10 +253,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return cleanup;
   }, []);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Login error:", error);
     }
