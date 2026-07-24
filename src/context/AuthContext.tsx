@@ -6,7 +6,13 @@ import {
   signInWithRedirect, 
   signOut,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  linkWithCredential,
+  EmailAuthProvider,
+  sendPasswordResetEmail,
+  reauthenticateWithCredential
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, runTransaction, DocumentData } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -18,6 +24,10 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   loginWithGoogle: () => void;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string) => Promise<void>;
+  linkEmailToGoogle: (email: string, password: string) => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
   mediaType: 'anime' | 'manga';
@@ -262,13 +272,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithEmail = async (email: string, password: string) => {
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      const credential = EmailAuthProvider.credential(email, password);
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error("Email login error:", error);
+      throw error;
+    }
+  };
+
+  const registerWithEmail = async (email: string, password: string) => {
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error("Email registration error:", error);
+      throw error;
+    }
+  };
+
+  const linkEmailToGoogle = async (email: string, password: string) => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('No user is currently signed in');
+      }
+      const credential = EmailAuthProvider.credential(email, password);
+      await linkWithCredential(auth.currentUser, credential);
+    } catch (error) {
+      console.error("Link email error:", error);
+      throw error;
+    }
+  };
+
+  const sendPasswordReset = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error("Password reset error:", error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
 
   return (
     <AuthContext.Provider value={{ 
-      user, loading, loginWithGoogle, logout, isAdmin, mediaType, setMediaType
+      user, loading, loginWithGoogle, loginWithEmail, registerWithEmail, linkEmailToGoogle, sendPasswordReset, logout, isAdmin, mediaType, setMediaType
     }}>
       {children}
     </AuthContext.Provider>
