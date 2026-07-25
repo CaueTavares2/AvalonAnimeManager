@@ -3,7 +3,9 @@ import {
   onAuthStateChanged, 
   User, 
   GoogleAuthProvider, 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, 
   signOut,
   setPersistence,
   browserLocalPersistence
@@ -58,6 +60,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (e: string, p: string) => Promise<void>;
+  registerWithEmail: (e: string, p: string) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
   mediaType: 'anime' | 'manga';
@@ -395,13 +399,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  
+  const loginWithEmail = async (email: string, pass: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      throw error;
+    }
+  };
+
+  const registerWithEmail = async (email: string, pass: string) => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      console.error("Register error:", error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
 
   return (
     <AuthContext.Provider value={{ 
-      user, loading, loginWithGoogle, logout, isAdmin, mediaType, setMediaType, 
+      user, loading, loginWithGoogle, loginWithEmail, registerWithEmail, logout, isAdmin, mediaType, setMediaType, 
       streakInfo, showStreakPopUp, setShowStreakPopUp 
     }}>
       {children}
