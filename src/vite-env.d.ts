@@ -2,8 +2,6 @@
 
 interface ImportMetaEnv {
   readonly VITE_ANILIST_CLIENT_ID?: string;
-  readonly VITE_TMDB_API_KEY?: string;
-  readonly GEMINI_API_KEY?: string;
   // more env variables...
 }
 

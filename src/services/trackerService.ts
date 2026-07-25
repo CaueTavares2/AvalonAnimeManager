@@ -1,100 +1,69 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 export interface TrackerSyncResult {
   tracker: 'anilist' | 'myanimelist';
   success: boolean;
   message: string;
-  translatedScore?: 'SMILE' | 'NEUTRAL' | 'SAD';
+  translatedScore?: 'SMILE' | 'NEUTRAL' | 'SAD' | number;
 }
-
-type SmileyScore = 'SMILE' | 'NEUTRAL' | 'SAD';
-
-function translateScoreToSmiley(score: number): SmileyScore {
-  if (score >= 6) return 'SMILE';
-  if (score === 5) return 'NEUTRAL';
-  return 'SAD';
-}
-
-function smileyToRaw(smiley: SmileyScore | undefined): number | undefined {
-  switch (smiley) {
-    case 'SMILE': return 3;
-    case 'NEUTRAL': return 2;
-    case 'SAD': return 1;
-    default: return undefined;
-  }
-}
-
-function mapStatusToAniList(status: string): string {
-  switch (status) {
-    case 'WATCHING':
-    case 'READING':
-      return 'CURRENT';
-    case 'COMPLETED':
-      return 'COMPLETED';
-    case 'PLANNING':
-      return 'PLANNING';
-    case 'DROPPED':
-      return 'DROPPED';
-    default:
-      return 'CURRENT';
-  }
-}
-
-function mapStatusToMAL(status: string): string {
-  switch (status) {
-    case 'WATCHING':
-      return 'watching';
-    case 'READING':
-      return 'reading';
-    case 'COMPLETED':
-      return 'completed';
-    case 'PLANNING':
-      return 'plan_to_watch';
-    case 'DROPPED':
-      return 'dropped';
-    default:
-      return 'watching';
-  }
-}
-
-function extractErrorMessage(error: unknown): string {
-  if (error instanceof AxiosError) {
-    return error.response?.data?.message || error.message || 'Erro de API';
-  }
-  if (error instanceof Error) return error.message;
-  return 'Erro desconhecido';
-}
-
-const ANILIST_API = 'https://graphql.anilist.co';
-const MAL_API = 'https://api.myanimelist.net/v2';
-
-const ANILIST_QUERY_MEDIA = `
-  query ($idMal: Int) {
-    Media (idMal: $idMal) { id }
-  }
-`;
-
-const ANILIST_MUTATION = `
-  mutation ($mediaId: Int, $status: MediaListStatus, $progress: Int, $scoreRaw: Int) {
-    SaveMediaListEntry (mediaId: $mediaId, status: $status, progress: $progress, scoreRaw: $scoreRaw) {
-      id status progress
-    }
-  }
-`;
 
 export const trackerService = {
+  // Translate score to AniList Smiley format
+  translateScoreToSmiley(score: number): 'SMILE' | 'NEUTRAL' | 'SAD' {
+    if (score >= 6) return 'SMILE';
+    if (score === 5) return 'NEUTRAL';
+    return 'SAD';
+  },
+
+  // Map Avalon status to AniList status
+  mapStatusToAniList(status: string): string {
+    switch (status) {
+      case 'WATCHING':
+      case 'READING':
+        return 'CURRENT';
+      case 'COMPLETED':
+        return 'COMPLETED';
+      case 'PLANNING':
+        return 'PLANNING';
+      case 'DROPPED':
+        return 'DROPPED';
+      default:
+        return 'CURRENT';
+    }
+  },
+
+  // Map Avalon status to MyAnimeList status
+  mapStatusToMAL(status: string): string {
+    switch (status) {
+      case 'WATCHING':
+        return 'watching';
+      case 'READING':
+        return 'reading';
+      case 'COMPLETED':
+        return 'completed';
+      case 'PLANNING':
+        return 'plan_to_watch';
+      case 'DROPPED':
+        return 'dropped';
+      default:
+        return 'watching';
+    }
+  },
+
+  // Sync with AniList
   async syncToAniList(
-    username: string,
-    token: string | null,
-    malId: number,
-    status: string,
-    progress: number,
+    username: string, 
+    token: string | null, 
+    malId: number, 
+    status: string, 
+    progress: number, 
     score?: number
   ): Promise<TrackerSyncResult> {
-    const mappedStatus = mapStatusToAniList(status);
-    const translatedScore = score ? translateScoreToSmiley(score) : undefined;
+    const mappedStatus = this.mapStatusToAniList(status);
+    const translatedScore = score ? this.translateScoreToSmiley(score) : undefined;
 
     if (!token) {
+      // Return highly realistic mock simulation if no token is provided
       return {
         tracker: 'anilist',
         success: true,
@@ -104,29 +73,49 @@ export const trackerService = {
     }
 
     try {
-      const mediaResponse = await axios.post<{ data: { Media: { id: number } } }>(ANILIST_API, {
-        query: ANILIST_QUERY_MEDIA,
+      // First, get AniList Media ID from MAL ID using AniList API
+      const queryMedia = `
+        query ($idMal: Int) {
+          Media (idMal: $idMal) {
+            id
+          }
+        }
+      `;
+      
+      const mediaResponse = await axios.post('https://graphql.anilist.co', {
+        query: queryMedia,
         variables: { idMal: malId }
       });
 
       const aniListMediaId = mediaResponse.data?.data?.Media?.id;
       if (!aniListMediaId) {
-        return {
-          tracker: 'anilist',
-          success: false,
-          message: 'Mídia não encontrada no AniList.'
-        };
+        throw new Error('Mídia não encontrada no AniList.');
       }
 
-      const scoreRaw = smileyToRaw(translatedScore);
+      // Perform mutation
+      const mutation = `
+        mutation ($mediaId: Int, $status: MediaListStatus, $progress: Int, $scoreRaw: Int) {
+          SaveMediaListEntry (mediaId: $mediaId, status: $status, progress: $progress, scoreRaw: $scoreRaw) {
+            id
+            status
+            progress
+          }
+        }
+      `;
 
-      await axios.post(ANILIST_API, {
-        query: ANILIST_MUTATION,
+      // Translate Smiley score to raw score if needed
+      let scoreRaw = 0;
+      if (translatedScore === 'SMILE') scoreRaw = 3; // Smiley ratings are typically internally mapped in AniList
+      else if (translatedScore === 'NEUTRAL') scoreRaw = 2;
+      else if (translatedScore === 'SAD') scoreRaw = 1;
+
+      await axios.post('https://graphql.anilist.co', {
+        query: mutation,
         variables: {
           mediaId: aniListMediaId,
           status: mappedStatus,
           progress,
-          ...(scoreRaw !== undefined && { scoreRaw })
+          scoreRaw: scoreRaw > 0 ? scoreRaw : undefined
         }
       }, {
         headers: {
@@ -142,25 +131,26 @@ export const trackerService = {
         message: `Sucesso: Sincronizado em tempo real com AniList para ${username}!`,
         translatedScore
       };
-    } catch (error) {
-      console.error('AniList sync error:', error);
+    } catch (error: any) {
+      console.error('AniList real-time sync error:', error);
       return {
         tracker: 'anilist',
         success: false,
-        message: `Falha na sincronização com AniList: ${extractErrorMessage(error)}`
+        message: `Falha na sincronização real com AniList: ${error.message || 'Erro de API'}`
       };
     }
   },
 
+  // Sync with MyAnimeList
   async syncToMAL(
-    username: string,
-    token: string | null,
-    malId: number,
-    status: string,
-    progress: number,
+    username: string, 
+    token: string | null, 
+    malId: number, 
+    status: string, 
+    progress: number, 
     score?: number
   ): Promise<TrackerSyncResult> {
-    const mappedStatus = mapStatusToMAL(status);
+    const mappedStatus = this.mapStatusToMAL(status);
 
     if (!token) {
       return {
@@ -171,7 +161,8 @@ export const trackerService = {
     }
 
     try {
-      await axios.put(`${MAL_API}/anime/${malId}/my_list_status`,
+      // MAL write API requires OAuth login
+      await axios.put(`https://api.myanimelist.net/v2/anime/${malId}/my_list_status`, 
         new URLSearchParams({
           status: mappedStatus,
           num_watched_episodes: progress.toString(),
@@ -188,16 +179,17 @@ export const trackerService = {
         success: true,
         message: `Sucesso: Sincronizado em tempo real com MyAnimeList para ${username}!`
       };
-    } catch (error) {
-      console.error('MAL sync error:', error);
+    } catch (error: any) {
+      console.error('MAL real-time sync error:', error);
       return {
         tracker: 'myanimelist',
         success: false,
-        message: `Falha na sincronização com MyAnimeList: ${extractErrorMessage(error)}`
+        message: `Falha na sincronização real com MyAnimeList: ${error.message || 'Erro de API'}`
       };
     }
   },
 
+  // Central trigger to sync with all active configured trackers
   async syncToAllActive(malId: number, status: string, progress: number, score?: number): Promise<TrackerSyncResult[]> {
     const isAutoSync = localStorage.getItem('avalon_auto_sync_trackers') === 'true';
     if (!isAutoSync) return [];
@@ -205,21 +197,23 @@ export const trackerService = {
     const results: TrackerSyncResult[] = [];
 
     const anilistUser = localStorage.getItem('avalon_anilist_user') || '';
-    const anilistToken = localStorage.getItem('avalon_anilist_token');
+    const anilistToken = localStorage.getItem('avalon_anilist_token') || null;
     if (anilistUser) {
       const res = await this.syncToAniList(anilistUser, anilistToken, malId, status, progress, score);
       results.push(res);
     }
 
     const malUser = localStorage.getItem('avalon_mal_user') || '';
-    const malToken = localStorage.getItem('avalon_mal_token');
+    const malToken = localStorage.getItem('avalon_mal_token') || null;
     if (malUser) {
       const res = await this.syncToMAL(malUser, malToken, malId, status, progress, score);
       results.push(res);
     }
 
+    // Trigger visual toast notification in UI if requested/subscribed
     if (results.length > 0) {
-      window.dispatchEvent(new CustomEvent('avalon-tracker-sync', { detail: results }));
+      const event = new CustomEvent('avalon-tracker-sync', { detail: results });
+      window.dispatchEvent(event);
     }
 
     return results;

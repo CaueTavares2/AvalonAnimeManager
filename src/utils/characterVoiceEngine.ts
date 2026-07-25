@@ -139,6 +139,14 @@ const VOICE_CATALOG: { [key: string]: VoiceSnippet } = {
     pactTitle: "Portador do Death Note",
     audioUrl: "https://www.myinstants.com/media/sounds/light-yagami-laugh.mp3"
   },
+  kilua: {
+    phraseJa: "神速！あんた、俺と友達になってよ。",
+    phraseRomaji: "Godspeed! Anta, ore to tomodachi ni natte yo.",
+    translation: "Velocidade Sombria! Ei você, torne-se meu amigo.",
+    badge: "Velocidade Relâmpago",
+    auraColor: "from-indigo-300 to-sky-400 shadow-cyan-400/50",
+    pactTitle: "Companheiro do Clã Zoldyck"
+  },
   killua: {
     phraseJa: "神速！あんた、俺と友達になってよ。",
     phraseRomaji: "Godspeed! Anta, ore to tomodachi ni natte yo.",

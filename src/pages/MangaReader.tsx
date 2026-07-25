@@ -183,7 +183,6 @@ export default function MangaReader() {
             const jikanData = await jikanService.getDetails(Number(id), 'manga').catch(() => null);
             if (jikanData) setMangaTitle(formatTitle(jikanData));
 
-            // Use scraper (MangaDex, NineManga)
             let url = `/api/scraper/chapters?id=${id}`;
             if (selectedSource !== 'all') {
                 url += `&source=${selectedSource}`;
@@ -192,6 +191,7 @@ export default function MangaReader() {
             const res = await fetch(url);
             const data = await res.json();
             
+            // Normalize
             const normalized = (data.chapters || []).map((c: any) => ({
                 ...c,
                 id: c.id,
@@ -332,7 +332,7 @@ export default function MangaReader() {
               Leitor Experimental <span className="text-orange-400 text-[10px] bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-500/30">BETA</span>
             </h3>
             <p className="text-orange-200/70 text-xs lg:text-sm font-medium leading-relaxed max-w-3xl">
-              Sincronizando com <strong>MangaDex</strong> e <strong>NineManga</strong> para garantir a maior variedade de capítulos. Otimizado para PT-BR.
+              Sincronizando com <strong>MangaDex</strong>, <strong>MangaFire</strong> e <strong>NineManga</strong> para garantir a maior variedade de capítulos. Otimizado para PT-BR.
             </p>
           </div>
         </div>
@@ -494,6 +494,7 @@ export default function MangaReader() {
                 >
                     <option value="all">Todas as Fontes</option>
                     <option value="mangadex">MangaDex</option>
+                    <option value="mangafire">MangaFire</option>
                     <option value="ninemanga">Nine Manga</option>
                 </select>
 

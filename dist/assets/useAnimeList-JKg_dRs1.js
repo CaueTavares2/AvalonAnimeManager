@@ -1,1 +1,0 @@
-import{y as t}from"./index-CcxDI0Sv.js";function A(){const i=t();return{list:i.list,addAnime:e=>i.addAnime(e),updateAnime:(e,n)=>i.updateAnime(e,n),removeAnime:e=>i.removeAnime(e),batchAddAnimes:e=>i.batchAddAnimes(e)}}export{A as u};

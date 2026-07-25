@@ -4,81 +4,9 @@ import { createServer as createViteServer } from 'vite';
 import { Readable } from 'stream';
 import { scraperManager } from './server/scraper';
 
-const ALLOWED_PROXY_DOMAINS: readonly string[] = [
-  'mangadex.org',
-  'uploads.mangadex.org',
-  'api.mangadex.org',
-  'mangafire.to',
-  'mangalivre.net',
-  'muitomanga.com',
-  'lermanga.org',
-  'supermangas.com',
-  'ninemanga.com',
-  'mangaplus.shueisha.co.jp',
-  'images.weserv.nl',
-  'i0.wp.com',
-  'corsproxy.io',
-  'api.allorigins.win',
-  'strem.fun',
-  'betterflix.click',
-  'web.stremio.com',
-  'myinstants.com',
-  'image.tmdb.org',
-];
-
-function sanitizeQueryParam(value: unknown): string {
-  if (typeof value !== 'string') return '';
-  return value.slice(0, 2000).replace(/[<>\n\r\t]/g, '').trim();
-}
-
-function isAllowedProxyTarget(url: URL): boolean {
-  const hostname = url.hostname.toLowerCase();
-
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0') return false;
-
-  const privatePrefixes = ['10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.', '192.168.', '169.254.'];
-  for (const prefix of privatePrefixes) {
-    if (hostname.startsWith(prefix)) return false;
-  }
-
-  if (hostname.endsWith('.internal') || hostname.endsWith('.local')) return false;
-
-  if (hostname.includes('169.254.169.254') || hostname.includes('metadata.google.internal')) return false;
-
-  for (const domain of ALLOWED_PROXY_DOMAINS) {
-    if (hostname === domain || hostname.endsWith('.' + domain)) return true;
-  }
-
-  return false;
-}
-
 async function startServer() {
   const app = express();
   const PORT = 3000;
-
-  const requestCounts = new Map<string, { count: number; resetAt: number }>();
-
-  function rateLimit(req: express.Request, res: express.Response, next: express.NextFunction): void {
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
-    const now = Date.now();
-    const entry = requestCounts.get(ip);
-
-    if (!entry || entry.resetAt < now) {
-      requestCounts.set(ip, { count: 1, resetAt: now + 60000 });
-      next();
-      return;
-    }
-
-    entry.count++;
-    if (entry.count > 60) {
-      res.status(429).json({ error: 'Too many requests. Please slow down.' });
-      return;
-    }
-
-    next();
-  }
-
-  app.use('/api/', rateLimit);
 
   // Simple in-memory cache
   const cache = new Map<string, { data: Buffer, contentType: string, status: number, expiry: number }>();
@@ -89,21 +17,6 @@ async function startServer() {
     const targetUrl = req.query.url as string;
     if (!targetUrl) {
       return res.status(400).json({ error: 'Missing url parameter' });
-    }
-
-    let urlObj: URL;
-    try {
-      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-        return res.status(400).json({ error: 'Target URL must be absolute (start with http/https)' });
-      }
-      urlObj = new URL(targetUrl);
-    } catch {
-      return res.status(400).json({ error: 'Invalid URL provided' });
-    }
-
-    if (!isAllowedProxyTarget(urlObj)) {
-      console.warn(`[Proxy] Blocked unauthorized target: ${targetUrl}`);
-      return res.status(403).json({ error: 'Domain not in proxy allowlist' });
     }
 
     const isRetry = req.query.retry !== undefined;
@@ -120,6 +33,17 @@ async function startServer() {
     }
 
     console.log(`[Proxy] Requesting: ${targetUrl}${rangeHeader ? ` with Range: ${rangeHeader}` : ''}`);
+
+    let urlObj: URL;
+    try {
+      if (!targetUrl.startsWith('http')) {
+        throw new Error('Target URL must be absolute (start with http/https)');
+      }
+      urlObj = new URL(targetUrl);
+    } catch (e: any) {
+      console.error(`[Proxy] Invalid target URL: "${targetUrl}" - ${e.message}`);
+      return res.status(400).json({ error: 'Invalid URL provided' });
+    }
 
     // Abort controller linked to both time limits and client disconnect
     const controller = new AbortController();
@@ -152,6 +76,7 @@ async function startServer() {
             const headers = { 
               ...options.headers, 
               'User-Agent': ua,
+              'X-Forwarded-For': `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`
             };
 
             const response = await fetch(url, { 
@@ -314,112 +239,59 @@ async function startServer() {
     }
   });
 
-  const ALPHANUMERIC_REGEX = /^[a-zA-Z0-9_\-\/.:%=?#]+$/;
-
-  function sanitizeQueryParam(value: unknown): string {
-    if (typeof value !== 'string') return '';
-    return value.slice(0, 2000).replace(/[<>\n\r\t]/g, '').trim();
-  }
-
   // Scraper API routes
   app.get('/api/scraper/search', async (req, res) => {
-    const rawQ = sanitizeQueryParam(req.query.q);
-    if (!rawQ) return res.status(400).json({ error: 'Query required' });
-    console.log(`[API] Scraper Search Request: ${rawQ}`);
-    const results = await scraperManager.searchAll(rawQ);
+    const { q } = req.query;
+    console.log(`[API] Scraper Search Request: ${q}`);
+    if (!q) return res.status(400).json({ error: 'Query required' });
+    const results = await scraperManager.searchAll(q as string);
     console.log(`[API] Scraper Search Results: ${results.length} found`);
     res.json(results);
   });
 
   app.get('/api/scraper/chapters', async (req, res) => {
-    const source = sanitizeQueryParam(req.query.source);
-    const rawId = sanitizeQueryParam(req.query.id);
-    if (!rawId) return res.status(400).json({ error: 'ID required' });
-    if (!ALPHANUMERIC_REGEX.test(rawId)) return res.status(400).json({ error: 'Invalid ID format' });
-
-    console.log(`[API] Scraper Chapters Request: source=${source}, id=${rawId}`);
-
+    const { source, id } = req.query;
+    console.log(`[API] Scraper Chapters Request: source=${source}, id=${id}`);
+    if (!id) return res.status(400).json({ error: 'ID required' });
+    
     if (source) {
-      const provider = scraperManager.getProvider(source);
+      const provider = scraperManager.getProvider(source as string);
       if (!provider) return res.status(404).json({ error: 'Source not found' });
-      const chapters = await provider.getChapters(rawId);
+      const chapters = await provider.getChapters(id as string);
+      console.log(`[API] Scraper Chapters for ${source}: ${chapters.length} found`);
       res.json({ chapters });
     } else {
-      const chapters = await scraperManager.getChapters(rawId);
+      const chapters = await scraperManager.getChapters(id as string);
+      console.log(`[API] Scraper All Chapters: ${chapters.length} found`);
       res.json({ chapters });
     }
   });
 
   app.get('/api/scraper/pages', async (req, res) => {
-    const source = sanitizeQueryParam(req.query.source);
-    const rawId = sanitizeQueryParam(req.query.id);
-    if (!rawId) return res.status(400).json({ error: 'ID required' });
-    if (!ALPHANUMERIC_REGEX.test(rawId)) return res.status(400).json({ error: 'Invalid ID format' });
-
-    console.log(`[API] Scraper Pages Request: source=${source}, id=${rawId}`);
-
+    const { source, id } = req.query;
+    console.log(`[API] Scraper Pages Request: source=${source}, id=${id}`);
+    if (!id) return res.status(400).json({ error: 'ID required' });
+    
     if (source) {
-      const provider = scraperManager.getProvider(source);
+      const provider = scraperManager.getProvider(source as string);
       if (!provider) return res.status(404).json({ error: 'Source not found' });
-      const pages = await provider.getPages(rawId);
+      const pages = await provider.getPages(id as string);
+      console.log(`[API] Scraper Pages for ${source}: ${pages.length} found`);
       res.json({ pages });
     } else {
-      const pages = await scraperManager.getPages(rawId);
+      const pages = await scraperManager.getPages(id as string);
+      console.log(`[API] Scraper All Pages: ${pages.length} found`);
       res.json({ pages });
-    }
-  });
-
-  // TMDB Search endpoint (keeps API key server-side)
-  app.get('/api/tmdb/search', async (req, res) => {
-    const query = sanitizeQueryParam(req.query.query);
-    const year = sanitizeQueryParam(req.query.year);
-    const language = sanitizeQueryParam(req.query.language) || 'pt-BR';
-
-    if (!query) return res.status(400).json({ error: 'Query required' });
-
-    const tmdbApiKey = process.env.VITE_TMDB_API_KEY || process.env.TMDB_API_KEY;
-    if (!tmdbApiKey) {
-      console.warn('[TMDB] API key not configured');
-      return res.status(503).json({ error: 'TMDB integration not configured' });
-    }
-
-    try {
-      const yearParam = year ? `&first_air_date_year=${year}&primary_release_year=${year}` : '';
-      const url = `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}&language=${language}${yearParam}&include_adult=false`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        const error = await response.text();
-        console.error('[TMDB] Search failed:', response.status, error);
-        return res.status(response.status).json({ error: 'TMDB search failed' });
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error: any) {
-      console.error('[TMDB] Search error:', error.message);
-      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
   // Body parser for JSON
   app.use(express.json());
 
-  function sanitizeFeedbackInput(value: unknown): string {
-    if (typeof value !== 'string') return '';
-    return value.replace(/[<>\n\r]/g, ' ').slice(0, 5000).trim();
-  }
-
   // GitHub Feedback Endpoint
   app.post('/api/feedback/github', async (req, res) => {
-    const title = sanitizeFeedbackInput(req.body.title);
-    const description = sanitizeFeedbackInput(req.body.description);
-    const type = sanitizeFeedbackInput(req.body.type);
-
-    if (!title || !description) {
-      return res.status(400).json({ error: 'Title and description are required' });
-    }
-
+    const { title, description, user, type } = req.body;
+    
     const token = process.env.GITHUB_FEEDBACK_TOKEN;
     const owner = process.env.GITHUB_REPO_OWNER;
     const repo = process.env.GITHUB_REPO_NAME;
@@ -439,9 +311,9 @@ async function startServer() {
           'User-Agent': 'Avalon-Feedback-App'
         },
         body: JSON.stringify({
-          title: `[${type || 'geral'}] ${title}`,
-          body: `**Tipo:** ${type || 'geral'}\n\n**Descrição:**\n${description}\n\n--- \n*Enviado via Avalon Feedback App*`,
-          labels: [type?.toLowerCase() || 'feedback', 'feedback'].filter(Boolean)
+          title: `[${type}] ${title}`,
+          body: `**User:** ${user.name} (${user.email})\n**Type:** ${type}\n\n**Description:**\n${description}\n\n--- \n*Sent via Avalon Feedback App*`,
+          labels: [type.toLowerCase(), 'feedback']
         })
       });
 
@@ -452,9 +324,8 @@ async function startServer() {
 
       const data = await response.json();
       res.json({ success: true, url: data.html_url, number: data.number });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[Feedback] GitHub Error:', message);
+    } catch (error: any) {
+      console.error('[Feedback] GitHub Error:', error);
       res.status(500).json({ error: 'Failed to create GitHub issue' });
     }
   });
@@ -462,16 +333,8 @@ async function startServer() {
   // GitHub Feedback Endpoint update
   app.patch('/api/feedback/github/:number', async (req, res) => {
     const { number } = req.params;
-    const { state } = req.body;
-
-    if (typeof state !== 'string' || !['open', 'closed'].includes(state)) {
-      return res.status(400).json({ error: 'Invalid state value' });
-    }
-
-    if (!/^\d+$/.test(number)) {
-      return res.status(400).json({ error: 'Invalid issue number' });
-    }
-
+    const { state } = req.body; // e.g., 'closed'
+    
     const token = process.env.GITHUB_FEEDBACK_TOKEN;
     const owner = process.env.GITHUB_REPO_OWNER;
     const repo = process.env.GITHUB_REPO_NAME;
@@ -499,40 +362,9 @@ async function startServer() {
 
       const data = await response.json();
       res.json({ success: true, state: data.state });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[Feedback] GitHub Patch Error:', message);
+    } catch (error: any) {
+      console.error('[Feedback] GitHub Patch Error:', error);
       res.status(500).json({ error: 'Failed to update GitHub issue' });
-    }
-  });
-
-  // TMDB Search Proxy (keeps API key server-side)
-  app.get('/api/tmdb/search', async (req, res) => {
-    const query = sanitizeQueryParam(req.query.query);
-    if (!query) return res.status(400).json({ error: 'Query required' });
-
-    const tmdbApiKey = process.env.TMDB_API_KEY;
-    if (!tmdbApiKey) {
-      console.warn('[TMDB] API key not configured');
-      return res.status(503).json({ error: 'TMDB not configured' });
-    }
-
-    try {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}&language=pt-BR`
-      );
-      
-      if (!response.ok) {
-        console.error('[TMDB] Search failed:', response.status);
-        return res.status(502).json({ error: 'TMDB search failed' });
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[TMDB] Search Error:', message);
-      res.status(500).json({ error: 'Failed to search TMDB' });
     }
   });
 

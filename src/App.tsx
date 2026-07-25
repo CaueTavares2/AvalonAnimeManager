@@ -28,8 +28,6 @@ import { AnimeListProvider } from './context/AnimeListContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthProvider } from './context/AuthContext';
 import { SocialProvider } from './context/SocialContext';
-import { StreakProvider } from './context/StreakContext';
-import { RankingProvider } from './context/RankingContext';
 
 function MobileNav() {
   const location = useLocation();
@@ -88,8 +86,8 @@ function MainLayout() {
     <div className="min-h-screen">
       {isSakuraTheme && <FallingSakura />}
       <GlobalAnnouncement />
-       <Navbar />
-       <UpdateNotification />
+      <Navbar />
+      <UpdateNotification />
       <AchievementNotification />
       <ChangelogModal />
       <WelcomeModal />
@@ -126,21 +124,17 @@ export default function App() {
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
-          <StreakProvider>
-            <RankingProvider>
-              <SocialProvider>
-                <AnimeListProvider>
-                  <FavoritesProvider>
-                    <ProfileProvider>
-                        <BrowserRouter basename="/AvalonAnimeManager">
-                          <MainLayout />
-                        </BrowserRouter>
-                    </ProfileProvider>
-                  </FavoritesProvider>
-                </AnimeListProvider>
-              </SocialProvider>
-            </RankingProvider>
-          </StreakProvider>
+          <SocialProvider>
+            <AnimeListProvider>
+              <FavoritesProvider>
+                <ProfileProvider>
+                    <BrowserRouter basename="/AvalonAnimeManager">
+                      <MainLayout />
+                    </BrowserRouter>
+                </ProfileProvider>
+              </FavoritesProvider>
+            </AnimeListProvider>
+          </SocialProvider>
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>

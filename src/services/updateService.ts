@@ -1,63 +1,59 @@
-import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { getDocs, collection, query, where, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-interface UpdateInfo {
-  hasUpdate: boolean;
-  latestSha: string;
-  message: string;
-  date: string;
+interface GithubCommit {
+  sha: string;
+  commit: {
+    message: string;
+    author: {
+      date: string;
+    };
+  };
 }
 
-const COLLECTION = 'updates';
-const DOCUMENT = 'latest';
-const LOCAL_KEY = 'avalon_last_sha';
-
 export const updateService = {
-  REPO_OWNER: 'caue-nanda',
+  // Replace with actual repository details
+  REPO_OWNER: 'caue-nanda', 
   REPO_NAME: 'avalon-anime-list',
 
-  async getCurrent(): Promise<UpdateInfo | null> {
+  async checkForUpdates(currentSha?: string): Promise<{ hasUpdate: boolean; latestSha: string; message: string } | null> {
     try {
-      const ref = doc(db, COLLECTION, DOCUMENT);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) return null;
-      const data = snap.data() as { sha: string; message: string; date: string };
-      const lastSha = localStorage.getItem(LOCAL_KEY);
-      return {
-        hasUpdate: !!lastSha && data.sha !== lastSha,
-        latestSha: data.sha,
-        message: data.message,
-        date: data.date,
-      };
-    } catch {
+      // In a real environment, you'd fetch from GitHub API
+      // For this demo, we simulate a check. 
+      // If we had a locally stored VERSION or SHA, we'd compare it.
+      
+      const response = await fetch(`https://api.github.com/repos/${this.REPO_OWNER}/${this.REPO_NAME}/commits/main`, {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const data: GithubCommit = await response.json();
+      
+      const lastCheckedSha = localStorage.getItem('avalon_last_sha') || currentSha;
+      
+      if (lastCheckedSha && data.sha !== lastCheckedSha) {
+        return {
+          hasUpdate: true,
+          latestSha: data.sha,
+          message: data.commit.message
+        };
+      }
+
+      localStorage.setItem('avalon_last_sha', data.sha);
+      return { hasUpdate: false, latestSha: data.sha, message: data.commit.message };
+    } catch (error) {
+      console.error('Update check failed:', error);
       return null;
     }
   },
 
-  subscribe(callback: (info: UpdateInfo | null) => void) {
-    const ref = doc(db, COLLECTION, DOCUMENT);
-    return onSnapshot(ref, (snap) => {
-      if (!snap.exists()) {
-        callback(null);
-        return;
-      }
-      const data = snap.data() as { sha: string; message: string; date: string };
-      const lastSha = localStorage.getItem(LOCAL_KEY);
-      callback({
-        hasUpdate: !!lastSha && data.sha !== lastSha,
-        latestSha: data.sha,
-        message: data.message,
-        date: data.date,
-      });
-    });
-  },
-
-  markAsRead(sha: string) {
-    localStorage.setItem(LOCAL_KEY, sha);
-  },
-
-  async applyUpdate(sha: string) {
-    this.markAsRead(sha);
+  async applyUpdate(newSha: string) {
+    // In a web app, "updating" usually means refreshing to get new assets
+    // or triggering a rebuild if running locally.
+    localStorage.setItem('avalon_last_sha', newSha);
     window.location.reload();
-  },
+  }
 };

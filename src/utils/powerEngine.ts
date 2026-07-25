@@ -32,36 +32,29 @@ const AFFINITIES = [
   { name: 'Cósmico', color: 'text-indigo-400', hex: '#818cf8' }
 ];
 
-function calculateRankFromKi(baseKi: number): CharacterStats['rank'] {
-  if (baseKi >= 8000) return 'S+';
-  if (baseKi >= 6500) return 'S';
-  if (baseKi >= 4500) return 'A';
-  if (baseKi >= 3000) return 'B';
-  if (baseKi >= 1500) return 'C';
-  return 'D';
-}
-
-function rollNormalDistribution(rand: () => number): number {
-  return (rand() + rand() + rand()) / 3;
-}
-
 export function calculateCharacterStats(char: FavoriteCharacter, userOtakuPoints: number): CharacterStats {
-  if (!char || typeof char.id !== 'number') {
-    throw new Error('Invalid character data: id must be a number');
-  }
-
   const rand = mulberry32(char.id);
-  const roll = rollNormalDistribution(rand);
-  const baseKi = Math.floor(1000 + roll * 8000);
-
+  
+  // Base power based on deterministic random (1000 to 9000)
+  // We use multiple rand() calls to create a normal-ish distribution (bell curve)
+  const roll = (rand() + rand() + rand()) / 3; 
+  const baseKi = Math.floor(1000 + (roll * 8000));
+  
+  // Protagonism Bonus
   const roleBonus = char.role?.toLowerCase() === 'main' ? 1.25 : 1.0;
   const protagonismBonus = Math.floor(baseKi * roleBonus) - baseKi;
-
-  const safeUserPoints = Math.max(Number(userOtakuPoints) || 0, 0);
-  const userSynergy = Math.floor(Math.pow(safeUserPoints, 0.75) * 2.5);
-
+  
+  // User synergy scales logarithmically to avoid abusive scaling but still reward user points
+  const userSynergy = Math.floor(Math.pow(Math.max(userOtakuPoints || 0, 0), 0.75) * 2.5);
+  
   const totalKi = baseKi + protagonismBonus + userSynergy;
-  const rank = calculateRankFromKi(baseKi);
+  
+  let rank: CharacterStats['rank'] = 'D';
+  if (baseKi >= 8000) rank = 'S+';
+  else if (baseKi >= 6500) rank = 'S';
+  else if (baseKi >= 4500) rank = 'A';
+  else if (baseKi >= 3000) rank = 'B';
+  else if (baseKi >= 1500) rank = 'C';
 
   const affinityIndex = Math.floor(rand() * AFFINITIES.length);
   const affinity = AFFINITIES[affinityIndex];

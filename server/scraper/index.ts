@@ -1,7 +1,11 @@
 import { BaseScraperProvider } from './BaseProvider';
 import { ScrapedChapter } from './types';
 import { MuitoMangaProvider } from './providers/MuitoManga';
+import { LerMangaProvider } from './providers/LerManga';
+import { SuperMangasProvider } from './providers/SuperMangas';
+import { MangaLivreProvider } from './providers/MangaLivre';
 import { MangaPlusProvider } from './providers/MangaPlus';
+import { MangaFireProvider } from './providers/MangaFire';
 import { NineMangaProvider } from './providers/NineManga';
 import { MangaDexProvider } from './providers/MangaDex';
 
@@ -11,7 +15,11 @@ class ScraperManager {
   constructor() {
     this.registerProvider(
       new MuitoMangaProvider(),
+      new LerMangaProvider(),
+      new SuperMangasProvider(),
+      new MangaLivreProvider(),
       new MangaPlusProvider(),
+      new MangaFireProvider(),
       new NineMangaProvider(),
       new MangaDexProvider()
     );
