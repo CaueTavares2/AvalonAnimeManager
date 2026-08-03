@@ -15,7 +15,8 @@ import { motion, AnimatePresence } from 'motion/react';
 const ITEMS_PER_CHUNK = 50;
 
 export default function MyList() {
-  const { list, updateAnime, removeAnime } = useAnimeList();
+  const { list, updateAnime, removeAnime, syncWithTrackers } = useAnimeList();
+  const [isSyncing, setIsSyncing] = useState(false);
   const { user } = useAuth();
   const { profile } = useProfile();
   const { t, formatTitle } = useLanguage();
@@ -24,6 +25,16 @@ export default function MyList() {
   const [filter, setFilter] = useState<AnimeStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: 'title' | 'score' | null, direction: 'asc' | 'desc' | 'normal' }>({ key: null, direction: 'normal' });
+
+  
+  useEffect(() => {
+    const doSync = async () => {
+      setIsSyncing(true);
+      await syncWithTrackers();
+      setIsSyncing(false);
+    };
+    doSync();
+  }, []); // Run once on mount
 
   // Automatically sync Otaku Points (PO) on list changes with a 5s debounce for performance
   useEffect(() => {
@@ -136,7 +147,7 @@ export default function MyList() {
 
     if (anime) {
       import('../services/trackerService').then(({ trackerService }) => {
-        trackerService.syncToAllActive(id, newStatus, anime.progress, anime.score);
+        
       });
     }
   }, [list, updateAnime]);
@@ -160,7 +171,7 @@ export default function MyList() {
     updateAnime(id, { progress: newProgress, status: newStatus });
 
     import('../services/trackerService').then(({ trackerService }) => {
-      trackerService.syncToAllActive(id, newStatus, newProgress, anime.score);
+      
     });
   }, [list, updateAnime]);
 
@@ -431,6 +442,14 @@ export default function MyList() {
               )}
             </div>
 
+            
+            <button 
+              onClick={async () => { setIsSyncing(true); await syncWithTrackers(); setIsSyncing(false); }}
+              className="flex items-center gap-2 px-4 py-2 bg-[#2e51a2]/10 border border-[#2e51a2]/20 text-[#2e51a2] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#2e51a2] hover:text-white transition-all shadow-lg group whitespace-nowrap"
+            >
+              {isSyncing ? <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" /> : <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform shrink-0" />} 
+              Sync Remoto
+            </button>
             <button 
               onClick={() => handleSuggestion()}
               disabled={filteredList.length === 0}

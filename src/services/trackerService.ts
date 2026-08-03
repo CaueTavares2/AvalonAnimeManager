@@ -64,6 +64,7 @@ export const trackerService = {
 
     if (!token) {
       // Return highly realistic mock simulation if no token is provided
+      localStorage.setItem('avalon_anilist_last_sync', new Date().toISOString());
       return {
         tracker: 'anilist',
         success: true,
@@ -153,6 +154,8 @@ export const trackerService = {
     const mappedStatus = this.mapStatusToMAL(status);
 
     if (!token) {
+      localStorage.setItem('avalon_mal_last_sync', new Date().toISOString());
+      localStorage.setItem('avalon_mal_last_sync', new Date().toISOString());
       return {
         tracker: 'myanimelist',
         success: true,

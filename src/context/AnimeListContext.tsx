@@ -17,6 +17,8 @@ import {
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from './AuthContext';
 import { rankingService } from '../services/rankingService';
+import { trackerService } from '../services/trackerService';
+import { importService } from '../services/importService';
 
 interface AnimeListContextType {
   list: UserMedia[];
@@ -24,6 +26,7 @@ interface AnimeListContextType {
   batchAddAnimes: (animes: UserMedia[]) => Promise<void>;
   updateAnime: (id: number, data: Partial<UserMedia>) => Promise<void>;
   removeAnime: (id: number) => Promise<void>;
+  syncWithTrackers: () => Promise<void>;
 }
 
 const AnimeListContext = createContext<AnimeListContextType | undefined>(undefined);
@@ -117,6 +120,8 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
         if (anime.status === 'COMPLETED') {
           await rankingService.addPoints(user.uid, 50, `Concluiu: ${anime.title}`);
         }
+
+        trackerService.syncToAllActive(anime.id, anime.status, anime.progress, anime.score);
       } catch (error) {
         handleFirestoreError(error, OperationType.CREATE, path);
       }
@@ -127,6 +132,7 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('avalon_anime_list', JSON.stringify(updated));
         return updated;
       });
+      trackerService.syncToAllActive(anime.id, anime.status, anime.progress, anime.score);
     }
   }, [user]);
 
@@ -264,6 +270,8 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
         if (existingItem && data.status === 'COMPLETED' && existingItem.status !== 'COMPLETED') {
           await rankingService.addPoints(user.uid, 50, `Concluiu: ${existingItem.title}`);
         }
+
+        trackerService.syncToAllActive(id, data.status || existingItem.status, data.progress ?? existingItem.progress, data.score ?? existingItem.score);
       } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, path);
       }
@@ -279,8 +287,98 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('avalon_anime_list', JSON.stringify(updated));
         return updated;
       });
+      const existingItem = list.find(a => a.id === id);
+      if (existingItem) {
+        trackerService.syncToAllActive(id, data.status || existingItem.status, data.progress ?? existingItem.progress, data.score ?? existingItem.score);
+      }
     }
-  }, [user]);
+  }, [user, list]);
+
+  
+  const syncWithTrackers = useCallback(async () => {
+    try {
+      const isAutoSync = localStorage.getItem('avalon_auto_sync_trackers') === 'true';
+      if (!isAutoSync) return;
+
+      const anilistUser = localStorage.getItem('avalon_anilist_user') || '';
+      const malUser = localStorage.getItem('avalon_mal_user') || '';
+
+      let remoteAnimes: UserMedia[] = [];
+
+      if (anilistUser) {
+        try {
+          const alAnimes = await importService.importFromAniList(anilistUser);
+          remoteAnimes = [...remoteAnimes, ...alAnimes];
+          localStorage.setItem('avalon_anilist_last_sync', new Date().toISOString());
+        } catch(e) {
+          console.error("Failed to sync from AniList", e);
+        }
+      }
+
+      if (malUser) {
+        try {
+          const malAnimes = await importService.importFromMAL(malUser);
+          remoteAnimes = [...remoteAnimes, ...malAnimes];
+          localStorage.setItem('avalon_mal_last_sync', new Date().toISOString());
+        } catch(e) {
+          console.error("Failed to sync from MAL", e);
+        }
+      }
+
+      if (remoteAnimes.length === 0) return;
+
+      // Merge remote with local. If remote has higher progress or different status, we might want to update local, 
+      // but to be safe and simple, we can just do a merge favoring the most recently updated.
+      // Since we don't have updatedAt from MAL/AniList easily in this simplistic import, we'll favor remote if it has higher progress, or if it's missing locally.
+      
+      const newOrUpdated = [];
+      
+      for (const remote of remoteAnimes) {
+        const local = list.find(l => l.id === remote.id);
+        if (!local) {
+          newOrUpdated.push(remote);
+        } else if (remote.progress > local.progress || remote.status !== local.status || (remote.score && remote.score !== local.score)) {
+          // If remote is further ahead, or status changed, sync down
+          newOrUpdated.push({ ...local, ...remote });
+        }
+      }
+
+      if (newOrUpdated.length > 0) {
+        // We do a soft batch update
+        if (user) {
+          const batch = writeBatch(db);
+          newOrUpdated.forEach(anime => {
+            const docRef = doc(db, 'users', user.uid, 'list', anime.id.toString());
+            const { _parentIdMigration, ...cleanAnime } = anime as any;
+            batch.set(docRef, { 
+              ...cleanAnime, 
+              mediaId: anime.id,
+              userId: user.uid,
+              updatedAt: serverTimestamp()
+            }, { merge: true });
+          });
+          await batch.commit();
+        } else {
+          setList(prev => {
+            const updated = [...prev];
+            newOrUpdated.forEach(nu => {
+              const idx = updated.findIndex(u => u.id === nu.id);
+              if (idx >= 0) {
+                updated[idx] = nu;
+              } else {
+                updated.push(nu);
+              }
+            });
+            localStorage.setItem('avalon_anime_list', JSON.stringify(updated));
+            return updated;
+          });
+        }
+      }
+
+    } catch (e) {
+      console.error("Error syncing with trackers", e);
+    }
+  }, [user, list]);
 
   const removeAnime = useCallback(async (id: number) => {
     if (user) {
@@ -301,7 +399,7 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   return (
-    <AnimeListContext.Provider value={{ list, addAnime, batchAddAnimes, updateAnime, removeAnime }}>
+    <AnimeListContext.Provider value={{ list, addAnime, batchAddAnimes, updateAnime, removeAnime, syncWithTrackers }}>
       {children}
     </AnimeListContext.Provider>
   );

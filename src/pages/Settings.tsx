@@ -42,6 +42,16 @@ export default function Settings() {
   });
 
   const [hasChanges, setHasChanges] = useState(false);
+  const [lastSyncAnilist, setLastSyncAnilist] = useState(localStorage.getItem('avalon_anilist_last_sync') || '');
+  const [lastSyncMal, setLastSyncMal] = useState(localStorage.getItem('avalon_mal_last_sync') || '');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastSyncAnilist(localStorage.getItem('avalon_anilist_last_sync') || '');
+      setLastSyncMal(localStorage.getItem('avalon_mal_last_sync') || '');
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   useEffect(() => {
@@ -338,6 +348,12 @@ export default function Settings() {
                         <div>
                           <p className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{t('settings.migration.anilist')}</p>
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">GraphQL API v2</p>
+                          {lastSyncAnilist && (
+                            <div className="text-[9px] text-gray-400 font-medium flex items-center gap-1 mt-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                              Sync: {new Date(lastSyncAnilist).toLocaleString()}
+                            </div>
+                          )}
                         </div>
                       </div>
                       {localSettings.anilistUser && (
@@ -431,6 +447,12 @@ export default function Settings() {
                         <div>
                           <p className="text-sm font-black text-[var(--color-text-bright)] uppercase tracking-tight">{t('settings.migration.mal')}</p>
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Jikan REST API v4</p>
+                          {lastSyncMal && (
+                            <div className="text-[9px] text-gray-400 font-medium flex items-center gap-1 mt-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                              Sync: {new Date(lastSyncMal).toLocaleString()}
+                            </div>
+                          )}
                         </div>
                       </div>
                       {localSettings.malUser && (
