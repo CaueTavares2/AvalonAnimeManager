@@ -121,7 +121,7 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
           await rankingService.addPoints(user.uid, 50, `Concluiu: ${anime.title}`);
         }
 
-        trackerService.syncToAllActive(anime.id, anime.status, anime.progress, anime.score);
+        trackerService.syncToAllActive(anime.id, anime.status, anime.progress, anime.score, anime.type);
       } catch (error) {
         handleFirestoreError(error, OperationType.CREATE, path);
       }
@@ -132,7 +132,7 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('avalon_anime_list', JSON.stringify(updated));
         return updated;
       });
-      trackerService.syncToAllActive(anime.id, anime.status, anime.progress, anime.score);
+      trackerService.syncToAllActive(anime.id, anime.status, anime.progress, anime.score, anime.type);
     }
   }, [user]);
 
@@ -271,7 +271,7 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
           await rankingService.addPoints(user.uid, 50, `Concluiu: ${existingItem.title}`);
         }
 
-        trackerService.syncToAllActive(id, data.status || existingItem.status, data.progress ?? existingItem.progress, data.score ?? existingItem.score);
+        trackerService.syncToAllActive(id, data.status || existingItem.status, data.progress ?? existingItem.progress, data.score ?? existingItem.score, existingItem.type);
       } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, path);
       }

@@ -57,10 +57,11 @@ export const trackerService = {
     malId: number, 
     status: string, 
     progress: number, 
-    score?: number
+    score?: number,
+    type: 'ANIME' | 'MANGA' = 'ANIME'
   ): Promise<TrackerSyncResult> {
     const mappedStatus = this.mapStatusToAniList(status);
-    const translatedScore = score ? this.translateScoreToSmiley(score) : undefined;
+    
 
     if (!token) {
       // Return highly realistic mock simulation if no token is provided
@@ -68,16 +69,16 @@ export const trackerService = {
       return {
         tracker: 'anilist',
         success: true,
-        message: `Simulado: Sincronizado com AniList (${username}). Status: ${mappedStatus}, Progresso: ${progress}, Nota recomendada: ${translatedScore || 'N/A'}.`,
-        translatedScore
+        message: `Simulado: Sincronizado com AniList (${username}). Status: ${mappedStatus}, Progresso: ${progress}, Nota: ${score || 'N/A'}.`,
+        translatedScore: score
       };
     }
 
     try {
       // First, get AniList Media ID from MAL ID using AniList API
       const queryMedia = `
-        query ($idMal: Int) {
-          Media (idMal: $idMal) {
+        query ($idMal: Int, $type: MediaType) {
+          Media (idMal: $idMal, type: $type) {
             id
           }
         }
@@ -85,7 +86,7 @@ export const trackerService = {
       
       const mediaResponse = await axios.post('https://graphql.anilist.co', {
         query: queryMedia,
-        variables: { idMal: malId }
+        variables: { idMal: malId, type: type }
       });
 
       const aniListMediaId = mediaResponse.data?.data?.Media?.id;
@@ -104,11 +105,8 @@ export const trackerService = {
         }
       `;
 
-      // Translate Smiley score to raw score if needed
-      let scoreRaw = 0;
-      if (translatedScore === 'SMILE') scoreRaw = 3; // Smiley ratings are typically internally mapped in AniList
-      else if (translatedScore === 'NEUTRAL') scoreRaw = 2;
-      else if (translatedScore === 'SAD') scoreRaw = 1;
+      // AniList stores all scores internally as a 100-point integer
+      const scoreRaw = score ? score * 10 : undefined;
 
       await axios.post('https://graphql.anilist.co', {
         query: mutation,
@@ -116,7 +114,7 @@ export const trackerService = {
           mediaId: aniListMediaId,
           status: mappedStatus,
           progress,
-          scoreRaw: scoreRaw > 0 ? scoreRaw : undefined
+          scoreRaw: scoreRaw
         }
       }, {
         headers: {
@@ -130,7 +128,7 @@ export const trackerService = {
         tracker: 'anilist',
         success: true,
         message: `Sucesso: Sincronizado em tempo real com AniList para ${username}!`,
-        translatedScore
+        translatedScore: score
       };
     } catch (error: any) {
       console.error('AniList real-time sync error:', error);
@@ -149,7 +147,8 @@ export const trackerService = {
     malId: number, 
     status: string, 
     progress: number, 
-    score?: number
+    score?: number,
+    type: 'ANIME' | 'MANGA' = 'ANIME'
   ): Promise<TrackerSyncResult> {
     const mappedStatus = this.mapStatusToMAL(status);
 
@@ -165,12 +164,14 @@ export const trackerService = {
 
     try {
       // MAL write API requires OAuth login
-      await axios.put(`https://api.myanimelist.net/v2/anime/${malId}/my_list_status`, 
-        new URLSearchParams({
-          status: mappedStatus,
-          num_watched_episodes: progress.toString(),
-          score: score ? score.toString() : '0'
-        }).toString(), {
+      const params = new URLSearchParams();
+      params.append('status', mappedStatus);
+      if (type === 'ANIME') params.append('num_watched_episodes', progress.toString());
+      if (type === 'MANGA') params.append('num_chapters_read', progress.toString());
+      if (score) params.append('score', score.toString());
+      
+      await axios.put(`https://api.myanimelist.net/v2/${type.toLowerCase()}/${malId}/my_list_status`, 
+         params.toString(), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -193,23 +194,22 @@ export const trackerService = {
   },
 
   // Central trigger to sync with all active configured trackers
-  async syncToAllActive(malId: number, status: string, progress: number, score?: number): Promise<TrackerSyncResult[]> {
-    const isAutoSync = localStorage.getItem('avalon_auto_sync_trackers') === 'true';
-    if (!isAutoSync) return [];
+  async syncToAllActive(malId: number, status: string, progress: number, score?: number, type: 'ANIME' | 'MANGA' = 'ANIME'): Promise<TrackerSyncResult[]> {
+    
 
     const results: TrackerSyncResult[] = [];
 
     const anilistUser = localStorage.getItem('avalon_anilist_user') || '';
     const anilistToken = localStorage.getItem('avalon_anilist_token') || null;
     if (anilistUser) {
-      const res = await this.syncToAniList(anilistUser, anilistToken, malId, status, progress, score);
+      const res = await this.syncToAniList(anilistUser, anilistToken, malId, status, progress, score, type);
       results.push(res);
     }
 
     const malUser = localStorage.getItem('avalon_mal_user') || '';
     const malToken = localStorage.getItem('avalon_mal_token') || null;
     if (malUser) {
-      const res = await this.syncToMAL(malUser, malToken, malId, status, progress, score);
+      const res = await this.syncToMAL(malUser, malToken, malId, status, progress, score, type);
       results.push(res);
     }
 
