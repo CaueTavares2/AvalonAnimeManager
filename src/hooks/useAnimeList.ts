@@ -12,6 +12,6 @@ export function useAnimeList() {
     updateAnime: (id: number, data: Partial<UserMedia>) => context.updateAnime(id, data), 
     removeAnime: (id: number) => context.removeAnime(id), 
     batchAddAnimes: (animes: UserMedia[]) => context.batchAddAnimes(animes),
-     syncWithTrackers: () => context.syncWithTrackers() 
+     syncWithTrackers: (force?: boolean) => context.syncWithTrackers(force) 
   };
 }

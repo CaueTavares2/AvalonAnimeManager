@@ -30,7 +30,7 @@ export default function MyList() {
   useEffect(() => {
     const doSync = async () => {
       setIsSyncing(true);
-      await syncWithTrackers();
+      await syncWithTrackers(true);
       setIsSyncing(false);
     };
     doSync();

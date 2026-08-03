@@ -26,7 +26,7 @@ interface AnimeListContextType {
   batchAddAnimes: (animes: UserMedia[]) => Promise<void>;
   updateAnime: (id: number, data: Partial<UserMedia>) => Promise<void>;
   removeAnime: (id: number) => Promise<void>;
-  syncWithTrackers: () => Promise<void>;
+  syncWithTrackers: (force?: boolean) => Promise<void>;
 }
 
 const AnimeListContext = createContext<AnimeListContextType | undefined>(undefined);
@@ -295,10 +295,10 @@ export function AnimeListProvider({ children }: { children: React.ReactNode }) {
   }, [user, list]);
 
   
-  const syncWithTrackers = useCallback(async () => {
+  const syncWithTrackers = useCallback(async (force = false) => {
     try {
       const isAutoSync = localStorage.getItem('avalon_auto_sync_trackers') === 'true';
-      if (!isAutoSync) return;
+      if (!isAutoSync && !force) return;
 
       const anilistUser = localStorage.getItem('avalon_anilist_user') || '';
       const malUser = localStorage.getItem('avalon_mal_user') || '';
